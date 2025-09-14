@@ -7,6 +7,7 @@ import DevControls from '../components/DevControls'
 import { ThreeSceneManager, stage1Config, stage2Config, stage3Config } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
+import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -56,6 +57,8 @@ export default function Home() {
   const [current3DStage, setCurrent3DStage] = useState(1) // Start at Stage 1
   const [is3DAnimating, setIs3DAnimating] = useState(false)
   const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
+  const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
+  const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
 
   // Animated values function that handles all animations
   const getAnimatedValues = () => {
@@ -239,13 +242,11 @@ export default function Home() {
       }
     }
 
-    // Return current stage configuration if no animation
-    const currentStageConfig = current3DStage === 1 ? stage1Config : 
-                              current3DStage === 2 ? stage2Config : stage3Config
+    // Return actual control values when not animating (so dev controls work)
     return { 
-      model: currentStageConfig.model, 
-      camera: currentStageConfig.camera, 
-      lighting: currentStageConfig.lighting 
+      model: modelControls, 
+      camera: cameraControls, 
+      lighting: lightingControls 
     }
   }
 
@@ -276,6 +277,8 @@ export default function Home() {
         stage3DAnimationProgress={stage3DAnimationProgress}
         current3DStage={current3DStage}
         getAnimatedValues={getAnimatedValues}
+        componentControls={componentControls}
+        categoryVisibility={categoryVisibility}
       />
 
       {/* Scroll Manager */}
@@ -613,6 +616,10 @@ export default function Home() {
         stage3Config={stage3Config}
         current3DStage={current3DStage}
         stage3DAnimationProgress={stage3DAnimationProgress}
+        componentControls={componentControls}
+        onComponentControlsChange={setComponentControls}
+        categoryVisibility={categoryVisibility}
+        onCategoryVisibilityChange={setCategoryVisibility}
       />
 
       {/* Show Dev Mode Button when hidden */}

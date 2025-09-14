@@ -2,46 +2,75 @@
 
 import React from 'react'
 import CollapsibleSection from '../CollapsibleSection'
+import ComponentControl from './ComponentControl'
+import { ComponentControls, ComponentTransform } from './types'
 
-export default function CoreMechanicalComponents() {
+interface CoreMechanicalComponentsProps {
+  componentControls: ComponentControls
+  onComponentControlsChange: (controls: ComponentControls) => void
+}
+
+export default function CoreMechanicalComponents({
+  componentControls,
+  onComponentControlsChange
+}: CoreMechanicalComponentsProps) {
+  const updateComponent = (componentName: keyof ComponentControls, transform: ComponentTransform) => {
+    onComponentControlsChange({
+      ...componentControls,
+      [componentName]: transform
+    })
+  }
+
   return (
     <CollapsibleSection title="⚙️ Core Mechanical Components" defaultExpanded={false}>
       <div className="space-y-1">
-        <CollapsibleSection title="MicroGearmotor" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="MicroGearmotor"
+          icon="⚙️"
+          color="text-blue-400"
+          transform={componentControls.microGearmotor}
+          onTransformChange={(transform) => updateComponent('microGearmotor', transform)}
+        />
         
-        <CollapsibleSection title="Gear Motor PCB" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Gear Motor PCB"
+          icon="🔌"
+          color="text-green-400"
+          transform={componentControls.gearMotorPCB}
+          onTransformChange={(transform) => updateComponent('gearMotorPCB', transform)}
+        />
         
-        <CollapsibleSection title="Motor Holder" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Motor Holder"
+          icon="🔧"
+          color="text-yellow-400"
+          transform={componentControls.motorHolder}
+          onTransformChange={(transform) => updateComponent('motorHolder', transform)}
+        />
         
-        <CollapsibleSection title="Holder Support" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Holder Support"
+          icon="🛠️"
+          color="text-orange-400"
+          transform={componentControls.holderSupport}
+          onTransformChange={(transform) => updateComponent('holderSupport', transform)}
+        />
         
-        <CollapsibleSection title="Coupling" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Coupling"
+          icon="🔗"
+          color="text-purple-400"
+          transform={componentControls.coupling}
+          onTransformChange={(transform) => updateComponent('coupling', transform)}
+        />
         
-        <CollapsibleSection title="M5 Screw" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="M5 Screw"
+          icon="🔩"
+          color="text-gray-400"
+          transform={componentControls.m5Screw}
+          onTransformChange={(transform) => updateComponent('m5Screw', transform)}
+        />
       </div>
     </CollapsibleSection>
   )

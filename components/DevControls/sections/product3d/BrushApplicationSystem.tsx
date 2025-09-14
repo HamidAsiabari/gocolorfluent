@@ -2,34 +2,59 @@
 
 import React from 'react'
 import CollapsibleSection from '../CollapsibleSection'
+import ComponentControl from './ComponentControl'
+import { ComponentControls, ComponentTransform } from './types'
 
-export default function BrushApplicationSystem() {
+interface BrushApplicationSystemProps {
+  componentControls: ComponentControls
+  onComponentControlsChange: (controls: ComponentControls) => void
+}
+
+export default function BrushApplicationSystem({
+  componentControls,
+  onComponentControlsChange
+}: BrushApplicationSystemProps) {
+  const updateComponent = (componentName: keyof ComponentControls, transform: ComponentTransform) => {
+    onComponentControlsChange({
+      ...componentControls,
+      [componentName]: transform
+    })
+  }
+
   return (
     <CollapsibleSection title="🖌️ Brush & Application System" defaultExpanded={false}>
       <div className="space-y-1">
-        <CollapsibleSection title="Moving Plate" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Moving Plate"
+          icon="📋"
+          color="text-blue-400"
+          transform={componentControls.movingPlate}
+          onTransformChange={(transform) => updateComponent('movingPlate', transform)}
+        />
         
-        <CollapsibleSection title="Silicon Support" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Silicon Support"
+          icon="🔲"
+          color="text-green-400"
+          transform={componentControls.siliconSupport}
+          onTransformChange={(transform) => updateComponent('siliconSupport', transform)}
+        />
         
-        <CollapsibleSection title="Nozzle" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Nozzle"
+          icon="💧"
+          color="text-cyan-400"
+          transform={componentControls.nozzle}
+          onTransformChange={(transform) => updateComponent('nozzle', transform)}
+        />
         
-        <CollapsibleSection title="Nozzle Blinder" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Nozzle Blinder"
+          icon="🛡️"
+          color="text-red-400"
+          transform={componentControls.nozzleBlinder}
+          onTransformChange={(transform) => updateComponent('nozzleBlinder', transform)}
+        />
       </div>
     </CollapsibleSection>
   )

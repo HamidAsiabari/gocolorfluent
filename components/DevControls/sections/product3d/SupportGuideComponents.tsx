@@ -2,22 +2,43 @@
 
 import React from 'react'
 import CollapsibleSection from '../CollapsibleSection'
+import ComponentControl from './ComponentControl'
+import { ComponentControls, ComponentTransform } from './types'
 
-export default function SupportGuideComponents() {
+interface SupportGuideComponentsProps {
+  componentControls: ComponentControls
+  onComponentControlsChange: (controls: ComponentControls) => void
+}
+
+export default function SupportGuideComponents({
+  componentControls,
+  onComponentControlsChange
+}: SupportGuideComponentsProps) {
+  const updateComponent = (componentName: keyof ComponentControls, transform: ComponentTransform) => {
+    onComponentControlsChange({
+      ...componentControls,
+      [componentName]: transform
+    })
+  }
+
   return (
     <CollapsibleSection title="🛠️ Support & Guide Components" defaultExpanded={false}>
       <div className="space-y-1">
-        <CollapsibleSection title="Hair Guide Support" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Hair Guide Support"
+          icon="👤"
+          color="text-blue-400"
+          transform={componentControls.hairGuideSupport}
+          onTransformChange={(transform) => updateComponent('hairGuideSupport', transform)}
+        />
         
-        <CollapsibleSection title="SKQYAF Components" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="SKQYAF Components"
+          icon="🔧"
+          color="text-green-400"
+          transform={componentControls.skqyafComponents}
+          onTransformChange={(transform) => updateComponent('skqyafComponents', transform)}
+        />
       </div>
     </CollapsibleSection>
   )

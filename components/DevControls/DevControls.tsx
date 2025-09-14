@@ -11,6 +11,7 @@ import {
   Presets,
   Product3DObject
 } from './sections'
+import { ComponentControls, CategoryVisibility } from './sections/product3d/types'
 
 interface ModelControls {
   position: { x: number; y: number; z: number }
@@ -72,6 +73,10 @@ interface DevControlsProps {
   stage3Config: StageConfig
   current3DStage: number
   stage3DAnimationProgress: number
+  componentControls: ComponentControls
+  onComponentControlsChange: (controls: ComponentControls) => void
+  categoryVisibility: CategoryVisibility
+  onCategoryVisibilityChange: (visibility: CategoryVisibility) => void
 }
 
 export default function DevControls({
@@ -93,7 +98,11 @@ export default function DevControls({
   stage2Config,
   stage3Config,
   current3DStage,
-  stage3DAnimationProgress
+  stage3DAnimationProgress,
+  componentControls,
+  onComponentControlsChange,
+  categoryVisibility,
+  onCategoryVisibilityChange
 }: DevControlsProps) {
   if (!isDevMode) return null
 
@@ -142,7 +151,12 @@ export default function DevControls({
           onLightingControlsChange={onLightingControlsChange}
         />
 
-        <Product3DObject />
+        <Product3DObject
+          componentControls={componentControls}
+          onComponentControlsChange={onComponentControlsChange}
+          categoryVisibility={categoryVisibility}
+          onCategoryVisibilityChange={onCategoryVisibilityChange}
+        />
 
         <Presets
           modelControls={modelControls}

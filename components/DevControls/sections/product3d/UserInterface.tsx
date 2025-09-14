@@ -2,28 +2,51 @@
 
 import React from 'react'
 import CollapsibleSection from '../CollapsibleSection'
+import ComponentControl from './ComponentControl'
+import { ComponentControls, ComponentTransform } from './types'
 
-export default function UserInterface() {
+interface UserInterfaceProps {
+  componentControls: ComponentControls
+  onComponentControlsChange: (controls: ComponentControls) => void
+}
+
+export default function UserInterface({
+  componentControls,
+  onComponentControlsChange
+}: UserInterfaceProps) {
+  const updateComponent = (componentName: keyof ComponentControls, transform: ComponentTransform) => {
+    onComponentControlsChange({
+      ...componentControls,
+      [componentName]: transform
+    })
+  }
+
   return (
     <CollapsibleSection title="🎛️ User Interface" defaultExpanded={false}>
       <div className="space-y-1">
-        <CollapsibleSection title="Knobs" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Knobs"
+          icon="🎛️"
+          color="text-blue-400"
+          transform={componentControls.knobs}
+          onTransformChange={(transform) => updateComponent('knobs', transform)}
+        />
         
-        <CollapsibleSection title="Drain Button Actuator" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Drain Button Actuator"
+          icon="🔘"
+          color="text-red-400"
+          transform={componentControls.drainButtonActuator}
+          onTransformChange={(transform) => updateComponent('drainButtonActuator', transform)}
+        />
         
-        <CollapsibleSection title="Handle Up Cover" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Handle Up Cover"
+          icon="🤏"
+          color="text-green-400"
+          transform={componentControls.handleUpCover}
+          onTransformChange={(transform) => updateComponent('handleUpCover', transform)}
+        />
       </div>
     </CollapsibleSection>
   )

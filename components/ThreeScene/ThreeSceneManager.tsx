@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import { StageConfig, stage1Config, stage2Config, stage3Config } from './StageConfig'
+import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
 
 interface ThreeSceneManagerProps {
   mountRef: React.RefObject<HTMLDivElement>
@@ -48,6 +49,8 @@ interface ThreeSceneManagerProps {
     camera: { position: { x: number; y: number; z: number }; fov: number }
     lighting: any
   }
+  componentControls: ComponentControls
+  categoryVisibility: CategoryVisibility
 }
 
 export default function ThreeSceneManager({
@@ -60,7 +63,9 @@ export default function ThreeSceneManager({
   is3DAnimating,
   stage3DAnimationProgress,
   current3DStage,
-  getAnimatedValues
+  getAnimatedValues,
+  componentControls,
+  categoryVisibility
 }: ThreeSceneManagerProps) {
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -69,6 +74,7 @@ export default function ThreeSceneManager({
   const ambientLightRef = useRef<THREE.AmbientLight | null>(null)
   const directionalLightRef = useRef<THREE.DirectionalLight | null>(null)
   const pointLightRef = useRef<THREE.PointLight | null>(null)
+  const componentRefs = useRef<Map<string, THREE.Object3D>>(new Map())
   const spotLightRef = useRef<THREE.SpotLight | null>(null)
 
   useEffect(() => {
@@ -159,6 +165,275 @@ export default function ThreeSceneManager({
           isObject3D: child instanceof THREE.Object3D
         })
         childIndex++
+      })
+
+      // Enhanced component mapping with correct names from the actual 3D model
+      const componentMapping: { [key: string]: string[] } = {
+        // Core Mechanical Components - using actual model names
+        microGearmotor: ['MicroGearmotor1', 'MicroGearmotor_InstanceRep', 'MicroGearmotor1_1', 'MicroGearmotor1_InstanceRep'],
+        gearMotorPCB: ['Gear_motor_PCB1', 'Gear_motor_PCB_InstanceRep'],
+        motorHolder: ['Motor_holder_11', 'Motor_holder_1_InstanceRep'],
+        holderSupport: ['Holder_support1', 'Holder_support_InstanceRep', 'Holder_support2', 'Holder_support_InstanceRep_1'],
+        coupling: ['Coupling1', 'Coupling_InstanceRep'],
+        m5Screw: ['M5_Screw1', 'M5_Screw_InstanceRep'],
+        
+        // Brush & Application System
+        movingPlate: ['Movin_Plate1', 'Movin_Plate_InstanceRep'],
+        siliconSupport: ['Mobin_silicon_support1', 'Mobin_silicon_support_InstanceRep'],
+        nozzle: ['Copy_(1)_of_Nuzzle1', 'Copy_(1)_of_Nuzzle_InstanceRep'],
+        nozzleBlinder: ['Nuzzel_blinder1', 'Nuzzel_blinder_InstanceRep'],
+        
+        // Main Housing & Structure
+        upperSideMainHolder: ['Upper_side_main_holder1', 'Upper_side_main_holder_InstanceRep'],
+        lowerSideMain: ['Lower_Side_Main1', 'Lower_Side_Main_InstanceRep'],
+        upperCover: ['Upper_cover1', 'Upper_cover_InstanceRep'],
+        loadingMaterialCover: ['Loading_Material_Cover1', 'Loading_Material_Cover_InstanceRep'],
+        
+        // Electronic Components
+        colorSensorPCB: ['Color_Sensor_PCB1', 'Color_Sensor_PCB_InstanceRep'],
+        sts8dn3llh5: ['STS8DN3LLH51', 'STS8DN3LLH5_InstanceRep'],
+        oledDisplay: ['OLED_Display1', 'OLED_Display_InstanceRep'],
+        detectorSwitch: ['Detector_Switch1', 'Detector_Switch_InstanceRep'],
+        slideSwitch: ['Slide_Switch_11', 'Slide_Switch_1_InstanceRep'],
+        
+        // LED & Lighting
+        everlightLEDs: ['User_Library-Everlight_67-21SRC-TR81', 'User_Library-Everlight_67-21SRC-TR82', 'User_Library-Everlight_67-21SRC-TR83', 'User_Library-Everlight_67-21SRC-TR84'],
+        sensorGuideLight: ['Sensor_Guide_Light1', 'Sensor_Guide_Light_InstanceRep'],
+        
+        // User Interface
+        knobs: ['Knobs1', 'Knobs_InstanceRep'],
+        drainButtonActuator: ['Drain_Button_Actuator1', 'Drain_Button_Actuator_InstanceRep'],
+        handleUpCover: ['Handle_up_cover1', 'Handle_up_cover_InstanceRep'],
+        
+        // Support & Guide Components
+        hairGuideSupport: ['Hair_guide_Support1', 'Hair_guide_Support_InstanceRep'],
+        skqyafComponents: ['SKQYAF1', 'SKQYAF_InstanceRep', 'SKQYAF2', 'SKQYAF_InstanceRep_1', 'SKQYAF3', 'SKQYAF_InstanceRep_2', 'SKQYAF4', 'SKQYAF_InstanceRep_3'],
+        
+        // Additional Parts
+        productComponents: ['Product11', 'Product21', 'Product12', 'Product51', 'Product61', 'Product71'],
+        genericParts: ['Part11', 'Part1_InstanceRep', 'Part11_1', 'Part11_InstanceRep', 'Part11_2', 'Part113_InstanceRep', 'Part21', 'Part22_InstanceRep', 'Part31', 'Part3_InstanceRep', 'Part41', 'Part4_InstanceRep', 'Part51', 'Part5_InstanceRep', 'Part71', 'Part7_InstanceRep', 'Copy_(1)_of_Part71', 'Copy_(1)_of_Part7_InstanceRep', 'Part21_1', 'Part2_InstanceRep', 'Part11_3', 'Part1135_InstanceRep', 'Part21_2', 'Part224_InstanceRep'],
+        importedComponents: ['Imported_2_InstanceRep', 'Imported_4_InstanceRep', 'Imported_InstanceRep', 'Imported_3_InstanceRep', 'Imported_2_InstanceRep_1', 'Imported_4_InstanceRep_1', 'Imported_InstanceRep_1', 'Imported_3_InstanceRep_1', 'Imported_2_InstanceRep_2', 'Imported_4_InstanceRep_2', 'Imported_InstanceRep_2', 'Imported_3_InstanceRep_2', 'Imported_2_InstanceRep_3', 'Imported_4_InstanceRep_3', 'Imported_InstanceRep_3', 'Imported_3_InstanceRep_3']
+      }
+
+      // Enhanced component finding with better debugging
+      console.log('=== Component Mapping Debug ===')
+      const foundComponents: string[] = []
+      
+      model.traverse((child) => {
+        if (child.name) {
+          foundComponents.push(child.name)
+          console.log(`Found component: "${child.name}" (Type: ${child.type})`)
+          
+          // Special debugging for Lower Side Main hierarchy
+          if (child.name.includes('Lower') || child.name.includes('lower')) {
+            console.log(`🔍 Lower Side Debug - "${child.name}":`, {
+              type: child.type,
+              children: child.children.length,
+              parent: child.parent?.name || 'No parent',
+              position: child.position,
+              rotation: child.rotation,
+              scale: child.scale
+            })
+            
+            // Log all children of Lower Side Main objects
+            if (child.name.includes('Lower_Side_Main')) {
+              console.log(`📦 Children of ${child.name}:`, child.children.map(c => c.name))
+            }
+          }
+          
+          Object.entries(componentMapping).forEach(([controlKey, componentNames]) => {
+            if (componentNames.includes(child.name)) {
+              componentRefs.current.set(controlKey, child)
+              
+              // Mark this component as mapped for later identification
+              child.userData.isMappedComponent = true
+              
+              console.log(`✅ Mapped component: ${controlKey} -> "${child.name}"`)
+            }
+          })
+        }
+      })
+      
+      // Find the correct parent containers for group movement
+      console.log(`🔍 Searching for proper parent containers for group movement`)
+      
+      // Find Lower Side Main parent container
+      let lowerSideMainParent = null
+      model.traverse((child) => {
+        if (child.name && child.name.includes('Lower_Side_Main')) {
+          console.log(`🔍 Found Lower_Side_Main: "${child.name}"`)
+          console.log(`📦 Direct children:`, child.children.map(c => c.name))
+          
+          // Check if this object has many child components
+          if (child.children.length > 5) {
+            lowerSideMainParent = child
+            console.log(`✅ Using Lower_Side_Main as parent: "${child.name}" with ${child.children.length} children`)
+          } else {
+            // Look for parent that contains this and other lower side components
+            let parent = child.parent
+            while (parent && parent !== model) {
+              const lowerSideChildren = parent.children.filter(c => 
+                c.name && (c.name.includes('Lower') || c.name.includes('Product6') || 
+                          c.name.includes('Part1') || c.name.includes('Part2') || 
+                          c.name.includes('MicroGearmotor1_1') || c.name.includes('Handle_up_cover'))
+              )
+              console.log(`🔍 Checking parent "${parent.name}": ${lowerSideChildren.length} lower side children`)
+              
+              if (lowerSideChildren.length > 10) {
+                lowerSideMainParent = parent
+                console.log(`✅ Found Lower Side Main Parent: "${parent.name}" with ${lowerSideChildren.length} children`)
+                break
+              }
+              parent = parent.parent
+            }
+          }
+        }
+      })
+      
+      // Find Upper Side Main Holder parent container
+      let upperSideMainParent = null
+      model.traverse((child) => {
+        if (child.name && child.name.includes('Upper_side_main_holder')) {
+          console.log(`🔍 Found Upper_side_main_holder: "${child.name}"`)
+          console.log(`📦 Direct children:`, child.children.map(c => c.name))
+          
+          // Check if this object has many child components
+          if (child.children.length > 5) {
+            upperSideMainParent = child
+            console.log(`✅ Using Upper_side_main_holder as parent: "${child.name}" with ${child.children.length} children`)
+          } else {
+            // Look for parent that contains this and other upper side components
+            let parent = child.parent
+            while (parent && parent !== model) {
+              const upperSideChildren = parent.children.filter(c => 
+                c.name && (c.name.includes('Upper') || c.name.includes('Product1') || 
+                          c.name.includes('Product2') || c.name.includes('Color_Sensor') ||
+                          c.name.includes('OLED_Display') || c.name.includes('Upper_cover'))
+              )
+              console.log(`🔍 Checking parent "${parent.name}": ${upperSideChildren.length} upper side children`)
+              
+              if (upperSideChildren.length > 10) {
+                upperSideMainParent = parent
+                console.log(`✅ Found Upper Side Main Parent: "${parent.name}" with ${upperSideChildren.length} children`)
+                break
+              }
+              parent = parent.parent
+            }
+          }
+        }
+      })
+      
+      // Use the found parent containers
+      if (lowerSideMainParent) {
+        componentRefs.current.set('lowerSideMain', lowerSideMainParent)
+        console.log(`✅ Mapped lowerSideMain to parent: "${lowerSideMainParent.name}"`)
+      }
+      
+      if (upperSideMainParent) {
+        componentRefs.current.set('upperSideMainHolder', upperSideMainParent)
+        console.log(`✅ Mapped upperSideMainHolder to parent: "${upperSideMainParent.name}"`)
+      }
+
+      // Fallback mapping for components that might not have exact matches
+      const fallbackMapping: { [key: string]: string[] } = {
+        microGearmotor: ['motor', 'gear', 'micro', 'MicroGearmotor'],
+        gearMotorPCB: ['pcb', 'board', 'circuit', 'Gear_motor_PCB'],
+        motorHolder: ['holder', 'mount', 'Motor_holder'],
+        holderSupport: ['support', 'bracket', 'Holder_support'],
+        coupling: ['coupling', 'connector', 'Coupling'],
+        m5Screw: ['screw', 'bolt', 'm5', 'M5_Screw'],
+        movingPlate: ['plate', 'moving', 'Movin_Plate'],
+        siliconSupport: ['silicon', 'rubber', 'Mobin_silicon_support'],
+        nozzle: ['nozzle', 'tip', 'spray', 'Nuzzle'],
+        nozzleBlinder: ['blinder', 'cover', 'cap', 'Nuzzel_blinder'],
+        upperSideMainHolder: ['upper', 'main', 'holder', 'Upper_side_main_holder'],
+        lowerSideMain: ['lower', 'main', 'base', 'Lower_Side_Main'],
+        upperCover: ['cover', 'top', 'upper', 'Upper_cover'],
+        loadingMaterialCover: ['loading', 'material', 'cover', 'Loading_Material_Cover'],
+        colorSensorPCB: ['color', 'sensor', 'pcb', 'Color_Sensor_PCB'],
+        sts8dn3llh5: ['sts8', 'sensor', 'STS8DN3LLH5'],
+        oledDisplay: ['oled', 'display', 'screen', 'OLED_Display'],
+        detectorSwitch: ['detector', 'switch', 'button', 'Detector_Switch'],
+        slideSwitch: ['slide', 'switch', 'Slide_Switch'],
+        everlightLEDs: ['led', 'light', 'everlight', 'User_Library-Everlight'],
+        sensorGuideLight: ['guide', 'light', 'sensor', 'Sensor_Guide_Light'],
+        knobs: ['knob', 'dial', 'control', 'Knobs'],
+        drainButtonActuator: ['drain', 'button', 'actuator', 'Drain_Button_Actuator'],
+        handleUpCover: ['handle', 'cover', 'Handle_up_cover'],
+        hairGuideSupport: ['hair', 'guide', 'support', 'Hair_guide_Support'],
+        skqyafComponents: ['skqyaf', 'support', 'SKQYAF'],
+        productComponents: ['product', 'Product'],
+        genericParts: ['part', 'Part'],
+        importedComponents: ['imported', 'Imported']
+      }
+      
+      // Try fallback mapping for unmapped components
+      Object.entries(fallbackMapping).forEach(([controlKey, keywords]) => {
+        if (!componentRefs.current.has(controlKey)) {
+          model.traverse((child) => {
+            if (child.name && keywords.some(keyword => child.name.toLowerCase().includes(keyword.toLowerCase()))) {
+              componentRefs.current.set(controlKey, child)
+              console.log(`🔄 Fallback mapped component: ${controlKey} -> "${child.name}"`)
+            }
+          })
+        }
+      })
+      
+      console.log('=== All Found Components ===')
+      console.log(foundComponents)
+      console.log('=== Mapped Components ===')
+      console.log(Array.from(componentRefs.current.keys()))
+      
+      // Debug: Find unmapped components
+      const mappedComponentNames = new Set()
+      Object.values(componentMapping).forEach(names => {
+        names.forEach(name => mappedComponentNames.add(name))
+      })
+      
+      const unmappedComponents = foundComponents.filter(name => !mappedComponentNames.has(name))
+      if (unmappedComponents.length > 0) {
+        console.warn('⚠️ UNMAPPED COMPONENTS (these will always be visible):', unmappedComponents)
+      } else {
+        console.log('✅ All components are properly mapped to categories')
+      }
+      
+      // Store original component states (don't apply any transformations initially)
+      console.log('=== Storing Original Component States ===')
+      const originalStates = new Map<string, { position: THREE.Vector3, rotation: THREE.Euler, scale: THREE.Vector3, visible: boolean }>()
+      
+      Object.entries(componentControls).forEach(([componentKey, transform]) => {
+        const component = componentRefs.current.get(componentKey)
+        if (component) {
+          // Store original state without applying any transformations
+          originalStates.set(componentKey, {
+            position: component.position.clone(),
+            rotation: component.rotation.clone(),
+            scale: component.scale.clone(),
+            visible: component.visible
+          })
+          
+          console.log(`✅ Stored original state for ${componentKey}:`, {
+            position: component.position,
+            rotation: component.rotation,
+            scale: component.scale,
+            visible: component.visible,
+            componentName: component.name,
+            componentType: component.type
+          })
+        } else {
+          console.warn(`❌ Component not found for storing original state: ${componentKey}`)
+        }
+      })
+      
+      // Store original states in a ref for potential reset functionality
+      componentRefs.current.set('_originalStates', originalStates as any)
+      
+      // Store original visibility for all unmapped objects
+      console.log('💾 Storing original visibility for unmapped objects...')
+      model.traverse((child) => {
+        if (child.name && !child.userData.isMappedComponent) {
+          child.userData.originalVisibility = child.visible
+        }
       })
       
       // Check for animations
@@ -298,6 +573,161 @@ export default function ThreeSceneManager({
       spotLightRef.current.castShadow = animated.lighting.shadowsEnabled
     }
   }, [lightingControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress, getAnimatedValues])
+
+  // Apply component transformations (only when user changes controls)
+  useEffect(() => {
+    // Only apply if model is loaded and components are mapped
+    if (!modelRef.current || componentRefs.current.size === 0) {
+      console.log('⏳ Skipping component transformations - model not loaded yet')
+      return
+    }
+    
+    console.log('=== Applying Component Transformations (User Changes) ===')
+    console.log('Component controls changed:', componentControls)
+    console.log('Available component refs:', Array.from(componentRefs.current.keys()))
+    
+    Object.entries(componentControls).forEach(([componentKey, transform]) => {
+      const component = componentRefs.current.get(componentKey)
+      if (component) {
+        // Check if this is different from default values (excluding visibility)
+        const isDefaultTransform = 
+          transform.position.x === 0 && transform.position.y === 0 && transform.position.z === 0 &&
+          transform.rotation.x === 0 && transform.rotation.y === 0 && transform.rotation.z === 0 &&
+          transform.scale.x === 1 && transform.scale.y === 1 && transform.scale.z === 1
+        
+        // Apply visibility FIRST - this should always be applied regardless of other transforms
+        const categoryKey = Object.keys(categoryComponentMap).find(cat => 
+          categoryComponentMap[cat as keyof CategoryVisibility].includes(componentKey as keyof ComponentControls)
+        ) as keyof CategoryVisibility
+        
+        // Debug: Check if component is found in category mapping
+        if (!categoryKey) {
+          console.warn(`⚠️ Component "${componentKey}" not found in any category! This component will always be visible.`)
+        }
+        
+        const isCategoryVisible = categoryKey ? categoryVisibility[categoryKey] : true
+        const finalVisibility = transform.visible && isCategoryVisible
+        
+        // Debug: Log visibility decisions
+        if (!finalVisibility) {
+          console.log(`👁️ Hiding component "${componentKey}":`, {
+            componentVisible: transform.visible,
+            categoryKey: categoryKey || 'UNMAPPED',
+            categoryVisible: isCategoryVisible,
+            finalVisibility
+          })
+        }
+        
+        component.visible = finalVisibility
+        
+        // Apply visibility to ALL child objects (not just meshes)
+        component.traverse((child) => {
+          child.visible = finalVisibility
+          child.updateMatrix()
+          child.updateMatrixWorld(true)
+        })
+        
+        // Only apply position, rotation, and scale if they're not default values
+        if (!isDefaultTransform) {
+          console.log(`🔄 Applying non-default transforms to ${componentKey}`)
+          
+          // Apply position
+          component.position.set(transform.position.x, transform.position.y, transform.position.z)
+          
+          // Apply rotation
+          component.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z)
+          
+          // Apply scale
+          component.scale.set(transform.scale.x, transform.scale.y, transform.scale.z)
+          
+          // Force matrix update
+          component.updateMatrix()
+          component.updateMatrixWorld(true)
+        } else {
+          console.log(`⏭️ Skipping position/rotation/scale for ${componentKey} - using default values`)
+        }
+        
+        console.log(`✅ Applied visibility update to ${componentKey}:`, {
+          position: transform.position,
+          rotation: transform.rotation,
+          scale: transform.scale,
+          visible: transform.visible,
+          categoryVisible: isCategoryVisible,
+          finalVisibility: finalVisibility,
+          componentName: component.name,
+          componentType: component.type,
+          actualVisible: component.visible
+        })
+      } else {
+        console.warn(`❌ Component not found for update: ${componentKey}`)
+      }
+    })
+    
+    // Debug: Summary of visible components when all categories are hidden
+    const allCategoriesHidden = Object.values(categoryVisibility).every(visible => !visible)
+    
+    // If not all categories are hidden, restore original visibility of unmapped objects
+    if (!allCategoriesHidden && modelRef.current) {
+      console.log('🔧 Restoring original visibility of unmapped objects...')
+      modelRef.current.traverse((child) => {
+        if (child.name && !child.userData.isMappedComponent && child.userData.originalVisibility !== undefined) {
+          child.visible = child.userData.originalVisibility
+          child.updateMatrix()
+          child.updateMatrixWorld(true)
+        }
+      })
+    }
+    
+    if (allCategoriesHidden) {
+      console.log('🔍 DEBUG: All categories are hidden, checking which components are still visible...')
+      
+      // Check our mapped components
+      const stillVisibleComponents = Object.entries(componentControls)
+        .filter(([key, transform]) => {
+          const component = componentRefs.current.get(key)
+          return component && component.visible
+        })
+        .map(([key, transform]) => key)
+      
+      if (stillVisibleComponents.length > 0) {
+        console.warn(`⚠️ These mapped components are still visible when all categories are hidden:`, stillVisibleComponents)
+      } else {
+        console.log('✅ All mapped components are properly hidden when all categories are disabled')
+      }
+      
+      // Check ALL objects in the 3D model for visibility
+      if (modelRef.current) {
+        console.log('🔍 Checking ALL objects in the 3D model for visibility...')
+        const allVisibleObjects: string[] = []
+        
+        modelRef.current.traverse((child) => {
+          if (child.visible && child.name) {
+            allVisibleObjects.push(child.name)
+          }
+        })
+        
+        if (allVisibleObjects.length > 0) {
+          console.warn(`⚠️ These 3D model objects are still visible when all categories are hidden:`, allVisibleObjects)
+          
+          // Hide all unmapped objects when all categories are hidden
+          console.log('🔧 Hiding all unmapped objects...')
+          modelRef.current.traverse((child) => {
+            if (child.name && !child.userData.isMappedComponent) {
+              // Store original visibility if not already stored
+              if (child.userData.originalVisibility === undefined) {
+                child.userData.originalVisibility = child.visible
+              }
+              child.visible = false
+              child.updateMatrix()
+              child.updateMatrixWorld(true)
+            }
+          })
+        } else {
+          console.log('✅ No 3D model objects are visible when all categories are disabled')
+        }
+      }
+    }
+  }, [componentControls, categoryVisibility])
 
   return null // This component doesn't render anything directly
 }

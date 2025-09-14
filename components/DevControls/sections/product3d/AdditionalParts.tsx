@@ -2,28 +2,51 @@
 
 import React from 'react'
 import CollapsibleSection from '../CollapsibleSection'
+import ComponentControl from './ComponentControl'
+import { ComponentControls, ComponentTransform } from './types'
 
-export default function AdditionalParts() {
+interface AdditionalPartsProps {
+  componentControls: ComponentControls
+  onComponentControlsChange: (controls: ComponentControls) => void
+}
+
+export default function AdditionalParts({
+  componentControls,
+  onComponentControlsChange
+}: AdditionalPartsProps) {
+  const updateComponent = (componentName: keyof ComponentControls, transform: ComponentTransform) => {
+    onComponentControlsChange({
+      ...componentControls,
+      [componentName]: transform
+    })
+  }
+
   return (
     <CollapsibleSection title="🔧 Additional Parts" defaultExpanded={false}>
       <div className="space-y-1">
-        <CollapsibleSection title="Product Components" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Product Components"
+          icon="📦"
+          color="text-blue-400"
+          transform={componentControls.productComponents}
+          onTransformChange={(transform) => updateComponent('productComponents', transform)}
+        />
         
-        <CollapsibleSection title="Generic Parts" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Generic Parts"
+          icon="🔩"
+          color="text-gray-400"
+          transform={componentControls.genericParts}
+          onTransformChange={(transform) => updateComponent('genericParts', transform)}
+        />
         
-        <CollapsibleSection title="Imported Components" defaultExpanded={false}>
-          <div className="text-xs text-gray-400 p-2">
-            {/* Content will be added later */}
-          </div>
-        </CollapsibleSection>
+        <ComponentControl
+          title="Imported Components"
+          icon="📥"
+          color="text-purple-400"
+          transform={componentControls.importedComponents}
+          onTransformChange={(transform) => updateComponent('importedComponents', transform)}
+        />
       </div>
     </CollapsibleSection>
   )
