@@ -143,9 +143,10 @@ export default function Product3DObject({
               📋 Copy All Configs
             </button>
           </div>
-          <p className="text-xs text-gray-400">
-            Test One: Upper Side Main Holder | Test All: All components | Reset: Returns to default | Reset All: All components to default | Copy All: Copy all configurations to clipboard
-          </p>
+          <div className="text-xs text-gray-400 space-y-1">
+            <p>Test One: Upper Side Main Holder | Test All: All components | Reset: Returns to default</p>
+            <p>Reset All: All components to default | Copy All: Copy all configurations to clipboard</p>
+          </div>
         </div>
         
         {/* Debug Info */}

@@ -397,6 +397,22 @@ export default function ThreeSceneManager({
       console.log('=== Mapped Components ===')
       console.log(Array.from(componentRefs.current.keys()))
       
+      // Debug: Show which components are mapped vs which are in componentControls
+      const mappedComponents = Array.from(componentRefs.current.keys())
+      const controlComponents = Object.keys(componentControls)
+      const unmappedControls = controlComponents.filter(key => !mappedComponents.includes(key))
+      const unmappedRefs = mappedComponents.filter(key => !controlComponents.includes(key))
+      
+      console.log('🔍 Component Mapping Analysis:')
+      console.log('📋 Components in controls:', controlComponents.length)
+      console.log('🎯 Components mapped to 3D objects:', mappedComponents.length)
+      console.log('❌ Controls without 3D mapping:', unmappedControls)
+      console.log('❌ 3D objects without controls:', unmappedRefs)
+      
+      if (unmappedControls.length > 0) {
+        console.warn('⚠️ These component controls have no 3D object mapping and will not work:', unmappedControls)
+      }
+      
       // Debug: Find unmapped components
       const mappedComponentNames = new Set()
       Object.values(componentMapping).forEach(names => {
@@ -604,7 +620,7 @@ export default function ThreeSceneManager({
       
       Object.entries(componentControls).forEach(([componentKey, transform]) => {
         const component = componentRefs.current.get(componentKey)
-        if (component && explodedComponents.includes(componentKey)) {
+        if (component) {
           // Apply position, rotation, scale changes for exploded components
           const isDefaultTransform = 
             transform.position.x === 0 && transform.position.y === 0 && transform.position.z === 0 &&
@@ -983,11 +999,11 @@ export default function ThreeSceneManager({
       }
 
       // Update component controls with current actual positions
-      const explodedComponents = ['upperSideMainHolder', 'lowerSideMain', 'upperCover']
       const updatedControls = { ...componentControls }
       let hasChanges = false
 
-      explodedComponents.forEach(componentKey => {
+      // Update all components, not just exploded ones
+      Object.keys(componentControls).forEach(componentKey => {
         const component = componentRefs.current.get(componentKey)
         if (component) {
           const currentPos = component.position
