@@ -1,0 +1,144 @@
+export interface ModelConfig {
+  position: { x: number; y: number; z: number }
+  rotation: { x: number; y: number; z: number }
+  scale: { x: number; y: number; z: number }
+}
+
+export interface CameraConfig {
+  position: { x: number; y: number; z: number }
+  fov: number
+}
+
+export interface LightingConfig {
+  ambientIntensity: number
+  ambientColor: string
+  directionalIntensity: number
+  directionalColor: string
+  directionalPosition: { x: number; y: number; z: number }
+  directionalTarget: { x: number; y: number; z: number }
+  pointLightIntensity: number
+  pointLightColor: string
+  pointLightPosition: { x: number; y: number; z: number }
+  pointLightDistance: number
+  spotLightIntensity: number
+  spotLightColor: string
+  spotLightPosition: { x: number; y: number; z: number }
+  spotLightTarget: { x: number; y: number; z: number }
+  spotLightDistance: number
+  spotLightAngle: number
+  spotLightPenumbra: number
+  shadowsEnabled: boolean
+  shadowMapSize: number
+  shadowBias: number
+}
+
+export interface StageConfig {
+  model: ModelConfig
+  camera: CameraConfig
+  lighting: LightingConfig
+}
+
+// Stage 1 configuration (initial state)
+export const stage1Config: StageConfig = {
+  model: {
+    position: { x: 2, y: -0.3, z: 0 },
+    rotation: { x: -0.03, y: 0.1, z: 0.27 },
+    scale: { x: 10, y: 10, z: 10 }
+  },
+  camera: {
+    position: { x: 0, y: 0, z: 5 },
+    fov: 75
+  },
+  lighting: {
+    ambientIntensity: 0,
+    ambientColor: '#404040',
+    directionalIntensity: 0,
+    directionalColor: '#ffffff',
+    directionalPosition: { x: 5, y: 5, z: 5 },
+    directionalTarget: { x: 0, y: 0, z: 0 },
+    pointLightIntensity: 0.5,
+    pointLightColor: '#ffffff',
+    pointLightPosition: { x: -5, y: 5, z: 5 },
+    pointLightDistance: 10,
+    spotLightIntensity: 2,
+    spotLightColor: '#e89191',
+    spotLightPosition: { x: 0, y: 10, z: 0 },
+    spotLightTarget: { x: 3.4, y: 0, z: 0 },
+    spotLightDistance: 23,
+    spotLightAngle: 23,
+    spotLightPenumbra: 0,
+    shadowsEnabled: true,
+    shadowMapSize: 2048,
+    shadowBias: -0.0001
+  }
+}
+
+// Stage 2 configuration
+export const stage2Config: StageConfig = {
+  model: {
+    position: { x: 2, y: -0.3, z: 0 },
+    rotation: { x: -0.9, y: -0.15, z: -0.29 },
+    scale: { x: 10, y: 10, z: 10 }
+  },
+  camera: {
+    position: { x: 0, y: 0, z: 5 },
+    fov: 75
+  },
+  lighting: {
+    ambientIntensity: 2,
+    ambientColor: '#d9d9d9',
+    directionalIntensity: 1.3,
+    directionalColor: '#ffffff',
+    directionalPosition: { x: 5, y: 5, z: 5 },
+    directionalTarget: { x: 0, y: 0, z: 0 },
+    pointLightIntensity: 0.5,
+    pointLightColor: '#ffffff',
+    pointLightPosition: { x: -5, y: 5, z: 5 },
+    pointLightDistance: 10,
+    spotLightIntensity: 2,
+    spotLightColor: '#e89191',
+    spotLightPosition: { x: 0, y: 10, z: 0 },
+    spotLightTarget: { x: 3.4, y: 0, z: 0 },
+    spotLightDistance: 23,
+    spotLightAngle: 23,
+    spotLightPenumbra: 0,
+    shadowsEnabled: true,
+    shadowMapSize: 2048,
+    shadowBias: -0.0001
+  }
+}
+
+// Stage 3 configuration
+export const stage3Config: StageConfig = {
+  model: {
+    position: { x: -2.1, y: -1.2, z: 0 },
+    rotation: { x: -0.9, y: -0.15, z: -0.29 },
+    scale: { x: 10, y: 10, z: 10 }
+  },
+  camera: {
+    position: { x: 0, y: 0, z: 5 },
+    fov: 75
+  },
+  lighting: {
+    ambientIntensity: 2,
+    ambientColor: '#d9d9d9',
+    directionalIntensity: 1.3,
+    directionalColor: '#ffffff',
+    directionalPosition: { x: 5, y: 5, z: 5 },
+    directionalTarget: { x: 0, y: 0, z: 0 },
+    pointLightIntensity: 0.5,
+    pointLightColor: '#ffffff',
+    pointLightPosition: { x: -5, y: 5, z: 5 },
+    pointLightDistance: 10,
+    spotLightIntensity: 2,
+    spotLightColor: '#e89191',
+    spotLightPosition: { x: 0, y: 10, z: 0 },
+    spotLightTarget: { x: 3.4, y: 0, z: 0 },
+    spotLightDistance: 23,
+    spotLightAngle: 23,
+    spotLightPenumbra: 0,
+    shadowsEnabled: true,
+    shadowMapSize: 2048,
+    shadowBias: -0.0001
+  }
+}
