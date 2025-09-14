@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface ModelControls {
   position: { x: number; y: number; z: number }
@@ -147,8 +148,11 @@ export default function Presets({
   }
 
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-pink-400 mb-1">⚡ Presets</h4>
+    <CollapsibleSection
+      title="Presets"
+      icon="⚡"
+      color="text-pink-400"
+    >
       <div className="grid grid-cols-2 gap-1 mb-2">
         <button
           onClick={() => onModelControlsChange({
@@ -232,6 +236,6 @@ export default function Presets({
           🔄 Reset All
         </button>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

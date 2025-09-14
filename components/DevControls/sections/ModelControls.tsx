@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface ModelControls {
   position: { x: number; y: number; z: number }
@@ -18,8 +19,11 @@ export default function ModelControls({
   onModelControlsChange
 }: ModelControlsProps) {
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-blue-400 mb-1">📍 Model</h4>
+    <CollapsibleSection
+      title="Model"
+      icon="📍"
+      color="text-blue-400"
+    >
       <div className="space-y-1">
         {/* Position */}
         <div>
@@ -85,6 +89,6 @@ export default function ModelControls({
           </div>
         </div>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

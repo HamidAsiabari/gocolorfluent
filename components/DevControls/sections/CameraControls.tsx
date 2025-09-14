@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface CameraControls {
   position: { x: number; y: number; z: number }
@@ -17,8 +18,11 @@ export default function CameraControls({
   onCameraControlsChange
 }: CameraControlsProps) {
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-cyan-400 mb-1">📷 Camera</h4>
+    <CollapsibleSection
+      title="Camera"
+      icon="📷"
+      color="text-cyan-400"
+    >
       <div className="space-y-1">
         <div>
           <label className="text-xs text-gray-300">Field of View: {cameraControls.fov}°</label>
@@ -55,6 +59,6 @@ export default function CameraControls({
           </div>
         </div>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

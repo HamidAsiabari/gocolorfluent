@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface LightingControls {
   ambientIntensity: number
@@ -35,8 +36,11 @@ export default function LightingControls({
   onLightingControlsChange
 }: LightingControlsProps) {
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-yellow-300 mb-1">💡 Lighting</h4>
+    <CollapsibleSection
+      title="Lighting"
+      icon="💡"
+      color="text-yellow-300"
+    >
       <div className="space-y-2">
         {/* Ambient Light */}
         <div className="border-b border-gray-600 pb-1">
@@ -378,6 +382,6 @@ export default function LightingControls({
           </div>
         </div>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

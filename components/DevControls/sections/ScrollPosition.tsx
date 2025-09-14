@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface ScrollPositionProps {
   scrollPosition: number
@@ -12,8 +13,11 @@ export default function ScrollPosition({
   isClient
 }: ScrollPositionProps) {
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-purple-400 mb-1">📜 Scroll Position</h4>
+    <CollapsibleSection
+      title="Scroll Position"
+      icon="📜"
+      color="text-purple-400"
+    >
       <div className="space-y-1">
         <div>
           <label className="text-xs text-gray-300">
@@ -36,6 +40,6 @@ export default function ScrollPosition({
           {isClient ? '🟢 Live Tracking' : '🟡 Initializing...'}
         </div>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

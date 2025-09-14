@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface SectionNavigationProps {
   currentSection: number
@@ -16,8 +17,11 @@ export default function SectionNavigation({
   transitionName
 }: SectionNavigationProps) {
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-blue-400 mb-1">📍 Sections</h4>
+    <CollapsibleSection
+      title="Sections"
+      icon="📍"
+      color="text-blue-400"
+    >
       <div className="space-y-1">
         <div>
           <label className="text-xs text-gray-300">
@@ -41,6 +45,6 @@ export default function SectionNavigation({
           </div>
         )}
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

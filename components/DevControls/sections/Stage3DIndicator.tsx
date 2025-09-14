@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import CollapsibleSection from './CollapsibleSection'
 
 interface Stage3DIndicatorProps {
   current3DStage: number
@@ -12,8 +13,11 @@ export default function Stage3DIndicator({
   stage3DAnimationProgress
 }: Stage3DIndicatorProps) {
   return (
-    <div className="bg-gray-800/50 p-2 rounded">
-      <h4 className="text-xs font-medium text-orange-400 mb-1">🎯 3D Stage</h4>
+    <CollapsibleSection
+      title="3D Stage"
+      icon="🎯"
+      color="text-orange-400"
+    >
       <div className="space-y-1">
         <div className="text-xs text-gray-300">
           Current: Stage {current3DStage}
@@ -24,6 +28,6 @@ export default function Stage3DIndicator({
           </div>
         )}
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }
