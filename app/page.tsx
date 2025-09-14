@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
 import { ThreeSceneManager, stage1Config, stage2Config, stage3Config } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
+import { AnimationSystem, easeInOut } from '../components/Animation'
 
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -56,19 +57,17 @@ export default function Home() {
   const [is3DAnimating, setIs3DAnimating] = useState(false)
   const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
 
-
-  // Interpolation function for smooth animation
+  // Animated values function that handles all animations
+  const getAnimatedValues = () => {
+    // Import easing functions
   const lerp = (start: number, end: number, progress: number) => {
     return start + (end - start) * progress
   }
 
-  // Color interpolation function
   const lerpColor = (startColor: string, endColor: string, progress: number): string => {
-    // Remove # from hex colors
     const start = startColor.replace('#', '')
     const end = endColor.replace('#', '')
     
-    // Convert to RGB
     const startR = parseInt(start.substr(0, 2), 16)
     const startG = parseInt(start.substr(2, 2), 16)
     const startB = parseInt(start.substr(4, 2), 16)
@@ -77,36 +76,20 @@ export default function Home() {
     const endG = parseInt(end.substr(2, 2), 16)
     const endB = parseInt(end.substr(4, 2), 16)
     
-    // Interpolate each component
     const r = Math.round(lerp(startR, endR, progress))
     const g = Math.round(lerp(startG, endG, progress))
     const b = Math.round(lerp(startB, endB, progress))
     
-    // Convert back to hex
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
-  }
-
-  // Easing functions for smooth animations
-  const easeInOutCubic = (t: number): number => {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-  }
-
-  const easeInOutQuart = (t: number): number => {
-    return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2
   }
 
   const easeInOutSine = (t: number): number => {
     return -(Math.cos(Math.PI * t) - 1) / 2
   }
 
-  // Use the smoothest easing function
-  const easeInOut = easeInOutSine
-
-  // Get animated values based on current progress
-  const getAnimatedValues = () => {
     // Handle section-based 3D stage animations
     if (is3DAnimating) {
-      const progress = easeInOut(stage3DAnimationProgress)
+      const progress = easeInOutSine(stage3DAnimationProgress)
       const fromStage = current3DStage === 2 ? stage2Config : stage3Config
       const toStage = current3DStage === 2 ? stage3Config : stage2Config
       
@@ -183,7 +166,7 @@ export default function Home() {
 
     // Handle initial Stage 1 to Stage 2 animation
     if (isAnimating) {
-      const progress = easeInOut(animationProgress)
+      const progress = easeInOutSine(animationProgress)
       
       return {
         model: {
@@ -268,140 +251,9 @@ export default function Home() {
 
 
 
-  // Trigger 3D stage animation based on section transition start
-  useEffect(() => {
-    if (isTransitioning && scrollDirection === 'down' && currentSection === 1 && current3DStage === 2 && !is3DAnimating) {
-      // Start Stage 2 to Stage 3 animation when transitioning to Section 2
-      console.log('Starting Stage 2 to Stage 3 animation')
-      setIs3DAnimating(true)
-      setStage3DAnimationProgress(0)
-      
-      const startTime = Date.now()
-      const duration = 3000 // 3 seconds
-      
-      const animateStage3 = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        
-        console.log('Animation progress:', progress)
-        setStage3DAnimationProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateStage3)
-        } else {
-          console.log('Stage 2 to Stage 3 animation complete')
-          setIs3DAnimating(false)
-          setCurrent3DStage(3)
-        }
-      }
-      
-      requestAnimationFrame(animateStage3)
-    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
-      // Start Stage 3 to Stage 2 animation when transitioning to Section 1
-      console.log('Starting Stage 3 to Stage 2 animation')
-      setIs3DAnimating(true)
-      setStage3DAnimationProgress(0)
-      
-      const startTime = Date.now()
-      const duration = 3000 // 3 seconds
-      
-      const animateStage2 = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        
-        console.log('Animation progress:', progress)
-        setStage3DAnimationProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateStage2)
-        } else {
-          console.log('Stage 3 to Stage 2 animation complete')
-          setIs3DAnimating(false)
-          setCurrent3DStage(2)
-        }
-      }
-      
-      requestAnimationFrame(animateStage2)
-    }
-  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating])
-
-  // Sync Dev Controls with current stage when stage changes
-  useEffect(() => {
-    if (!is3DAnimating && !isAnimating) {
-      const currentStageConfig = current3DStage === 1 ? stage1Config : 
-                                current3DStage === 2 ? stage2Config : stage3Config
-      setModelControls(currentStageConfig.model)
-      setCameraControls(currentStageConfig.camera)
-      setLightingControls(currentStageConfig.lighting)
-    }
-  }, [current3DStage, is3DAnimating, isAnimating])
 
 
 
-
-  // Start Stage 1 to Stage 2 animation after component mounts
-  useEffect(() => {
-    if (!isClient) return
-
-    // Start animation after a short delay to ensure everything is loaded
-    const timer = setTimeout(() => {
-      setIsAnimating(true)
-      
-      // Animation duration: 3 seconds
-      const duration = 3000
-      const startTime = Date.now()
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        
-        setAnimationProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        } else {
-          // Animation complete - update state to Stage 2 values
-          setModelControls({
-            position: stage2Config.model.position,
-            rotation: stage2Config.model.rotation,
-            scale: stage2Config.model.scale
-          })
-          setCameraControls({
-            position: stage2Config.camera.position,
-            fov: stage2Config.camera.fov
-          })
-          setLightingControls({
-            ambientIntensity: stage2Config.lighting.ambientIntensity,
-            ambientColor: stage2Config.lighting.ambientColor,
-            directionalIntensity: stage2Config.lighting.directionalIntensity,
-            directionalColor: stage2Config.lighting.directionalColor,
-            directionalPosition: stage2Config.lighting.directionalPosition,
-            directionalTarget: stage2Config.lighting.directionalTarget,
-            pointLightIntensity: stage2Config.lighting.pointLightIntensity,
-            pointLightColor: stage2Config.lighting.pointLightColor,
-            pointLightPosition: stage2Config.lighting.pointLightPosition,
-            pointLightDistance: stage2Config.lighting.pointLightDistance,
-            spotLightIntensity: stage2Config.lighting.spotLightIntensity,
-            spotLightColor: stage2Config.lighting.spotLightColor,
-            spotLightPosition: stage2Config.lighting.spotLightPosition,
-            spotLightTarget: stage2Config.lighting.spotLightTarget,
-            spotLightDistance: stage2Config.lighting.spotLightDistance,
-            spotLightAngle: stage2Config.lighting.spotLightAngle,
-            spotLightPenumbra: stage2Config.lighting.spotLightPenumbra,
-            shadowsEnabled: stage2Config.lighting.shadowsEnabled,
-            shadowMapSize: stage2Config.lighting.shadowMapSize,
-            shadowBias: stage2Config.lighting.shadowBias
-          })
-          setCurrent3DStage(2) // Update stage to Stage 2
-          setIsAnimating(false)
-        }
-      }
-      
-      requestAnimationFrame(animate)
-    }, 1000) // 1 second delay after page load
-
-    return () => clearTimeout(timer)
-  }, [isClient])
 
   return (
     <div className="relative">
@@ -438,6 +290,27 @@ export default function Home() {
         setScrollPosition={setScrollPosition}
         isClient={isClient}
         setIsClient={setIsClient}
+      />
+
+      {/* Animation System */}
+      <AnimationSystem
+        isAnimating={isAnimating}
+        setIsAnimating={setIsAnimating}
+        animationProgress={animationProgress}
+        setAnimationProgress={setAnimationProgress}
+        is3DAnimating={is3DAnimating}
+        setIs3DAnimating={setIs3DAnimating}
+        stage3DAnimationProgress={stage3DAnimationProgress}
+        setStage3DAnimationProgress={setStage3DAnimationProgress}
+        current3DStage={current3DStage}
+        setCurrent3DStage={setCurrent3DStage}
+        isTransitioning={isTransitioning}
+        scrollDirection={scrollDirection}
+        currentSection={currentSection}
+        isClient={isClient}
+        setModelControls={setModelControls}
+        setCameraControls={setCameraControls}
+        setLightingControls={setLightingControls}
       />
 
       {/* Scrollable Content - 8x screen height */}
