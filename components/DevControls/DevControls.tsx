@@ -73,6 +73,7 @@ interface DevControlsProps {
   stage3Config: StageConfig
   current3DStage: number
   stage3DAnimationProgress: number
+  setCurrent3DStage: (stage: number) => void
   componentControls: ComponentControls
   onComponentControlsChange: (controls: ComponentControls) => void
   categoryVisibility: CategoryVisibility
@@ -99,6 +100,7 @@ export default function DevControls({
   stage3Config,
   current3DStage,
   stage3DAnimationProgress,
+  setCurrent3DStage,
   componentControls,
   onComponentControlsChange,
   categoryVisibility,
@@ -122,6 +124,7 @@ export default function DevControls({
         <Stage3DIndicator
           current3DStage={current3DStage}
           stage3DAnimationProgress={stage3DAnimationProgress}
+          setCurrent3DStage={setCurrent3DStage}
         />
 
         <ModelControls

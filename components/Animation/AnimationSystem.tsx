@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { stage1Config, stage2Config, stage3Config } from '../ThreeScene'
+import { stage1Config, stage2Config, stage3Config, stage4Config } from '../ThreeScene'
 
 interface AnimationSystemProps {
   isAnimating: boolean
@@ -243,7 +243,8 @@ export default function AnimationSystem({
 
     // Return current stage configuration if no animation
     const currentStageConfig = current3DStage === 1 ? stage1Config : 
-                              current3DStage === 2 ? stage2Config : stage3Config
+                              current3DStage === 2 ? stage2Config : 
+                              current3DStage === 3 ? stage3Config : stage4Config
     return { 
       model: currentStageConfig.model, 
       camera: currentStageConfig.camera, 
@@ -273,6 +274,64 @@ export default function AnimationSystem({
           requestAnimationFrame(animateStage3)
         } else {
           console.log('Stage 2 to Stage 3 animation complete')
+          setIs3DAnimating(false)
+          setCurrent3DStage(3)
+        }
+      }
+      
+      requestAnimationFrame(animateStage3)
+    } else if (isTransitioning && scrollDirection === 'down' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
+      // Start two-phase Stage 3 to Stage 4 animation when transitioning to Section 3
+      console.log('Starting two-phase Stage 3 to Stage 4 animation')
+      
+      // Phase 1: Move to Stage 4 position (model, camera, lighting)
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const phase1Duration = 2000 // 2 seconds for position animation
+      
+      const animatePhase1 = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / phase1Duration, 1)
+        
+        console.log('Phase 1 progress:', progress)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animatePhase1)
+        } else {
+          console.log('Phase 1 complete - now starting component explosion')
+          setIs3DAnimating(false)
+          setCurrent3DStage(4)
+          
+          // Phase 2: Animate components to exploded positions
+          // This will be handled by the component animation system
+          console.log('Phase 2: Component explosion will be handled by component animation system')
+        }
+      }
+      
+      requestAnimationFrame(animatePhase1)
+    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 3 && current3DStage === 4 && !is3DAnimating) {
+      // Start Stage 4 to Stage 3 animation when transitioning to Section 2
+      console.log('Starting Stage 4 to Stage 3 animation')
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 3000 // 3 seconds
+      
+      const animateStage3 = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        
+        console.log('Animation progress:', progress)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateStage3)
+        } else {
+          console.log('Stage 4 to Stage 3 animation complete')
           setIs3DAnimating(false)
           setCurrent3DStage(3)
         }

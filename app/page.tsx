@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
 import { ThreeSceneManager, stage1Config, stage2Config, stage3Config } from '../components/ThreeScene'
+import { stage4Config } from '../components/ThreeScene/StageConfig'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
@@ -57,6 +58,8 @@ export default function Home() {
   const [current3DStage, setCurrent3DStage] = useState(1) // Start at Stage 1
   const [is3DAnimating, setIs3DAnimating] = useState(false)
   const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
+  const [isComponentAnimating, setIsComponentAnimating] = useState(false)
+  const [componentAnimationProgress, setComponentAnimationProgress] = useState(0)
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
 
@@ -93,8 +96,21 @@ export default function Home() {
     // Handle section-based 3D stage animations
     if (is3DAnimating) {
       const progress = easeInOutSine(stage3DAnimationProgress)
-      const fromStage = current3DStage === 2 ? stage2Config : stage3Config
-      const toStage = current3DStage === 2 ? stage3Config : stage2Config
+      let fromStage, toStage
+      
+      if (current3DStage === 2) {
+        fromStage = stage2Config
+        toStage = stage3Config
+      } else if (current3DStage === 3) {
+        fromStage = stage3Config
+        toStage = stage4Config
+      } else if (current3DStage === 4) {
+        fromStage = stage4Config
+        toStage = stage3Config
+      } else {
+        fromStage = stage3Config
+        toStage = stage2Config
+      }
       
       return {
         model: {
@@ -242,6 +258,15 @@ export default function Home() {
       }
     }
 
+    // Return Stage 4 configuration for camera and lighting when in Stage 4, but allow model controls to work
+    if (current3DStage === 4) {
+      return {
+        model: modelControls, // Allow model controls to work in Stage 4
+        camera: stage4Config.camera,
+        lighting: stage4Config.lighting
+      }
+    }
+
     // Return actual control values when not animating (so dev controls work)
     return { 
       model: modelControls, 
@@ -255,6 +280,89 @@ export default function Home() {
 
 
 
+
+  // Update model controls to reflect current animated values
+  useEffect(() => {
+    if (is3DAnimating || isAnimating) {
+      const animatedValues = getAnimatedValues()
+      setModelControls(animatedValues.model)
+    }
+  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage])
+
+  // Update model controls when stage changes (not animating)
+  useEffect(() => {
+    if (!is3DAnimating && !isAnimating) {
+      const animatedValues = getAnimatedValues()
+      setModelControls(animatedValues.model)
+    }
+  }, [current3DStage, is3DAnimating, isAnimating])
+
+  // Trigger component animation when Stage 4 is reached - one time only
+  useEffect(() => {
+    if (current3DStage === 4 && !isComponentAnimating && componentAnimationProgress === 0) {
+      console.log('Stage 4 reached - starting component explosion animation')
+      setIsComponentAnimating(true)
+      setComponentAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds for component animation
+      
+      const animateComponents = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        
+        setComponentAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateComponents)
+        } else {
+          console.log('Component explosion animation complete')
+          setIsComponentAnimating(false)
+          // Set progress to 1 to prevent re-animation
+          setComponentAnimationProgress(1)
+        }
+      }
+      
+      requestAnimationFrame(animateComponents)
+    }
+  }, [current3DStage, isComponentAnimating, componentAnimationProgress])
+
+  // Reset component animation state when leaving Stage 4
+  useEffect(() => {
+    if (current3DStage !== 4 && componentAnimationProgress > 0) {
+      console.log('Leaving Stage 4 - resetting component animation state')
+      setIsComponentAnimating(false)
+      setComponentAnimationProgress(0)
+    }
+  }, [current3DStage, componentAnimationProgress])
+
+  // Update component controls to show exploded positions when entering Stage 4
+  useEffect(() => {
+    if (current3DStage === 4) {
+      console.log('Entering Stage 4 - updating component controls with exploded positions')
+      setComponentControls(prev => ({
+        ...prev,
+        upperSideMainHolder: { 
+          position: { x: 0, y: 0, z: 80 }, 
+          rotation: { x: 0, y: 0, z: 0 }, 
+          scale: { x: 1, y: 1, z: 1 }, 
+          visible: true 
+        },
+        lowerSideMain: { 
+          position: { x: 0, y: 0, z: -80 }, 
+          rotation: { x: 0, y: 0, z: 0 }, 
+          scale: { x: 1, y: 1, z: 1 }, 
+          visible: true 
+        },
+        upperCover: { 
+          position: { x: 0, y: 0, z: 80 }, 
+          rotation: { x: 0, y: 0, z: 0 }, 
+          scale: { x: 1, y: 1, z: 1 }, 
+          visible: true 
+        }
+      }))
+    }
+  }, [current3DStage])
 
   return (
     <div className="relative">
@@ -279,6 +387,9 @@ export default function Home() {
         getAnimatedValues={getAnimatedValues}
         componentControls={componentControls}
         categoryVisibility={categoryVisibility}
+        isComponentAnimating={isComponentAnimating}
+        componentAnimationProgress={componentAnimationProgress}
+        onComponentControlsChange={setComponentControls}
       />
 
       {/* Scroll Manager */}
@@ -616,6 +727,7 @@ export default function Home() {
         stage3Config={stage3Config}
         current3DStage={current3DStage}
         stage3DAnimationProgress={stage3DAnimationProgress}
+        setCurrent3DStage={setCurrent3DStage}
         componentControls={componentControls}
         onComponentControlsChange={setComponentControls}
         categoryVisibility={categoryVisibility}

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
-import { StageConfig, stage1Config, stage2Config, stage3Config } from './StageConfig'
+import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config } from './StageConfig'
 import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
 
 interface ThreeSceneManagerProps {
@@ -51,6 +51,9 @@ interface ThreeSceneManagerProps {
   }
   componentControls: ComponentControls
   categoryVisibility: CategoryVisibility
+  isComponentAnimating?: boolean
+  componentAnimationProgress?: number
+  onComponentControlsChange?: (controls: ComponentControls) => void
 }
 
 export default function ThreeSceneManager({
@@ -65,7 +68,10 @@ export default function ThreeSceneManager({
   current3DStage,
   getAnimatedValues,
   componentControls,
-  categoryVisibility
+  categoryVisibility,
+  isComponentAnimating = false,
+  componentAnimationProgress = 0,
+  onComponentControlsChange
 }: ThreeSceneManagerProps) {
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -245,10 +251,17 @@ export default function ThreeSceneManager({
             if (componentNames.includes(child.name)) {
               componentRefs.current.set(controlKey, child)
               
-              // Mark this component as mapped for later identification
-              child.userData.isMappedComponent = true
-              
-              console.log(`✅ Mapped component: ${controlKey} -> "${child.name}"`)
+                // Mark this component as mapped for later identification
+                child.userData.isMappedComponent = true
+                
+                // Store original position for animation
+                child.userData.originalPosition = {
+                  x: child.position.x,
+                  y: child.position.y,
+                  z: child.position.z
+                }
+                
+                console.log(`✅ Mapped component: ${controlKey} -> "${child.name}"`)
             }
           })
         }
@@ -581,6 +594,38 @@ export default function ThreeSceneManager({
       console.log('⏳ Skipping component transformations - model not loaded yet')
       return
     }
+
+    // In Stage 4, allow position changes for exploded components only
+    if (current3DStage === 4) {
+      console.log('⏳ Stage 4 active - applying changes to exploded components only')
+      
+      // Only apply changes to exploded components in Stage 4
+      const explodedComponents = ['upperSideMainHolder', 'lowerSideMain', 'upperCover']
+      
+      Object.entries(componentControls).forEach(([componentKey, transform]) => {
+        const component = componentRefs.current.get(componentKey)
+        if (component && explodedComponents.includes(componentKey)) {
+          // Apply position, rotation, scale changes for exploded components
+          const isDefaultTransform = 
+            transform.position.x === 0 && transform.position.y === 0 && transform.position.z === 0 &&
+            transform.rotation.x === 0 && transform.rotation.y === 0 && transform.rotation.z === 0 &&
+            transform.scale.x === 1 && transform.scale.y === 1 && transform.scale.z === 1
+          
+          if (!isDefaultTransform) {
+            component.position.set(transform.position.x, transform.position.y, transform.position.z)
+            component.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z)
+            component.scale.set(transform.scale.x, transform.scale.y, transform.scale.z)
+            
+            component.updateMatrix()
+            component.updateMatrixWorld(true)
+            
+            console.log(`✅ Applied ${componentKey} transform:`, transform)
+          }
+        }
+      })
+      
+      return
+    }
     
     console.log('=== Applying Component Transformations (User Changes) ===')
     console.log('Component controls changed:', componentControls)
@@ -728,6 +773,344 @@ export default function ThreeSceneManager({
       }
     }
   }, [componentControls, categoryVisibility])
+
+  // Component animation for Stage 4 explosion - one time only
+  useEffect(() => {
+    if (!isComponentAnimating || !modelRef.current || current3DStage !== 4) return
+
+    console.log('Animating components to exploded positions, progress:', componentAnimationProgress)
+
+    // Define the exploded positions for Stage 4
+    const explodedPositions = {
+      upperSideMainHolder: { x: 0, y: 0, z: 80 },
+      lowerSideMain: { x: 0, y: 0, z: -80 },
+      upperCover: { x: 0, y: 0, z: 80 }
+    }
+
+    // Animate each component to its exploded position
+    Object.entries(explodedPositions).forEach(([componentKey, targetPosition]) => {
+      const component = componentRefs.current.get(componentKey)
+      if (component) {
+        // Interpolate between original position and exploded position
+        const originalPos = component.userData.originalPosition || { x: 0, y: 0, z: 0 }
+        
+        component.position.x = originalPos.x + (targetPosition.x - originalPos.x) * componentAnimationProgress
+        component.position.y = originalPos.y + (targetPosition.y - originalPos.y) * componentAnimationProgress
+        component.position.z = originalPos.z + (targetPosition.z - originalPos.z) * componentAnimationProgress
+        
+        component.updateMatrix()
+        component.updateMatrixWorld(true)
+        
+        console.log(`Animated ${componentKey} to:`, component.position)
+      }
+    })
+
+    // When animation is complete, set final positions and stop animation
+    if (componentAnimationProgress >= 1) {
+      console.log('Component animation complete - setting final positions')
+      Object.entries(explodedPositions).forEach(([componentKey, targetPosition]) => {
+        const component = componentRefs.current.get(componentKey)
+        if (component) {
+          component.position.x = targetPosition.x
+          component.position.y = targetPosition.y
+          component.position.z = targetPosition.z
+          component.updateMatrix()
+          component.updateMatrixWorld(true)
+          
+          // Mark as animated to prevent re-animation
+          component.userData.hasBeenAnimated = true
+        }
+      })
+      
+      // Immediately update component controls with final positions
+      if (onComponentControlsChange) {
+        console.log('Updating component controls with final exploded positions...')
+        const updatedControls = { ...componentControls }
+        
+        Object.entries(explodedPositions).forEach(([componentKey, targetPosition]) => {
+          const component = componentRefs.current.get(componentKey)
+          if (component) {
+            updatedControls[componentKey as keyof ComponentControls] = {
+              position: {
+                x: parseFloat(targetPosition.x.toFixed(3)),
+                y: parseFloat(targetPosition.y.toFixed(3)),
+                z: parseFloat(targetPosition.z.toFixed(3))
+              },
+              rotation: {
+                x: parseFloat(component.rotation.x.toFixed(3)),
+                y: parseFloat(component.rotation.y.toFixed(3)),
+                z: parseFloat(component.rotation.z.toFixed(3))
+              },
+              scale: {
+                x: parseFloat(component.scale.x.toFixed(3)),
+                y: parseFloat(component.scale.y.toFixed(3)),
+                z: parseFloat(component.scale.z.toFixed(3))
+              },
+              visible: updatedControls[componentKey as keyof ComponentControls]?.visible ?? true
+            }
+            
+            console.log(`Final position update ${componentKey}:`, updatedControls[componentKey as keyof ComponentControls])
+          }
+        })
+        
+        onComponentControlsChange(updatedControls)
+      }
+    }
+  }, [isComponentAnimating, componentAnimationProgress, current3DStage])
+
+  // Apply visibility changes in Stage 4 (separate from position animation)
+  useEffect(() => {
+    if (current3DStage !== 4 || !modelRef.current || !componentRefs.current.size) return
+
+    console.log('Applying visibility changes in Stage 4...')
+
+    // Apply individual component visibility
+    Object.entries(componentControls).forEach(([componentKey, transform]) => {
+      const component = componentRefs.current.get(componentKey)
+      if (component) {
+        // Apply visibility FIRST - this should always be applied regardless of other transforms
+        const categoryKey = Object.keys(categoryComponentMap).find(cat => 
+          categoryComponentMap[cat as keyof CategoryVisibility].includes(componentKey as keyof ComponentControls)
+        ) as keyof CategoryVisibility
+        
+        const isCategoryVisible = categoryKey ? categoryVisibility[categoryKey] : true
+        const finalVisibility = transform.visible && isCategoryVisible
+        
+        console.log(`👁️ Stage 4 visibility: ${componentKey} (transform.visible: ${transform.visible}, isCategoryVisible: ${isCategoryVisible}, finalVisibility: ${finalVisibility})`)
+        
+        // Apply visibility to ALL child objects (not just meshes)
+        component.traverse((child) => {
+          child.visible = finalVisibility
+          child.updateMatrix()
+          child.updateMatrixWorld(true)
+        })
+      }
+    })
+    
+    // Handle category visibility for unmapped objects
+    const allCategoriesHidden = Object.values(categoryVisibility).every(visible => !visible)
+    if (allCategoriesHidden && modelRef.current) {
+      console.log('🔧 All categories hidden - hiding unmapped objects...')
+      modelRef.current.traverse((child) => {
+        if (child.name && !child.userData.isMappedComponent) {
+          // Store original visibility if not already stored
+          if (child.userData.originalVisibility === undefined) {
+            child.userData.originalVisibility = child.visible
+          }
+          child.visible = false
+          child.updateMatrix()
+          child.updateMatrixWorld(true)
+        }
+      })
+    } else if (!allCategoriesHidden && modelRef.current) {
+      console.log('🔧 Some categories visible - restoring unmapped objects...')
+      modelRef.current.traverse((child) => {
+        if (child.name && !child.userData.isMappedComponent && child.userData.originalVisibility !== undefined) {
+          child.visible = child.userData.originalVisibility
+          child.updateMatrix()
+          child.updateMatrixWorld(true)
+        }
+      })
+    }
+  }, [current3DStage, componentControls, categoryVisibility])
+
+  // Update component controls to reflect actual positions in Stage 4
+  useEffect(() => {
+    if (current3DStage !== 4 || !modelRef.current || !componentRefs.current.size) return
+
+    // Only update if components have been animated (exploded)
+    const hasAnimatedComponents = componentRefs.current.get('upperSideMainHolder')?.userData.hasBeenAnimated
+    if (!hasAnimatedComponents) return
+
+    console.log('Updating component controls to reflect actual Stage 4 positions...')
+
+    // Get the current actual positions of exploded components
+    const explodedComponents = ['upperSideMainHolder', 'lowerSideMain', 'upperCover']
+    const updatedControls = { ...componentControls }
+
+    explodedComponents.forEach(componentKey => {
+      const component = componentRefs.current.get(componentKey)
+      if (component) {
+        const currentPos = component.position
+        const currentRot = component.rotation
+        const currentScale = component.scale
+
+        // Update the component controls with actual values
+        updatedControls[componentKey as keyof ComponentControls] = {
+          position: {
+            x: parseFloat(currentPos.x.toFixed(3)),
+            y: parseFloat(currentPos.y.toFixed(3)),
+            z: parseFloat(currentPos.z.toFixed(3))
+          },
+          rotation: {
+            x: parseFloat(currentRot.x.toFixed(3)),
+            y: parseFloat(currentRot.y.toFixed(3)),
+            z: parseFloat(currentRot.z.toFixed(3))
+          },
+          scale: {
+            x: parseFloat(currentScale.x.toFixed(3)),
+            y: parseFloat(currentScale.y.toFixed(3)),
+            z: parseFloat(currentScale.z.toFixed(3))
+          },
+          visible: updatedControls[componentKey as keyof ComponentControls]?.visible ?? true
+        }
+
+        console.log(`Updated ${componentKey} controls:`, updatedControls[componentKey as keyof ComponentControls])
+      }
+    })
+
+    // Update the component controls state with actual values
+    // This will trigger a re-render with the correct values
+    if (JSON.stringify(updatedControls) !== JSON.stringify(componentControls) && onComponentControlsChange) {
+      console.log('Updating component controls with actual Stage 4 positions')
+      onComponentControlsChange(updatedControls)
+    }
+  }, [current3DStage, componentAnimationProgress])
+
+  // Real-time update of component controls to reflect actual positions
+  useEffect(() => {
+    if (current3DStage !== 4 || !modelRef.current || !componentRefs.current.size) return
+
+    // Only update if components have been animated (exploded)
+    const hasAnimatedComponents = componentRefs.current.get('upperSideMainHolder')?.userData.hasBeenAnimated
+    if (!hasAnimatedComponents) return
+
+    // Use a timer to update component controls periodically
+    const updateInterval = setInterval(() => {
+      if (current3DStage !== 4 || !modelRef.current || !componentRefs.current.size) {
+        clearInterval(updateInterval)
+        return
+      }
+
+      // Update component controls with current actual positions
+      const explodedComponents = ['upperSideMainHolder', 'lowerSideMain', 'upperCover']
+      const updatedControls = { ...componentControls }
+      let hasChanges = false
+
+      explodedComponents.forEach(componentKey => {
+        const component = componentRefs.current.get(componentKey)
+        if (component) {
+          const currentPos = component.position
+          const currentRot = component.rotation
+          const currentScale = component.scale
+
+          const currentControls = updatedControls[componentKey as keyof ComponentControls]
+          const actualPosition = {
+            x: parseFloat(currentPos.x.toFixed(3)),
+            y: parseFloat(currentPos.y.toFixed(3)),
+            z: parseFloat(currentPos.z.toFixed(3))
+          }
+          const actualRotation = {
+            x: parseFloat(currentRot.x.toFixed(3)),
+            y: parseFloat(currentRot.y.toFixed(3)),
+            z: parseFloat(currentRot.z.toFixed(3))
+          }
+          const actualScale = {
+            x: parseFloat(currentScale.x.toFixed(3)),
+            y: parseFloat(currentScale.y.toFixed(3)),
+            z: parseFloat(currentScale.z.toFixed(3))
+          }
+
+          // Check if the actual values are different from the current controls
+          const positionChanged = 
+            Math.abs(currentControls.position.x - actualPosition.x) > 0.001 ||
+            Math.abs(currentControls.position.y - actualPosition.y) > 0.001 ||
+            Math.abs(currentControls.position.z - actualPosition.z) > 0.001
+
+          const rotationChanged = 
+            Math.abs(currentControls.rotation.x - actualRotation.x) > 0.001 ||
+            Math.abs(currentControls.rotation.y - actualRotation.y) > 0.001 ||
+            Math.abs(currentControls.rotation.z - actualRotation.z) > 0.001
+
+          const scaleChanged = 
+            Math.abs(currentControls.scale.x - actualScale.x) > 0.001 ||
+            Math.abs(currentControls.scale.y - actualScale.y) > 0.001 ||
+            Math.abs(currentControls.scale.z - actualScale.z) > 0.001
+
+          if (positionChanged || rotationChanged || scaleChanged) {
+            updatedControls[componentKey as keyof ComponentControls] = {
+              position: actualPosition,
+              rotation: actualRotation,
+              scale: actualScale,
+              visible: currentControls.visible
+            }
+            hasChanges = true
+            console.log(`Real-time update ${componentKey}:`, actualPosition)
+          }
+        }
+      })
+
+      // Update the component controls state with actual values
+      if (hasChanges && onComponentControlsChange) {
+        onComponentControlsChange(updatedControls)
+      }
+    }, 100) // Update every 100ms
+
+    return () => clearInterval(updateInterval)
+  }, [current3DStage, onComponentControlsChange])
+
+  // Update component controls when entering Stage 4 to show exploded positions
+  useEffect(() => {
+    if (current3DStage === 4 && onComponentControlsChange) {
+      console.log('Stage 4 entered - updating component controls with exploded positions')
+      const explodedPositions = {
+        upperSideMainHolder: { x: 0, y: 0, z: 80 },
+        lowerSideMain: { x: 0, y: 0, z: -80 },
+        upperCover: { x: 0, y: 0, z: 80 }
+      }
+
+      const updatedControls = { ...componentControls }
+      Object.entries(explodedPositions).forEach(([componentKey, targetPosition]) => {
+        updatedControls[componentKey as keyof ComponentControls] = {
+          position: {
+            x: parseFloat(targetPosition.x.toFixed(3)),
+            y: parseFloat(targetPosition.y.toFixed(3)),
+            z: parseFloat(targetPosition.z.toFixed(3))
+          },
+          rotation: {
+            x: parseFloat((0).toFixed(3)),
+            y: parseFloat((0).toFixed(3)),
+            z: parseFloat((0).toFixed(3))
+          },
+          scale: {
+            x: parseFloat((1).toFixed(3)),
+            y: parseFloat((1).toFixed(3)),
+            z: parseFloat((1).toFixed(3))
+          },
+          visible: updatedControls[componentKey as keyof ComponentControls]?.visible ?? true
+        }
+      })
+
+      onComponentControlsChange(updatedControls)
+    }
+  }, [current3DStage, onComponentControlsChange])
+
+  // Reset component positions when leaving Stage 4
+  useEffect(() => {
+    if (current3DStage !== 4 && modelRef.current) {
+      console.log('Leaving Stage 4 - resetting component positions')
+      
+      // Reset components to their original positions
+      const componentsToReset = ['upperSideMainHolder', 'lowerSideMain', 'upperCover']
+      
+      componentsToReset.forEach(componentKey => {
+        const component = componentRefs.current.get(componentKey)
+        if (component && component.userData.originalPosition) {
+          const originalPos = component.userData.originalPosition
+          component.position.x = originalPos.x
+          component.position.y = originalPos.y
+          component.position.z = originalPos.z
+          component.updateMatrix()
+          component.updateMatrixWorld(true)
+          
+          // Reset animation flag
+          component.userData.hasBeenAnimated = false
+          
+          console.log(`Reset ${componentKey} to original position:`, originalPos)
+        }
+      })
+    }
+  }, [current3DStage])
 
   return null // This component doesn't render anything directly
 }
