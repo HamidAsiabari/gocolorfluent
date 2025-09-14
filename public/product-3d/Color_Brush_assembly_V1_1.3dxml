@@ -1,0 +1,890 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Model_3dxml xmlns="http://www.3ds.com/xsd/3DXML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<Header>
+		<SchemaVersion>4.3</SchemaVersion>
+		<Title>Product2 3D XML File</Title>
+		<Author>ghanizadegan</Author>
+		<Generator>CATIA V5</Generator>
+		<Created>2025-08-23</Created>
+	</Header>
+	<ProductStructure root="1">
+		<Reference3D xsi:type="Reference3DType" id="1" name="Product2">
+			<PLM_ExternalID>Product2</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="3" name="Part1.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>2</IsInstanceOf>
+			<RelativeMatrix>1 -2.86721948178921e-018 -1.88872875492751e-019 2.87085087944324e-018 0.999726784220646 0.0233742788518917 1.21802084745957e-019 -0.0233742788518917 0.999726784220646 -3.33103012064e-017 -0.674347560804 -0.307892955027</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="2" name="Part1">
+			<PLM_ExternalID>Part1</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="11" name="Product1.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>4</IsInstanceOf>
+			<RelativeMatrix>1 -2.86721948178921e-018 -1.88872875492751e-019 2.87085087944324e-018 0.999726784220646 0.0233742788518917 1.21802084745957e-019 -0.0233742788518917 0.999726784220646 -3.33103012064e-017 -0.674347560804 -0.307892955027</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="4" name="Product1">
+			<PLM_ExternalID>Product1</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="10" name="Product2.1">
+			<IsAggregatedBy>4</IsAggregatedBy>
+			<IsInstanceOf>5</IsInstanceOf>
+			<RelativeMatrix>-1 -1.94567007478e-044 -1.22464679915e-016 -1.22464679915e-016 6.12323399574e-017 1 7.49879891331e-033 1 -6.12323399574e-017 5.98448704417 4.91399952495 13.5</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="5" name="Product2_1">
+			<PLM_ExternalID>Product2_1</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="7" name="MicroGearmotor.1">
+			<IsAggregatedBy>5</IsAggregatedBy>
+			<IsInstanceOf>6</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="6" name="MicroGearmotor">
+			<PLM_ExternalID>MicroGearmotor</PLM_ExternalID>
+			<V_Name>MicroGearmotor</V_Name>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="9" name="Gear_motor_PCB.1">
+			<IsAggregatedBy>5</IsAggregatedBy>
+			<IsInstanceOf>8</IsInstanceOf>
+			<RelativeMatrix>6.72089401559e-017 1 1.22464679915e-016 -1 6.72089401559e-017 2.22044604925e-016 2.22044604925e-016 -1.22464679915e-016 1 12.122567366 -16.5 -16.9666183455</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="8" name="Gear_motor_PCB">
+			<PLM_ExternalID>Gear_motor_PCB</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="13" name="Motor_holder_1.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>12</IsInstanceOf>
+			<RelativeMatrix>1.21802084712197e-019 -0.0233742788518917 0.999726784220646 2.87085087944324e-018 0.999726784220646 0.0233742788518917 -1 2.86721948179e-018 1.88872875459e-019 -1.28280105239e-015 -0.725770974278 1.89150597026</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="12" name="Motor_holder_1">
+			<PLM_ExternalID>Motor_holder_1</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="15" name="Holder_support.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>14</IsInstanceOf>
+			<RelativeMatrix>1 -2.86721948178574e-018 -1.888728754589e-019 1.21802084712197e-019 -0.0233742788518917 0.999726784220646 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 -3.28230928675e-017 -0.767844676212 3.69101418186</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="14" name="Holder_support">
+			<PLM_ExternalID>Holder_support</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="16" name="Holder_support.2">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>14</IsInstanceOf>
+			<RelativeMatrix>1 -2.86721948178574e-018 -1.888728754589e-019 1.21802084712197e-019 -0.0233742788518917 0.999726784220646 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 -1.58207229757e-017 -4.29736078285 154.649758599</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="18" name="Coupling.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>17</IsInstanceOf>
+			<RelativeMatrix>-4.05619822712064e-016 -0.0233742788518917 0.999726784220646 -5.83614890779494e-017 0.999726784220646 0.0233742788518917 -1 -4.88644729543e-017 -4.06873158696e-016 8.12027051225e-015 -1.28675366672 25.8849487916</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="17" name="Coupling">
+			<PLM_ExternalID>Coupling</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="20" name="M5_Screw.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>19</IsInstanceOf>
+			<RelativeMatrix>4.05619822712899e-016 0.0233742788518917 -0.999726784220646 6.41031908367974e-017 0.999726784220646 0.0233742788518917 1 -7.35667476775e-017 4.04010635119e-016 -9.53453426687e-018 -5.23700679269 194.838775325</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="19" name="M5_Screw">
+			<PLM_ExternalID>M5_Screw</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="22" name="Movin_Plate.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>21</IsInstanceOf>
+			<RelativeMatrix>1.21802084712197e-019 -0.0233742788518917 0.999726784220646 2.87085087944324e-018 0.999726784220646 0.0233742788518917 -1 2.86721948179e-018 1.88872875459e-019 -2.54495239945e-017 -2.18286031696 64.2117705702</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="21" name="Movin_Plate">
+			<PLM_ExternalID>Movin_Plate</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="24" name="Mobin_silicon_support.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>23</IsInstanceOf>
+			<RelativeMatrix>1 -2.86721948178921e-018 -1.88872875492751e-019 2.87085087944324e-018 0.999726784220646 0.0233742788518917 1.21802084745957e-019 -0.0233742788518917 0.999726784220646 -2.48405135704e-017 -2.29973171122 69.2104044913</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="23" name="Mobin_silicon_support">
+			<PLM_ExternalID>Mobin_silicon_support</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="26" name="Copy (1) of Nuzzle.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>25</IsInstanceOf>
+			<RelativeMatrix>6.13541420420783e-017 -0.0233742788518917 0.999726784220646 -1 6.26515680087236e-017 6.28357449802585e-017 -6.41031908367773e-017 -0.999726784220646 -0.0233742788518917 1.42032690143e-014 -5.61099525432 210.834403872</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="25" name="Copy (1) of Nuzzle">
+			<PLM_ExternalID>Copy (1) of Nuzzle</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="28" name="Upper_side_main_holder.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>27</IsInstanceOf>
+			<RelativeMatrix>1 -4.69590395638394e-021 -1.22620093507e-016 1.2258648199922e-016 -0.0233742788518917 0.999726784220646 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 -34.5 14.6811719215 6.0527690725</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="27" name="Upper_side_main_holder">
+			<PLM_ExternalID>Upper_side_main_holder</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="49" name="Product1.2">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>29</IsInstanceOf>
+			<RelativeMatrix>-3.82257829681865e-017 -0.0233742788518917 0.999726784220646 1 -3.76356662810883e-018 3.81482350121032e-017 2.87085087943898e-018 0.999726784220646 0.0233742788518917 -26.5 -10.4992333442 201.717653992</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="29" name="Product1.1">
+			<PLM_ExternalID>Product1.1</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="31" name="Color_Sensor_PCB.1">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>30</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="30" name="Color_Sensor_PCB">
+			<PLM_ExternalID>Color_Sensor_PCB</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="33" name="STS8DN3LLH5.1">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>32</IsInstanceOf>
+			<RelativeMatrix>-1 -1.08528637466e-016 -2.74953670942e-016 -2.74953670942e-016 1.66533453694e-016 1 -1.08528637466e-016 1 -1.66533453694e-016 29 8 1.60000000007</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="32" name="STS8DN3LLH5">
+			<PLM_ExternalID>STS8DN3LLH5</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="43" name="User Library-Everlight 67-21SRC-TR8.1">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>34</IsInstanceOf>
+			<RelativeMatrix>-0.999847695156391 -3.25521658043578e-022 -0.0174524064373068 -0.0174524064373068 6.12509890804765e-017 0.999847695156391 1.06865168404e-018 1 -6.12416659393e-017 43.3258357713 11.9 1.57701909896</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="34" name="User Library-Everlight 67-21SRC-TR8">
+			<PLM_ExternalID>User Library-Everlight 67-21SRC-TR8</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="36" name="NAUO2">
+			<V_description> </V_description>
+			<IsAggregatedBy>34</IsAggregatedBy>
+			<IsInstanceOf>35</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="35" name="Imported_2">
+			<PLM_ExternalID>Imported_2</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="38" name="NAUO4">
+			<V_description> </V_description>
+			<IsAggregatedBy>34</IsAggregatedBy>
+			<IsInstanceOf>37</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="37" name="Imported_4">
+			<PLM_ExternalID>Imported_4</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="40" name="NAUO1">
+			<V_description> </V_description>
+			<IsAggregatedBy>34</IsAggregatedBy>
+			<IsInstanceOf>39</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="39" name="Imported">
+			<PLM_ExternalID>Imported</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="42" name="NAUO3">
+			<V_description> </V_description>
+			<IsAggregatedBy>34</IsAggregatedBy>
+			<IsInstanceOf>41</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="41" name="Imported_3">
+			<PLM_ExternalID>Imported_3</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="44" name="User Library-Everlight 67-21SRC-TR8.2">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>34</IsInstanceOf>
+			<RelativeMatrix>-1 -1.94567007478225e-044 -1.22464679915e-016 -1.22464679915e-016 6.12323399574e-017 1 7.49879891331e-033 1 -6.12323399574e-017 14.6953397561 11.9 1.46901035065</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="45" name="User Library-Everlight 67-21SRC-TR8.3">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>34</IsInstanceOf>
+			<RelativeMatrix>-1 -1.94567007478225e-044 -1.22464679915e-016 -1.22464679915e-016 6.12323399574e-017 1 7.49879891331e-033 1 -6.12323399574e-017 14.6952767555 4.1 1.46540105236</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="46" name="User Library-Everlight 67-21SRC-TR8.4">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>34</IsInstanceOf>
+			<RelativeMatrix>-0.999847695156391 -3.20686595039919e-030 -0.0174524064373068 -0.0174524064373068 6.1232339957361e-017 0.999847695156391 1.06865168404e-018 1 -6.12230139754e-017 43.3258357713 4.1 1.73977332796</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="48" name="Sensor_Guide_Light.1">
+			<IsAggregatedBy>29</IsAggregatedBy>
+			<IsInstanceOf>47</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 22 3.00000000027 1.6</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="47" name="Sensor_Guide_Light">
+			<PLM_ExternalID>Sensor_Guide_Light</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="51" name="Upper_cover.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>50</IsInstanceOf>
+			<RelativeMatrix>1.22586481998957e-016 -0.0233742788518917 0.999726784220646 -1 4.69590396253236e-021 1.22620093506737e-016 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 15.5 11.5496410753 -14.0259140158</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="50" name="Upper_cover">
+			<PLM_ExternalID>Upper_cover</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="64" name="Product5.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>52</IsInstanceOf>
+			<RelativeMatrix>1 -2.72153225249743e-019 -1.11180842293e-016 1.11144104547146e-016 -0.0233742788518917 0.999726784220646 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 -23.5 -14.0803823562 21.1846227438</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="52" name="Product5">
+			<PLM_ExternalID>Product5</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="54" name="Part1.1">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>53</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 0</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="53" name="Part1.1">
+			<PLM_ExternalID>Part1.1</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="56" name="OLED_Display.1">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>55</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 2.5 59 2.2</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="55" name="OLED_Display">
+			<PLM_ExternalID>OLED_Display</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="58" name="SKQYAF.1">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>57</IsInstanceOf>
+			<RelativeMatrix>1 -3.45126646034e-031 2.90377443099e-030 -2.90377443099e-030 3.10613981431e-030 1 -3.45126646034e-031 -1 3.10613981431e-030 21.65 46.95 1</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="57" name="SKQYAF">
+			<PLM_ExternalID>SKQYAF</PLM_ExternalID>
+			<V_Name>UNKNOWN</V_Name>
+			<V_version>ANY</V_version>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="59" name="SKQYAF.2">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>57</IsInstanceOf>
+			<RelativeMatrix>1 -2.7117093617e-031 2.28153705292e-030 -2.28153705292e-030 2.44053842553e-030 1 -2.7117093617e-031 -1 2.44053842553e-030 21.65 39.95 1</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="60" name="SKQYAF.3">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>57</IsInstanceOf>
+			<RelativeMatrix>1 -2.7117093617e-031 2.28153705292e-030 -2.28153705292e-030 2.44053842553e-030 1 -2.7117093617e-031 -1 2.44053842553e-030 10.35 39.95 1</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="61" name="SKQYAF.4">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>57</IsInstanceOf>
+			<RelativeMatrix>1 -1.60237371373e-031 1.34818098581e-030 -1.34818098581e-030 1.44213634236e-030 1 -1.60237371373e-031 -1 1.44213634236e-030 10.35 46.95 1</RelativeMatrix>
+		</Instance3D>
+		<Instance3D xsi:type="Instance3DType" id="63" name="Detector_Switch.1">
+			<IsAggregatedBy>52</IsAggregatedBy>
+			<IsInstanceOf>62</IsInstanceOf>
+			<RelativeMatrix>4.16333634234e-017 -1 -1.32696298276e-017 -1 -4.16333634234e-017 2.25496286172e-016 -2.25496286172e-016 1.32696298276e-017 -1 6.8 34 -0.5</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="62" name="Detector_Switch">
+			<PLM_ExternalID>Detector_Switch</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="66" name="Hair_guide_Support.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>65</IsInstanceOf>
+			<RelativeMatrix>-5.56329533159803e-017 0.0233742788518917 -0.999726784220646 -1 1.56968635351655e-018 5.56848575842805e-017 2.87085087943898e-018 0.999726784220646 0.0233742788518917 14.5 8.55711086231 267.981186538</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="65" name="Hair_guide_Support">
+			<PLM_ExternalID>Hair_guide_Support</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="68" name="Knobs.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>67</IsInstanceOf>
+			<RelativeMatrix>1 -2.86721948178574e-018 -1.888728754589e-019 1.21802084712197e-019 -0.0233742788518917 0.999726784220646 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 -22.7 -19.2707943049 56.2228736106</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="67" name="Knobs">
+			<PLM_ExternalID>Knobs</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="70" name="Nuzzel_blinder.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>69</IsInstanceOf>
+			<RelativeMatrix>1 -6.55140915865581e-017 5.9595475651501e-017 -6.11105378726475e-017 -0.0233742788518917 0.999726784220646 -6.41031908367773e-017 -0.999726784220646 -0.0233742788518917 2.00256981778e-015 -7.52863884678 207.28861157</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="69" name="Nuzzel_blinder">
+			<PLM_ExternalID>Nuzzel_blinder</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="72" name="Loading_Material_Cover.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>71</IsInstanceOf>
+			<RelativeMatrix>-1.22586481998957e-016 0.0233742788518917 -0.999726784220646 1 -4.69590396253236e-021 -1.22620093506737e-016 -2.87085087943898e-018 -0.999726784220646 -0.0233742788518917 -31.5 -11.9080100083 219.189498437</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="71" name="Loading_Material_Cover">
+			<PLM_ExternalID>Loading_Material_Cover</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="74" name="Lower_Side_Main.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>73</IsInstanceOf>
+			<RelativeMatrix>2.824108649829e-016 -0.0233742788518917 0.999726784220646 -1 -1.90359533074448e-017 2.82042971892457e-016 1.24382013113956e-017 -0.999726784220646 -0.0233742788518917 16.5 27.7712918084 280.433706387</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="73" name="Lower_Side_Main">
+			<PLM_ExternalID>Lower_Side_Main</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="92" name="Product6.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>75</IsInstanceOf>
+			<RelativeMatrix>-4.71966587549833e-016 0.0233742788518917 -0.999726784220646 1 6.39167086333349e-017 -4.70601156240609e-016 5.28992829259813e-017 -0.999726784220646 -0.0233742788518917 9.20687736218 24.2749316668 258.84608341</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="75" name="Product6">
+			<PLM_ExternalID>Product6</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="77" name="Part1.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>76</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 0.999907009340718 0.0136371797414962 0 -0.0136371797414962 0.999907009340718 7.88860905221e-031 -6.08603568133 1.94354519006</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="76" name="Part1.1.3">
+			<PLM_ExternalID>Part1.1.3</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="79" name="Part2.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>78</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 0.999907009340718 0.0136371797414962 0 -0.0136371797414962 0.999907009340718 7.88860905221e-031 -11.0582963686 -0.124454727328</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="78" name="Part2.2">
+			<PLM_ExternalID>Part2.2</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="81" name="Part3.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>80</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 -15.4 4.69312263782 8</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="80" name="Part3">
+			<PLM_ExternalID>Part3</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="83" name="MicroGearmotor.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>82</IsInstanceOf>
+			<RelativeMatrix>6.66452374882e-017 1 0 -1 6.66452374882e-017 -1.22464679915e-016 -1.22464679915e-016 0 1 71.3513036258 -21.1068773622 8.04075863985</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="82" name="MicroGearmotor.1">
+			<PLM_ExternalID>MicroGearmotor.1</PLM_ExternalID>
+			<V_Name>MicroGearmotor</V_Name>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="85" name="Part4.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>84</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 0.525742597707813 -0.850643709760697 0 0.850643709760697 0.525742597707813 52.3513036258 -8.19136875354 -13.8938299635</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="84" name="Part4">
+			<PLM_ExternalID>Part4</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="87" name="Part5.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>86</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 71.9 3.3014737625e-017 9.03657932573e-032</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="86" name="Part5">
+			<PLM_ExternalID>Part5</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="89" name="Part7.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>88</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 -0.6 0 10</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="88" name="Part7">
+			<PLM_ExternalID>Part7</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="91" name="Copy (1) of Part7.1">
+			<IsAggregatedBy>75</IsAggregatedBy>
+			<IsInstanceOf>90</IsInstanceOf>
+			<RelativeMatrix>-1 6.98068146601e-048 9.06419837073e-016 -9.02977392589118e-047 -1 -9.19188375907e-032 9.06419837073e-016 -9.19188375907e-032 1 55.1 -33.4137547244 10</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="90" name="Copy (1) of Part7">
+			<PLM_ExternalID>Copy (1) of Part7</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="94" name="Handle_up_cover.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>93</IsInstanceOf>
+			<RelativeMatrix>2.825430861499e-016 -0.0233742788518917 0.999726784220646 -1 -1.11397098484911e-017 2.82359848631674e-016 4.53670846548839e-018 -0.999726784220646 -0.0233742788518917 11.4 18.7081539421 -16.4455415213</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="93" name="Handle_up_cover">
+			<PLM_ExternalID>Handle_up_cover</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="96" name="Drain_Button Actuator.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>95</IsInstanceOf>
+			<RelativeMatrix>1.11022302462961e-016 -0.0233742788518917 0.999726784220646 -1 8.73432787747559e-019 1.11073065238584e-016 -3.46944695194877e-018 -0.999726784220646 -0.0233742788518917 -19.7 10.2281114243 68.1656522145</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="95" name="Drain_Button Actuator">
+			<PLM_ExternalID>Drain_Button Actuator</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="98" name="Part2.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>97</IsInstanceOf>
+			<RelativeMatrix>1.22620093507e-016 4.69590395056e-021 1 4.69590395056e-021 1 -4.69590395056e-021 -1 4.69590395056e-021 1.22620093507e-016 -22.7 -7.78934515874 121.949061453</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="97" name="Part2">
+			<PLM_ExternalID>Part2</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="106" name="Product7.1">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>99</IsInstanceOf>
+			<RelativeMatrix>1 -1.56746089967439e-018 -8.60647335155803e-016 8.60375554455221e-016 -0.0233742788518917 0.999726784220646 -2.16840434496923e-017 -0.999726784220646 -0.0233742788518917 -7.5 -21.8283892801 133.671262535</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="99" name="Product7">
+			<PLM_ExternalID>Product7</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="101" name="Part1.1">
+			<IsAggregatedBy>99</IsAggregatedBy>
+			<IsInstanceOf>100</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 -2.92918747737</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="100" name="Part1.1.3.5">
+			<PLM_ExternalID>Part1.1.3.5</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="103" name="Part2.1">
+			<IsAggregatedBy>99</IsAggregatedBy>
+			<IsInstanceOf>102</IsInstanceOf>
+			<RelativeMatrix>1 0 0 0 1 0 0 0 1 0 0 -5.92918747737</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="102" name="Part2.2.4">
+			<PLM_ExternalID>Part2.2.4</PLM_ExternalID>
+		</Reference3D>
+		<Instance3D xsi:type="Instance3DType" id="105" name="Slide_Switch_1.1">
+			<IsAggregatedBy>99</IsAggregatedBy>
+			<IsInstanceOf>104</IsInstanceOf>
+			<RelativeMatrix>6.12323399574e-017 1 0 -1 6.12323399574e-017 0 0 0 1 -1.2 -6 -8.12918747737</RelativeMatrix>
+		</Instance3D>
+		<Reference3D xsi:type="Reference3DType" id="104" name="Slide_Switch_1">
+			<PLM_ExternalID>Slide_Switch_1</PLM_ExternalID>
+		</Reference3D>
+		<ReferenceRep xsi:type="ReferenceRepType" id="107" name="Part1_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part1.3DRep">
+			<PLM_ExternalID>Part1_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="108" name="Part1_InstanceRep">
+			<IsAggregatedBy>2</IsAggregatedBy>
+			<IsInstanceOf>107</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="109" name="MicroGearmotor_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:MicroGearmotor.3DRep">
+			<PLM_ExternalID>MicroGearmotor_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="110" name="MicroGearmotor_InstanceRep">
+			<IsAggregatedBy>6</IsAggregatedBy>
+			<IsInstanceOf>109</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="111" name="Gear_motor_PCB_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Gear_motor_PCB.3DRep">
+			<PLM_ExternalID>Gear_motor_PCB_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="112" name="Gear_motor_PCB_InstanceRep">
+			<IsAggregatedBy>8</IsAggregatedBy>
+			<IsInstanceOf>111</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="113" name="Motor_holder_1_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Motor_holder_1.3DRep">
+			<PLM_ExternalID>Motor_holder_1_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="114" name="Motor_holder_1_InstanceRep">
+			<IsAggregatedBy>12</IsAggregatedBy>
+			<IsInstanceOf>113</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="115" name="Holder_support_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Holder_support.3DRep">
+			<PLM_ExternalID>Holder_support_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="116" name="Holder_support_InstanceRep">
+			<IsAggregatedBy>14</IsAggregatedBy>
+			<IsInstanceOf>115</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="117" name="Coupling_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Coupling.3DRep">
+			<PLM_ExternalID>Coupling_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="118" name="Coupling_InstanceRep">
+			<IsAggregatedBy>17</IsAggregatedBy>
+			<IsInstanceOf>117</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="119" name="M5_Screw_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:M5_Screw.3DRep">
+			<PLM_ExternalID>M5_Screw_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="120" name="M5_Screw_InstanceRep">
+			<IsAggregatedBy>19</IsAggregatedBy>
+			<IsInstanceOf>119</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="121" name="Movin_Plate_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Movin_Plate.3DRep">
+			<PLM_ExternalID>Movin_Plate_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="122" name="Movin_Plate_InstanceRep">
+			<IsAggregatedBy>21</IsAggregatedBy>
+			<IsInstanceOf>121</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="123" name="Mobin_silicon_support_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Mobin_silicon_support.3DRep">
+			<PLM_ExternalID>Mobin_silicon_support_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="124" name="Mobin_silicon_support_InstanceRep">
+			<IsAggregatedBy>23</IsAggregatedBy>
+			<IsInstanceOf>123</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="125" name="Copy (1) of Nuzzle_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Copy__1__of_Nuzzle.3DRep">
+			<PLM_ExternalID>Copy (1) of Nuzzle_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="126" name="Copy (1) of Nuzzle_InstanceRep">
+			<IsAggregatedBy>25</IsAggregatedBy>
+			<IsInstanceOf>125</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="127" name="Upper_side_main_holder_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Upper_side_main_holder.3DRep">
+			<PLM_ExternalID>Upper_side_main_holder_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="128" name="Upper_side_main_holder_InstanceRep">
+			<IsAggregatedBy>27</IsAggregatedBy>
+			<IsInstanceOf>127</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="129" name="Color_Sensor_PCB_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Color_Sensor_PCB.3DRep">
+			<PLM_ExternalID>Color_Sensor_PCB_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="130" name="Color_Sensor_PCB_InstanceRep">
+			<IsAggregatedBy>30</IsAggregatedBy>
+			<IsInstanceOf>129</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="131" name="STS8DN3LLH5_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:STS8DN3LLH5.3DRep">
+			<PLM_ExternalID>STS8DN3LLH5_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="132" name="STS8DN3LLH5_InstanceRep">
+			<IsAggregatedBy>32</IsAggregatedBy>
+			<IsInstanceOf>131</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="133" name="Imported_2_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Imported_2.3DRep">
+			<PLM_ExternalID>Imported_2_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="134" name="Imported_2_InstanceRep">
+			<IsAggregatedBy>35</IsAggregatedBy>
+			<IsInstanceOf>133</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="135" name="Imported_4_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Imported_4.3DRep">
+			<PLM_ExternalID>Imported_4_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="136" name="Imported_4_InstanceRep">
+			<IsAggregatedBy>37</IsAggregatedBy>
+			<IsInstanceOf>135</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="137" name="Imported_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Imported.3DRep">
+			<PLM_ExternalID>Imported_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="138" name="Imported_InstanceRep">
+			<IsAggregatedBy>39</IsAggregatedBy>
+			<IsInstanceOf>137</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="139" name="Imported_3_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Imported_3.3DRep">
+			<PLM_ExternalID>Imported_3_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="140" name="Imported_3_InstanceRep">
+			<IsAggregatedBy>41</IsAggregatedBy>
+			<IsInstanceOf>139</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="141" name="Sensor_Guide_Light_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Sensor_Guide_Light.3DRep">
+			<PLM_ExternalID>Sensor_Guide_Light_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="142" name="Sensor_Guide_Light_InstanceRep">
+			<IsAggregatedBy>47</IsAggregatedBy>
+			<IsInstanceOf>141</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="143" name="Upper_cover_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Upper_cover.3DRep">
+			<PLM_ExternalID>Upper_cover_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="144" name="Upper_cover_InstanceRep">
+			<IsAggregatedBy>50</IsAggregatedBy>
+			<IsInstanceOf>143</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="145" name="Part1.1_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part1_1.3DRep">
+			<PLM_ExternalID>Part1.1_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="146" name="Part1.1_InstanceRep">
+			<IsAggregatedBy>53</IsAggregatedBy>
+			<IsInstanceOf>145</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="147" name="OLED_Display_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:OLED_Display.3DRep">
+			<PLM_ExternalID>OLED_Display_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="148" name="OLED_Display_InstanceRep">
+			<IsAggregatedBy>55</IsAggregatedBy>
+			<IsInstanceOf>147</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="149" name="SKQYAF_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:SKQYAF.3DRep">
+			<PLM_ExternalID>SKQYAF_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="150" name="SKQYAF_InstanceRep">
+			<IsAggregatedBy>57</IsAggregatedBy>
+			<IsInstanceOf>149</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="151" name="Detector_Switch_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Detector_Switch.3DRep">
+			<PLM_ExternalID>Detector_Switch_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="152" name="Detector_Switch_InstanceRep">
+			<IsAggregatedBy>62</IsAggregatedBy>
+			<IsInstanceOf>151</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="153" name="Hair_guide_Support_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Hair_guide_Support.3DRep">
+			<PLM_ExternalID>Hair_guide_Support_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="154" name="Hair_guide_Support_InstanceRep">
+			<IsAggregatedBy>65</IsAggregatedBy>
+			<IsInstanceOf>153</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="155" name="Knobs_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Knobs.3DRep">
+			<PLM_ExternalID>Knobs_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="156" name="Knobs_InstanceRep">
+			<IsAggregatedBy>67</IsAggregatedBy>
+			<IsInstanceOf>155</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="157" name="Nuzzel_blinder_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Nuzzel_blinder.3DRep">
+			<PLM_ExternalID>Nuzzel_blinder_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="158" name="Nuzzel_blinder_InstanceRep">
+			<IsAggregatedBy>69</IsAggregatedBy>
+			<IsInstanceOf>157</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="159" name="Loading_Material_Cover_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Loading_Material_Cover.3DRep">
+			<PLM_ExternalID>Loading_Material_Cover_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="160" name="Loading_Material_Cover_InstanceRep">
+			<IsAggregatedBy>71</IsAggregatedBy>
+			<IsInstanceOf>159</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="161" name="Lower_Side_Main_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Lower_Side_Main.3DRep">
+			<PLM_ExternalID>Lower_Side_Main_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="162" name="Lower_Side_Main_InstanceRep">
+			<IsAggregatedBy>73</IsAggregatedBy>
+			<IsInstanceOf>161</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="163" name="Part1.1.3_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part1_1_3.3DRep">
+			<PLM_ExternalID>Part1.1.3_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="164" name="Part1.1.3_InstanceRep">
+			<IsAggregatedBy>76</IsAggregatedBy>
+			<IsInstanceOf>163</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="165" name="Part2.2_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part2_2.3DRep">
+			<PLM_ExternalID>Part2.2_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="166" name="Part2.2_InstanceRep">
+			<IsAggregatedBy>78</IsAggregatedBy>
+			<IsInstanceOf>165</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="167" name="Part3_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part3.3DRep">
+			<PLM_ExternalID>Part3_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="168" name="Part3_InstanceRep">
+			<IsAggregatedBy>80</IsAggregatedBy>
+			<IsInstanceOf>167</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="169" name="MicroGearmotor.1_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:MicroGearmotor_1.3DRep">
+			<PLM_ExternalID>MicroGearmotor.1_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="170" name="MicroGearmotor.1_InstanceRep">
+			<IsAggregatedBy>82</IsAggregatedBy>
+			<IsInstanceOf>169</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="171" name="Part4_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part4.3DRep">
+			<PLM_ExternalID>Part4_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="172" name="Part4_InstanceRep">
+			<IsAggregatedBy>84</IsAggregatedBy>
+			<IsInstanceOf>171</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="173" name="Part5_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part5.3DRep">
+			<PLM_ExternalID>Part5_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="174" name="Part5_InstanceRep">
+			<IsAggregatedBy>86</IsAggregatedBy>
+			<IsInstanceOf>173</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="175" name="Part7_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part7.3DRep">
+			<PLM_ExternalID>Part7_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="176" name="Part7_InstanceRep">
+			<IsAggregatedBy>88</IsAggregatedBy>
+			<IsInstanceOf>175</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="177" name="Copy (1) of Part7_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Copy__1__of_Part7.3DRep">
+			<PLM_ExternalID>Copy (1) of Part7_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="178" name="Copy (1) of Part7_InstanceRep">
+			<IsAggregatedBy>90</IsAggregatedBy>
+			<IsInstanceOf>177</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="179" name="Handle_up_cover_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Handle_up_cover.3DRep">
+			<PLM_ExternalID>Handle_up_cover_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="180" name="Handle_up_cover_InstanceRep">
+			<IsAggregatedBy>93</IsAggregatedBy>
+			<IsInstanceOf>179</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="181" name="Drain_Button Actuator_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Drain_Button_Actuator.3DRep">
+			<PLM_ExternalID>Drain_Button Actuator_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="182" name="Drain_Button Actuator_InstanceRep">
+			<IsAggregatedBy>95</IsAggregatedBy>
+			<IsInstanceOf>181</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="183" name="Part2_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part2.3DRep">
+			<PLM_ExternalID>Part2_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="184" name="Part2_InstanceRep">
+			<IsAggregatedBy>97</IsAggregatedBy>
+			<IsInstanceOf>183</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="185" name="Part1.1.3.5_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part1_1_3_5.3DRep">
+			<PLM_ExternalID>Part1.1.3.5_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="186" name="Part1.1.3.5_InstanceRep">
+			<IsAggregatedBy>100</IsAggregatedBy>
+			<IsInstanceOf>185</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="187" name="Part2.2.4_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Part2_2_4.3DRep">
+			<PLM_ExternalID>Part2.2.4_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="188" name="Part2.2.4_InstanceRep">
+			<IsAggregatedBy>102</IsAggregatedBy>
+			<IsInstanceOf>187</IsInstanceOf>
+		</InstanceRep>
+		<ReferenceRep xsi:type="ReferenceRepType" id="189" name="Slide_Switch_1_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:Slide_Switch_1.3DRep">
+			<PLM_ExternalID>Slide_Switch_1_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="190" name="Slide_Switch_1_InstanceRep">
+			<IsAggregatedBy>104</IsAggregatedBy>
+			<IsInstanceOf>189</IsInstanceOf>
+		</InstanceRep>
+	</ProductStructure>
+	<DefaultView>
+		<Viewpoint xsi:type="ParallelViewpointType" visualizedHeight="181.7750905" targetDistance="757.1478882" nearPlaneDistance="601.2518311" farPlaneDistance="965.9971924">
+			<Position>123.3532181 -761.9294434 29.91339111</Position>
+			<Sight>-0.1710391194 0.9803836346 0.09794740379</Sight>
+			<Right>0.8813314438 0.1077972353 0.4600377679</Right>
+			<Up>-0.4404549897 -0.1650085598 0.8824803233</Up>
+		</Viewpoint>
+	</DefaultView>
+</Model_3dxml>
