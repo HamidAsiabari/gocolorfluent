@@ -8,7 +8,8 @@ import {
   SectionNavigation,
   ScrollPosition,
   LightingControls,
-  Presets
+  Presets,
+  Product3DObject
 } from './sections'
 
 interface ModelControls {
@@ -140,6 +141,8 @@ export default function DevControls({
           lightingControls={lightingControls}
           onLightingControlsChange={onLightingControlsChange}
         />
+
+        <Product3DObject />
 
         <Presets
           modelControls={modelControls}
