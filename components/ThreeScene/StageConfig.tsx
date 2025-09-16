@@ -76,8 +76,8 @@ export const stage1Config: StageConfig = {
 // Stage 2 configuration
 export const stage2Config: StageConfig = {
   model: {
-    position: { x: 2, y: -0.3, z: 0 },
-    rotation: { x: -0.9, y: -0.15, z: -0.29 },
+    position: { x: 2.7, y: -1.2, z: -0.1 },
+    rotation: { x: -0.84, y: 0.04, z: -0.06 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -143,11 +143,11 @@ export const stage3Config: StageConfig = {
   }
 }
 
-// Stage 4 configuration - Exploded view with separated upper and lower housing
+// Stage 4 configuration
 export const stage4Config: StageConfig = {
   model: {
-    position: { x: 2, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
+    position: { x: 2, y: 1.2, z: 0 },
+    rotation: { x: 0.37, y: 0, z: 0 },
     scale: { x: 18, y: 18, z: 18 }
   },
   camera: {

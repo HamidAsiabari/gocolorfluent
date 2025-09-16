@@ -39,7 +39,7 @@ export default function Stage3DIndicator({
               : 'bg-orange-800 text-orange-200 hover:bg-orange-700'
           }`}
         >
-          🚀 Go to Stage 4 (Exploded View)
+          🚀 Go to Stage 4
         </button>
         
         {/* Reset to Stage 1 Button */}

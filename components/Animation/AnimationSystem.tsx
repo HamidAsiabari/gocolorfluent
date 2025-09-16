@@ -21,8 +21,6 @@ interface AnimationSystemProps {
   setModelControls: (controls: any) => void
   setCameraControls: (controls: any) => void
   setLightingControls: (controls: any) => void
-  setIsComponentUnexploding: (unexploding: boolean) => void
-  setComponentUnexplodeProgress: (progress: number) => void
 }
 
 export default function AnimationSystem({
@@ -43,8 +41,6 @@ export default function AnimationSystem({
   setModelControls,
   setCameraControls,
   setLightingControls,
-  setIsComponentUnexploding,
-  setComponentUnexplodeProgress
 }: AnimationSystemProps) {
   // Interpolation function for smooth animation
   const lerp = (start: number, end: number, progress: number) => {
@@ -96,27 +92,58 @@ export default function AnimationSystem({
     // Handle section-based 3D stage animations
     if (is3DAnimating) {
       const progress = easeInOut(stage3DAnimationProgress)
-      const fromStage = current3DStage === 2 ? stage2Config : stage3Config
-      const toStage = current3DStage === 2 ? stage3Config : stage2Config
       
-      return {
-        model: {
-          position: {
-            x: lerp(fromStage.model.position.x, toStage.model.position.x, progress),
-            y: lerp(fromStage.model.position.y, toStage.model.position.y, progress),
-            z: lerp(fromStage.model.position.z, toStage.model.position.z, progress)
-          },
-          rotation: {
-            x: lerp(fromStage.model.rotation.x, toStage.model.rotation.x, progress),
-            y: lerp(fromStage.model.rotation.y, toStage.model.rotation.y, progress),
-            z: lerp(fromStage.model.rotation.z, toStage.model.rotation.z, progress)
-          },
-          scale: {
-            x: lerp(fromStage.model.scale.x, toStage.model.scale.x, progress),
-            y: lerp(fromStage.model.scale.y, toStage.model.scale.y, progress),
-            z: lerp(fromStage.model.scale.z, toStage.model.scale.z, progress)
-          }
+      // Determine from and to stages based on current stage and animation direction
+      let fromStage, toStage
+      if (current3DStage === 2) {
+        // Going from Stage 2 to Stage 3
+        fromStage = stage2Config
+        toStage = stage3Config
+      } else if (current3DStage === 3) {
+        // Check if we're animating to Stage 4 (down) or Stage 2 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 3 to Stage 4
+          fromStage = stage3Config
+          toStage = stage4Config
+        } else {
+          // Going from Stage 3 to Stage 2
+          fromStage = stage3Config
+          toStage = stage2Config
+        }
+      } else if (current3DStage === 4) {
+        // Going from Stage 4 to Stage 3
+        fromStage = stage4Config
+        toStage = stage3Config
+      } else {
+        // Default fallback
+        fromStage = stage2Config
+        toStage = stage3Config
+      }
+      
+      // Calculate animated values with proper easing
+      const easedProgress = easeInOut(progress)
+      
+      const animatedModel = {
+        position: {
+          x: lerp(fromStage.model.position.x, toStage.model.position.x, easedProgress),
+          y: lerp(fromStage.model.position.y, toStage.model.position.y, easedProgress),
+          z: lerp(fromStage.model.position.z, toStage.model.position.z, easedProgress)
         },
+        rotation: {
+          x: lerp(fromStage.model.rotation.x, toStage.model.rotation.x, easedProgress),
+          y: lerp(fromStage.model.rotation.y, toStage.model.rotation.y, easedProgress),
+          z: lerp(fromStage.model.rotation.z, toStage.model.rotation.z, easedProgress)
+        },
+        scale: {
+          x: lerp(fromStage.model.scale.x, toStage.model.scale.x, easedProgress),
+          y: lerp(fromStage.model.scale.y, toStage.model.scale.y, easedProgress),
+          z: lerp(fromStage.model.scale.z, toStage.model.scale.z, easedProgress)
+        }
+      }
+
+
+      return {
+        model: animatedModel,
         camera: {
           position: {
             x: lerp(fromStage.camera.position.x, toStage.camera.position.x, progress),
@@ -285,90 +312,70 @@ export default function AnimationSystem({
       
       requestAnimationFrame(animateStage3)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
-      // Start two-phase Stage 3 to Stage 4 animation when transitioning to Section 3
-      console.log('Starting two-phase Stage 3 to Stage 4 animation')
+      // Start Stage 3 to Stage 4 animation when transitioning to Section 3
+      console.log('🚀 Starting Stage 3 to Stage 4 animation')
+      console.log('From Stage 3:', stage3Config.model)
+      console.log('To Stage 4:', stage4Config.model)
       
-      // Phase 1: Move to Stage 4 position (model, camera, lighting)
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const phase1Duration = 2000 // 2 seconds for position animation
+      const duration = 2000 // 2 seconds
       
-      const animatePhase1 = () => {
+      const animateToStage4 = () => {
         const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / phase1Duration, 1)
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
         
-        console.log('Phase 1 progress:', progress)
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
-          requestAnimationFrame(animatePhase1)
+          requestAnimationFrame(animateToStage4)
         } else {
-          console.log('Phase 1 complete - now starting component explosion')
+          console.log('✅ Stage 3 to Stage 4 animation complete')
+          console.log('Final position should be:', stage4Config.model)
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
           setIs3DAnimating(false)
           setCurrent3DStage(4)
-          
-          // Phase 2: Animate components to exploded positions
-          // This will be handled by the component animation system
-          console.log('Phase 2: Component explosion will be handled by component animation system')
         }
       }
       
-      requestAnimationFrame(animatePhase1)
+      requestAnimationFrame(animateToStage4)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 3 && current3DStage === 4 && !is3DAnimating) {
-      // Start two-phase Stage 4 to Stage 3 animation when transitioning to Section 2
-      console.log('Starting two-phase Stage 4 to Stage 3 animation')
-      
-      // Phase 1: Un-explode components first
-      console.log('Phase 1: Starting component un-explode animation')
-      setIsComponentUnexploding(true)
-      setComponentUnexplodeProgress(0)
+      // Start Stage 4 to Stage 3 animation when transitioning to Section 2
+      console.log('Starting Stage 4 to Stage 3 animation')
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const phase1Duration = 2000 // 2 seconds for component un-explode
+      const duration = 2000 // 2 seconds for position animation
       
-      const animatePhase1 = () => {
+      const animateStage3 = () => {
         const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / phase1Duration, 1)
+        const progress = Math.min(elapsed / duration, 1)
         
-        console.log('Phase 1 (un-explode) progress:', progress)
-        setComponentUnexplodeProgress(progress)
+        console.log('Animation progress:', progress)
+        setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
-          requestAnimationFrame(animatePhase1)
+          requestAnimationFrame(animateStage3)
         } else {
-          console.log('Phase 1 complete - now starting model movement to Stage 3')
-          setIsComponentUnexploding(false)
-          
-          // Phase 2: Move model to Stage 3 position
-          setIs3DAnimating(true)
-          setStage3DAnimationProgress(0)
-          
-          const phase2StartTime = Date.now()
-          const phase2Duration = 2000 // 2 seconds for model movement
-          
-          const animatePhase2 = () => {
-            const phase2Elapsed = Date.now() - phase2StartTime
-            const phase2Progress = Math.min(phase2Elapsed / phase2Duration, 1)
-            
-            console.log('Phase 2 (model movement) progress:', phase2Progress)
-            setStage3DAnimationProgress(phase2Progress)
-            
-            if (phase2Progress < 1) {
-              requestAnimationFrame(animatePhase2)
-            } else {
-              console.log('Stage 4 to Stage 3 animation complete')
-              setIs3DAnimating(false)
-              setCurrent3DStage(3)
-            }
-          }
-          
-          requestAnimationFrame(animatePhase2)
+          console.log('Stage 4 to Stage 3 animation complete')
+          setIs3DAnimating(false)
+          setCurrent3DStage(3)
         }
       }
       
-      requestAnimationFrame(animatePhase1)
+      requestAnimationFrame(animateStage3)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
       // Start Stage 3 to Stage 2 animation when transitioning to Section 1
       console.log('Starting Stage 3 to Stage 2 animation')
@@ -396,7 +403,7 @@ export default function AnimationSystem({
       
       requestAnimationFrame(animateStage2)
     }
-  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage, setIsComponentUnexploding, setComponentUnexplodeProgress])
+  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage])
 
   // Sync Dev Controls with current stage when stage changes
   useEffect(() => {

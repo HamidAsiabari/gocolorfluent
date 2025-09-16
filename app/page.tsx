@@ -59,12 +59,9 @@ export default function Home() {
   const [current3DStage, setCurrent3DStage] = useState(1) // Start at Stage 1
   const [is3DAnimating, setIs3DAnimating] = useState(false)
   const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
-  const [isComponentAnimating, setIsComponentAnimating] = useState(false)
-  const [componentAnimationProgress, setComponentAnimationProgress] = useState(0)
-  const [isComponentUnexploding, setIsComponentUnexploding] = useState(false)
-  const [componentUnexplodeProgress, setComponentUnexplodeProgress] = useState(0)
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // Animated values function that handles all animations
   const getAnimatedValues = () => {
@@ -105,14 +102,22 @@ export default function Home() {
         fromStage = stage2Config
         toStage = stage3Config
       } else if (current3DStage === 3) {
-        fromStage = stage3Config
-        toStage = stage4Config
+        // Check scroll direction to determine correct target stage
+        if (scrollDirection === 'down') {
+          // Going from Stage 3 to Stage 4
+          fromStage = stage3Config
+          toStage = stage4Config
+        } else {
+          // Going from Stage 3 to Stage 2
+          fromStage = stage3Config
+          toStage = stage2Config
+        }
       } else if (current3DStage === 4) {
         fromStage = stage4Config
         toStage = stage3Config
       } else {
-        fromStage = stage3Config
-        toStage = stage2Config
+        fromStage = stage2Config
+        toStage = stage3Config
       }
       
       return {
@@ -261,10 +266,10 @@ export default function Home() {
       }
     }
 
-    // Return Stage 4 configuration for camera and lighting when in Stage 4, but allow model controls to work
+    // Return Stage 4 configuration when in Stage 4, but use model controls for dev controls
     if (current3DStage === 4) {
       return {
-        model: modelControls, // Allow model controls to work in Stage 4
+        model: modelControls, // Use model controls so dev controls work
         camera: stage4Config.camera,
         lighting: stage4Config.lighting
       }
@@ -289,83 +294,31 @@ export default function Home() {
     if (is3DAnimating || isAnimating) {
       const animatedValues = getAnimatedValues()
       setModelControls(animatedValues.model)
+      console.log('Animation progress - updating model controls:', animatedValues.model)
     }
   }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage])
 
   // Update model controls when stage changes (not animating)
   useEffect(() => {
     if (!is3DAnimating && !isAnimating) {
-      const animatedValues = getAnimatedValues()
-      setModelControls(animatedValues.model)
+      console.log('Stage changed - updating model controls for stage:', current3DStage)
+      // Update model controls to match the current stage configuration
+      if (current3DStage === 1) {
+        setModelControls(stage1Config.model)
+      } else if (current3DStage === 2) {
+        setModelControls(stage2Config.model)
+      } else if (current3DStage === 3) {
+        setModelControls(stage3Config.model)
+      } else if (current3DStage === 4) {
+        // For Stage 4, use the exact Stage 4 configuration
+        setModelControls(stage4Config.model)
+        console.log('Set model controls to Stage 4:', stage4Config.model)
+      }
     }
   }, [current3DStage, is3DAnimating, isAnimating])
 
-  // Trigger component animation when Stage 4 is reached - one time only
-  useEffect(() => {
-    if (current3DStage === 4 && !isComponentAnimating && componentAnimationProgress === 0) {
-      console.log('Stage 4 reached - starting component explosion animation')
-      setIsComponentAnimating(true)
-      setComponentAnimationProgress(0)
-      
-      const startTime = Date.now()
-      const duration = 2000 // 2 seconds for component animation
-      
-      const animateComponents = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        
-        setComponentAnimationProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateComponents)
-        } else {
-          console.log('Component explosion animation complete')
-          setIsComponentAnimating(false)
-          // Set progress to 1 to prevent re-animation
-          setComponentAnimationProgress(1)
-        }
-      }
-      
-      requestAnimationFrame(animateComponents)
-    }
-  }, [current3DStage, isComponentAnimating, componentAnimationProgress])
 
-  // Reset component animation state when leaving Stage 4
-  useEffect(() => {
-    if (current3DStage !== 4 && componentAnimationProgress > 0) {
-      console.log('Leaving Stage 4 - resetting component animation state')
-      setIsComponentAnimating(false)
-      setComponentAnimationProgress(0)
-    }
-  }, [current3DStage, componentAnimationProgress])
 
-  // Update component controls to show exploded positions when entering Stage 4
-  useEffect(() => {
-    if (current3DStage === 4) {
-      console.log('Entering Stage 4 - updating component controls with exploded positions')
-      setComponentControls(prev => ({
-        ...prev,
-        upperSideMainHolder: { 
-          position: { x: 0, y: 0, z: 80 }, 
-          rotation: { x: 0, y: 0, z: 0 }, 
-          scale: { x: 1, y: 1, z: 1 }, 
-          visible: true 
-        },
-        lowerSideMain: { 
-          position: { x: 0, y: 0, z: -80 }, 
-          rotation: { x: 0, y: 0, z: 0 }, 
-          scale: { x: 1, y: 1, z: 1 }, 
-          visible: true 
-        },
-        upperCover: { 
-          position: { x: 0, y: 0, z: 80 }, 
-          rotation: { x: 0, y: 0, z: 0 }, 
-          scale: { x: 1, y: 1, z: 1 }, 
-          visible: true 
-        }
-      }))
-    }
-  }, [current3DStage])
 
   return (
     <div className="relative">
@@ -390,10 +343,6 @@ export default function Home() {
         getAnimatedValues={getAnimatedValues}
         componentControls={componentControls}
         categoryVisibility={categoryVisibility}
-        isComponentAnimating={isComponentAnimating}
-        componentAnimationProgress={componentAnimationProgress}
-        isComponentUnexploding={isComponentUnexploding}
-        componentUnexplodeProgress={componentUnexplodeProgress}
         onComponentControlsChange={setComponentControls}
       />
 
@@ -430,8 +379,6 @@ export default function Home() {
         setModelControls={setModelControls}
         setCameraControls={setCameraControls}
         setLightingControls={setLightingControls}
-        setIsComponentUnexploding={setIsComponentUnexploding}
-        setComponentUnexplodeProgress={setComponentUnexplodeProgress}
       />
 
       {/* Scrollable Content - 8x screen height */}
@@ -452,12 +399,9 @@ export default function Home() {
             {/* Main Content */}
             <div className="text-center text-white space-y-8 max-w-4xl mx-auto">
               {/* Hero Title */}
-              <div className="space-y-4">
-                <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
-                  GoColorFluent
-                </h1>
-                <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
-              </div>
+              <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
+                GoColorFluent
+              </h1>
               
               {/* Subtitle */}
               <p className="text-xl md:text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
@@ -469,43 +413,6 @@ export default function Home() {
                 Experience precision, innovation, and cutting-edge technology in our advanced color brush system. 
                 Discover the future of digital artistry with our state-of-the-art assembly.
               </p>
-
-              {/* Key Features */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <div className="text-3xl mb-3">🎨</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Precision Control</h3>
-                  <p className="text-gray-400 text-sm">Advanced brush mechanics for unparalleled accuracy</p>
-                </div>
-                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <div className="text-3xl mb-3">⚡</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Smart Technology</h3>
-                  <p className="text-gray-400 text-sm">Integrated sensors and responsive feedback system</p>
-                </div>
-                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <div className="text-3xl mb-3">🔧</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Modular Design</h3>
-                  <p className="text-gray-400 text-sm">Customizable components for every creative need</p>
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-                <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
-                  Explore Product
-                </button>
-                <button className="border-2 border-white/30 hover:border-white/60 text-white font-semibold py-4 px-8 rounded-full transition-all duration-300 backdrop-blur-sm">
-                  Learn More
-                </button>
-              </div>
-
-              {/* Scroll Indicator */}
-              <div className="mt-16 animate-bounce">
-                <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-                  <div className="w-1 h-3 bg-white/60 rounded-full mt-2"></div>
-                </div>
-                <p className="text-sm text-gray-400 mt-2">Scroll to explore</p>
-              </div>
             </div>
           </section>
 
@@ -678,6 +585,50 @@ export default function Home() {
         categoryVisibility={categoryVisibility}
         onCategoryVisibilityChange={setCategoryVisibility}
       />
+
+      {/* Menu Button - Fixed top right */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="fixed top-4 right-4 z-30 text-white text-2xl font-bold hover:text-gray-300 transition-colors duration-200"
+        style={{ 
+          background: 'none', 
+          border: 'none',
+          outline: 'none'
+        }}
+      >
+        ☰
+      </button>
+
+      {/* Full Screen Menu */}
+      {isMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/90 backdrop-blur-sm flex items-center justify-center menu-fade-in"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <div 
+            className="text-center space-y-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-4xl font-bold text-white mb-12 menu-title-animate">
+              Menu
+            </h2>
+            <div className="space-y-6">
+              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-1">
+                Home
+              </div>
+              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-2">
+                About
+              </div>
+              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-3">
+                Products
+              </div>
+              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-4">
+                Contact
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Show Dev Mode Button when hidden */}
       {!isDevMode && (
