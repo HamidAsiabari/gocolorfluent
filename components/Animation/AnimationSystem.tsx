@@ -21,6 +21,8 @@ interface AnimationSystemProps {
   setModelControls: (controls: any) => void
   setCameraControls: (controls: any) => void
   setLightingControls: (controls: any) => void
+  setIsComponentUnexploding: (unexploding: boolean) => void
+  setComponentUnexplodeProgress: (progress: number) => void
 }
 
 export default function AnimationSystem({
@@ -40,7 +42,9 @@ export default function AnimationSystem({
   isClient,
   setModelControls,
   setCameraControls,
-  setLightingControls
+  setLightingControls,
+  setIsComponentUnexploding,
+  setComponentUnexplodeProgress
 }: AnimationSystemProps) {
   // Interpolation function for smooth animation
   const lerp = (start: number, end: number, progress: number) => {
@@ -313,31 +317,58 @@ export default function AnimationSystem({
       
       requestAnimationFrame(animatePhase1)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 3 && current3DStage === 4 && !is3DAnimating) {
-      // Start Stage 4 to Stage 3 animation when transitioning to Section 2
-      console.log('Starting Stage 4 to Stage 3 animation')
-      setIs3DAnimating(true)
-      setStage3DAnimationProgress(0)
+      // Start two-phase Stage 4 to Stage 3 animation when transitioning to Section 2
+      console.log('Starting two-phase Stage 4 to Stage 3 animation')
+      
+      // Phase 1: Un-explode components first
+      console.log('Phase 1: Starting component un-explode animation')
+      setIsComponentUnexploding(true)
+      setComponentUnexplodeProgress(0)
       
       const startTime = Date.now()
-      const duration = 3000 // 3 seconds
+      const phase1Duration = 2000 // 2 seconds for component un-explode
       
-      const animateStage3 = () => {
+      const animatePhase1 = () => {
         const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
+        const progress = Math.min(elapsed / phase1Duration, 1)
         
-        console.log('Animation progress:', progress)
-        setStage3DAnimationProgress(progress)
+        console.log('Phase 1 (un-explode) progress:', progress)
+        setComponentUnexplodeProgress(progress)
         
         if (progress < 1) {
-          requestAnimationFrame(animateStage3)
+          requestAnimationFrame(animatePhase1)
         } else {
-          console.log('Stage 4 to Stage 3 animation complete')
-          setIs3DAnimating(false)
-          setCurrent3DStage(3)
+          console.log('Phase 1 complete - now starting model movement to Stage 3')
+          setIsComponentUnexploding(false)
+          
+          // Phase 2: Move model to Stage 3 position
+          setIs3DAnimating(true)
+          setStage3DAnimationProgress(0)
+          
+          const phase2StartTime = Date.now()
+          const phase2Duration = 2000 // 2 seconds for model movement
+          
+          const animatePhase2 = () => {
+            const phase2Elapsed = Date.now() - phase2StartTime
+            const phase2Progress = Math.min(phase2Elapsed / phase2Duration, 1)
+            
+            console.log('Phase 2 (model movement) progress:', phase2Progress)
+            setStage3DAnimationProgress(phase2Progress)
+            
+            if (phase2Progress < 1) {
+              requestAnimationFrame(animatePhase2)
+            } else {
+              console.log('Stage 4 to Stage 3 animation complete')
+              setIs3DAnimating(false)
+              setCurrent3DStage(3)
+            }
+          }
+          
+          requestAnimationFrame(animatePhase2)
         }
       }
       
-      requestAnimationFrame(animateStage3)
+      requestAnimationFrame(animatePhase1)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
       // Start Stage 3 to Stage 2 animation when transitioning to Section 1
       console.log('Starting Stage 3 to Stage 2 animation')
@@ -365,7 +396,7 @@ export default function AnimationSystem({
       
       requestAnimationFrame(animateStage2)
     }
-  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage])
+  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage, setIsComponentUnexploding, setComponentUnexplodeProgress])
 
   // Sync Dev Controls with current stage when stage changes
   useEffect(() => {

@@ -53,6 +53,8 @@ interface ThreeSceneManagerProps {
   categoryVisibility: CategoryVisibility
   isComponentAnimating?: boolean
   componentAnimationProgress?: number
+  isComponentUnexploding?: boolean
+  componentUnexplodeProgress?: number
   onComponentControlsChange?: (controls: ComponentControls) => void
 }
 
@@ -71,6 +73,8 @@ export default function ThreeSceneManager({
   categoryVisibility,
   isComponentAnimating = false,
   componentAnimationProgress = 0,
+  isComponentUnexploding = false,
+  componentUnexplodeProgress = 0,
   onComponentControlsChange
 }: ThreeSceneManagerProps) {
   const sceneRef = useRef<THREE.Scene | null>(null)
@@ -873,6 +877,61 @@ export default function ThreeSceneManager({
       }
     }
   }, [isComponentAnimating, componentAnimationProgress, current3DStage])
+
+  // Component un-explode animation for Stage 4 to Stage 3 transition
+  useEffect(() => {
+    if (!isComponentUnexploding || !modelRef.current || current3DStage !== 4) return
+
+    console.log('Animating components back to original positions, progress:', componentUnexplodeProgress)
+
+    // Define the exploded positions (starting points for un-explode)
+    const explodedPositions = {
+      upperSideMainHolder: { x: 0, y: 0, z: 80 },
+      lowerSideMain: { x: 0, y: 0, z: -80 },
+      upperCover: { x: 0, y: 0, z: 80 }
+    }
+
+    // Animate each component back to its original position
+    Object.entries(explodedPositions).forEach(([componentKey, explodedPosition]) => {
+      const component = componentRefs.current.get(componentKey)
+      if (component) {
+        // Interpolate between exploded position and original position (reverse of explosion)
+        const originalPos = component.userData.originalPosition || { x: 0, y: 0, z: 0 }
+        
+        component.position.x = explodedPosition.x + (originalPos.x - explodedPosition.x) * componentUnexplodeProgress
+        component.position.y = explodedPosition.y + (originalPos.y - explodedPosition.y) * componentUnexplodeProgress
+        component.position.z = explodedPosition.z + (originalPos.z - explodedPosition.z) * componentUnexplodeProgress
+        
+        component.updateMatrix()
+        component.updateMatrixWorld(true)
+        
+        console.log(`Un-exploding ${componentKey} to:`, component.position)
+      }
+    })
+
+    // Update component controls to reflect the un-exploded positions when animation completes
+    if (componentUnexplodeProgress >= 1 && onComponentControlsChange) {
+      const updatedControls = { ...componentControls }
+      
+      Object.entries(explodedPositions).forEach(([componentKey, explodedPosition]) => {
+        const component = componentRefs.current.get(componentKey)
+        if (component) {
+          const originalPos = component.userData.originalPosition || { x: 0, y: 0, z: 0 }
+          updatedControls[componentKey as keyof ComponentControls] = {
+            ...updatedControls[componentKey as keyof ComponentControls],
+            position: {
+              x: parseFloat(originalPos.x.toFixed(3)),
+              y: parseFloat(originalPos.y.toFixed(3)),
+              z: parseFloat(originalPos.z.toFixed(3))
+            }
+          }
+        }
+      })
+      
+      console.log('Updated component controls with un-exploded positions:', updatedControls)
+      onComponentControlsChange(updatedControls)
+    }
+  }, [isComponentUnexploding, componentUnexplodeProgress, current3DStage, onComponentControlsChange, componentControls])
 
   // Apply visibility changes in Stage 4 (separate from position animation)
   useEffect(() => {

@@ -61,6 +61,8 @@ export default function Home() {
   const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
   const [isComponentAnimating, setIsComponentAnimating] = useState(false)
   const [componentAnimationProgress, setComponentAnimationProgress] = useState(0)
+  const [isComponentUnexploding, setIsComponentUnexploding] = useState(false)
+  const [componentUnexplodeProgress, setComponentUnexplodeProgress] = useState(0)
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
 
@@ -390,6 +392,8 @@ export default function Home() {
         categoryVisibility={categoryVisibility}
         isComponentAnimating={isComponentAnimating}
         componentAnimationProgress={componentAnimationProgress}
+        isComponentUnexploding={isComponentUnexploding}
+        componentUnexplodeProgress={componentUnexplodeProgress}
         onComponentControlsChange={setComponentControls}
       />
 
@@ -426,6 +430,8 @@ export default function Home() {
         setModelControls={setModelControls}
         setCameraControls={setCameraControls}
         setLightingControls={setLightingControls}
+        setIsComponentUnexploding={setIsComponentUnexploding}
+        setComponentUnexplodeProgress={setComponentUnexplodeProgress}
       />
 
       {/* Scrollable Content - 8x screen height */}
@@ -436,131 +442,69 @@ export default function Home() {
 
         {/* Content Sections - Positioned based on scroll */}
         <div className="relative z-10">
-          {/* Section 1 */}
+          {/* Section 1 - Hero */}
           <section 
             className="flex flex-col items-center justify-center h-screen px-6 absolute inset-0"
             style={{
               transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
             }}
           >
-            {/* Section Number Badge */}
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 1</span>
-            </div>
-
             {/* Main Content */}
-            <div className="text-center text-white space-y-6">
-              {/* Title */}
-              <h1 className="text-4xl font-bold text-white">
-                GoColorFluent
-              </h1>
-              <p className="text-gray-300 text-lg">
-                Built with Next.js, Tailwind CSS, and Three.js
+            <div className="text-center text-white space-y-8 max-w-4xl mx-auto">
+              {/* Hero Title */}
+              <div className="space-y-4">
+                <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
+                  GoColorFluent
+                </h1>
+                <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+              </div>
+              
+              {/* Subtitle */}
+              <p className="text-xl md:text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
+                Revolutionary Color Brush Assembly
               </p>
               
-              {/* Animation Status Indicator */}
-              <div className="flex justify-center">
-                <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-purple-500/30">
-                  <div className="flex items-center gap-2 text-sm">
-                    {isAnimating ? (
-                      <>
-                        <span className="text-yellow-400">🎬</span>
-                        <span className="text-white font-mono">
-                          Stage 1 → Stage 2: {Math.round(animationProgress * 100)}%
-                        </span>
-                        <div className="w-16 h-2 bg-gray-700 rounded-full">
-                          <div 
-                            className="h-2 bg-yellow-400 rounded-full transition-all duration-100"
-                            style={{ width: `${easeInOut(animationProgress) * 100}%` }}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-green-400">✅</span>
-                        <span className="text-white font-mono">Stage 2 Complete</span>
-                      </>
-                    )}
-                  </div>
+              {/* Description */}
+              <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                Experience precision, innovation, and cutting-edge technology in our advanced color brush system. 
+                Discover the future of digital artistry with our state-of-the-art assembly.
+              </p>
+
+              {/* Key Features */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="text-3xl mb-3">🎨</div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Precision Control</h3>
+                  <p className="text-gray-400 text-sm">Advanced brush mechanics for unparalleled accuracy</p>
+                </div>
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="text-3xl mb-3">⚡</div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Smart Technology</h3>
+                  <p className="text-gray-400 text-sm">Integrated sensors and responsive feedback system</p>
+                </div>
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="text-3xl mb-3">🔧</div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Modular Design</h3>
+                  <p className="text-gray-400 text-sm">Customizable components for every creative need</p>
                 </div>
               </div>
 
-              {/* 3D Stage Indicator */}
-              <div className="flex justify-center">
-                <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-cyan-500/30">
-                  <div className="flex items-center gap-2 text-sm">
-                    {is3DAnimating ? (
-                      <>
-                        <span className="text-cyan-400">🎬</span>
-                        <span className="text-white font-mono">
-                          Stage {current3DStage} → Stage {current3DStage === 2 ? 3 : 2}: {Math.round(stage3DAnimationProgress * 100)}%
-                        </span>
-                        <div className="w-16 h-2 bg-gray-700 rounded-full">
-                          <div 
-                            className="h-2 bg-cyan-400 rounded-full transition-all duration-100"
-                            style={{ width: `${easeInOut(stage3DAnimationProgress) * 100}%` }}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-cyan-400">🎯</span>
-                        <span className="text-white font-mono">3D Stage: {current3DStage}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+              {/* Call to Action */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+                <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  Explore Product
+                </button>
+                <button className="border-2 border-white/30 hover:border-white/60 text-white font-semibold py-4 px-8 rounded-full transition-all duration-300 backdrop-blur-sm">
+                  Learn More
+                </button>
               </div>
 
-              {/* Section Navigation Indicator */}
-              <div className="flex justify-center">
-                <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-purple-500/30">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-purple-400">📍</span>
-                    <span className="text-white font-mono">
-                      Section: {currentSection}/8
-                    </span>
-                    {isScrolling && (
-                      <span className="text-yellow-400 animate-pulse">
-                        {scrollDirection === 'down' ? '↓' : '↑'}
-                      </span>
-                    )}
-                    {transitionName && (
-                      <span className="text-blue-400 text-xs">
-                        {transitionName}
-                      </span>
-                    )}
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                  </div>
+              {/* Scroll Indicator */}
+              <div className="mt-16 animate-bounce">
+                <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+                  <div className="w-1 h-3 bg-white/60 rounded-full mt-2"></div>
                 </div>
-              </div>
-
-              {/* Scroll Position Indicator */}
-              <div className="flex justify-center">
-                <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-purple-500/30">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-purple-400">📜</span>
-                    <span className="text-white font-mono">
-                      Scroll: {isClient ? `${scrollPosition}px` : '0px'}
-                    </span>
-                    {isClient && (
-                      <span className="text-gray-400">
-                        / {document.documentElement.scrollHeight - window.innerHeight}px
-                      </span>
-                    )}
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Welcome Message */}
-              <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-4">
-                  Welcome to your new project!
-                </h2>
-                <p className="text-gray-300 max-w-md mx-auto">
-                  This is your starting point. The 3D model is fixed in the background while you scroll through this content.
-                </p>
+                <p className="text-sm text-gray-400 mt-2">Scroll to explore</p>
               </div>
             </div>
           </section>
