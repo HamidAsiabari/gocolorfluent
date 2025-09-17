@@ -78,6 +78,8 @@ export default function ThreeSceneManager({
   const pointLightRef = useRef<THREE.PointLight | null>(null)
   const componentRefs = useRef<Map<string, THREE.Object3D>>(new Map())
   const spotLightRef = useRef<THREE.SpotLight | null>(null)
+  const textureLoader = useRef<THREE.TextureLoader | null>(null)
+  const oledTextureRef = useRef<THREE.Texture | null>(null)
 
   useEffect(() => {
     if (!mountRef.current) return
@@ -91,6 +93,9 @@ export default function ThreeSceneManager({
     sceneRef.current = scene
     cameraRef.current = camera
     rendererRef.current = renderer
+    
+    // Initialize texture loader
+    textureLoader.current = new THREE.TextureLoader()
     
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x1a1a1a)
@@ -497,6 +502,170 @@ export default function ThreeSceneManager({
 
       // Set initial camera position
       camera.position.set(cameraControls.position.x, cameraControls.position.y, cameraControls.position.z)
+      
+      // Function to apply texture to OLED Display
+      const applyOLEDTexture = (texturePath: string) => {
+        if (!textureLoader.current) return
+        
+        textureLoader.current.load(texturePath, (texture) => {
+          console.log('📸 Texture loaded successfully:', texturePath, texture)
+          
+          // Store texture reference for cleanup
+          oledTextureRef.current = texture
+          
+          // Configure texture for OLED display
+          texture.wrapS = THREE.ClampToEdgeWrapping
+          texture.wrapT = THREE.ClampToEdgeWrapping
+          texture.flipY = false
+          texture.minFilter = THREE.LinearFilter
+          texture.magFilter = THREE.LinearFilter
+          
+          console.log('🔧 Texture configured:', {
+            wrapS: texture.wrapS,
+            wrapT: texture.wrapT,
+            flipY: texture.flipY,
+            minFilter: texture.minFilter,
+            magFilter: texture.magFilter
+          })
+          
+          // Find OLED Display components and apply texture
+          const oledComponents = componentMapping.oledDisplay
+          console.log('🔍 Looking for OLED components:', oledComponents)
+          
+          // Also search for any object with "OLED" or "Display" in the name as fallback
+          const allOLEDObjects: THREE.Object3D[] = []
+          if (modelRef.current) {
+            modelRef.current.traverse((child) => {
+              if (child.name && (child.name.toLowerCase().includes('oled') || child.name.toLowerCase().includes('display'))) {
+                allOLEDObjects.push(child)
+                console.log(`🔍 Found OLED-related object: ${child.name}`)
+              }
+            })
+          }
+          
+          oledComponents.forEach(componentName => {
+            const component = componentRefs.current.get(componentName)
+            console.log(`🔍 Component ${componentName} found:`, component ? 'YES' : 'NO')
+            
+            if (component) {
+              let meshCount = 0
+              component.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                  meshCount++
+                  console.log(`📺 Found mesh in OLED: ${child.name}`, {
+                    position: child.position,
+                    rotation: child.rotation,
+                    scale: child.scale,
+                    materialType: child.material.type,
+                    geometryType: child.geometry.type
+                  })
+                  
+                  // Create a new material with the texture
+                  const newMaterial = child.material.clone()
+                  
+                  if (Array.isArray(newMaterial)) {
+                    newMaterial.forEach((mat, index) => {
+                      if (mat instanceof THREE.MeshStandardMaterial) {
+                        // Apply texture to the material
+                        mat.map = texture
+                        mat.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
+                        mat.emissiveMap = texture
+                        mat.emissiveIntensity = 0.3
+                        mat.needsUpdate = true
+                        console.log(`✅ Applied texture to material array index ${index} for ${child.name}`)
+                      }
+                    })
+                  } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                    // Apply texture to the material
+                    newMaterial.map = texture
+                    newMaterial.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
+                    newMaterial.emissiveMap = texture
+                    newMaterial.emissiveIntensity = 0.3
+                    newMaterial.needsUpdate = true
+                    console.log(`✅ Applied texture to material for ${child.name}`)
+                  }
+                  
+                  child.material = newMaterial
+                }
+              })
+              console.log(`📊 Total meshes found in ${componentName}: ${meshCount}`)
+            }
+          })
+          
+          // If no meshes found in mapped components, try the fallback search
+          if (allOLEDObjects.length > 0) {
+            console.log('🔄 Trying fallback OLED search...')
+            allOLEDObjects.forEach(obj => {
+              obj.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                  console.log(`📺 Found mesh in fallback OLED: ${child.name}`)
+                  
+                  const newMaterial = child.material.clone()
+                  if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                    newMaterial.map = texture
+                    newMaterial.emissive = new THREE.Color(0x000000)
+                    newMaterial.emissiveMap = texture
+                    newMaterial.emissiveIntensity = 0.3
+                    newMaterial.needsUpdate = true
+                    child.material = newMaterial
+                    console.log(`✅ Applied texture to fallback OLED mesh: ${child.name}`)
+                  }
+                }
+              })
+            })
+          }
+          
+          console.log('✅ OLED Display texture applied:', texturePath)
+        }, undefined, (error) => {
+          console.error('Error loading OLED texture:', error)
+        })
+      }
+      
+      // Function to remove OLED texture
+      const removeOLEDTexture = () => {
+        if (oledTextureRef.current) {
+          oledTextureRef.current.dispose()
+          oledTextureRef.current = null
+        }
+        
+        // Reset OLED Display materials to original
+        const oledComponents = componentMapping.oledDisplay
+        oledComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          if (component) {
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach(mat => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      mat.map = null
+                      mat.emissiveMap = null
+                      mat.emissive = new THREE.Color(0x000000)
+                      mat.emissiveIntensity = 0
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  newMaterial.map = null
+                  newMaterial.emissiveMap = null
+                  newMaterial.emissive = new THREE.Color(0x000000)
+                  newMaterial.emissiveIntensity = 0
+                  newMaterial.needsUpdate = true
+                }
+                child.material = newMaterial
+              }
+            })
+          }
+        })
+        
+        console.log('✅ OLED Display texture removed')
+      }
+      
+      // Store functions for use in other effects
+      ;(window as any).applyOLEDTexture = applyOLEDTexture
+      ;(window as any).removeOLEDTexture = removeOLEDTexture
+      
     }, undefined, (error) => {
       console.error('Error loading GLB model:', error)
     })
@@ -531,6 +700,11 @@ export default function ThreeSceneManager({
       }
       if (rendererRef.current) {
         rendererRef.current.dispose()
+      }
+      // Cleanup texture
+      if (oledTextureRef.current) {
+        oledTextureRef.current.dispose()
+        oledTextureRef.current = null
       }
     }
   }, [])
@@ -816,6 +990,23 @@ export default function ThreeSceneManager({
 
 
 
+
+  // Apply OLED Display texture in Stage 5
+  useEffect(() => {
+    if (current3DStage === 5) {
+      console.log('🎬 Stage 5: Applying OLED Display texture...')
+      // Try PNG first, then fallback to GIF
+      if ((window as any).applyOLEDTexture) {
+        (window as any).applyOLEDTexture('/screen.png')
+      }
+    } else if (current3DStage !== 5 && oledTextureRef.current) {
+      console.log('🎬 Leaving Stage 5: Removing OLED Display texture...')
+      // Remove the texture when leaving Stage 5
+      if ((window as any).removeOLEDTexture) {
+        (window as any).removeOLEDTexture()
+      }
+    }
+  }, [current3DStage])
 
   return null // This component doesn't render anything directly
 }
