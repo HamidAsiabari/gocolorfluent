@@ -5,8 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
-import { ThreeSceneManager, stage1Config, stage2Config, stage3Config } from '../components/ThreeScene'
-import { stage4Config } from '../components/ThreeScene/StageConfig'
+import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
@@ -113,8 +112,20 @@ export default function Home() {
           toStage = stage2Config
         }
       } else if (current3DStage === 4) {
-        fromStage = stage4Config
-        toStage = stage3Config
+        // Check if we're animating to Stage 5 (down) or Stage 3 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 4 to Stage 5
+          fromStage = stage4Config
+          toStage = stage5Config
+        } else {
+          // Going from Stage 4 to Stage 3
+          fromStage = stage4Config
+          toStage = stage3Config
+        }
+      } else if (current3DStage === 5) {
+        // Going from Stage 5 to Stage 4
+        fromStage = stage5Config
+        toStage = stage4Config
       } else {
         fromStage = stage2Config
         toStage = stage3Config
@@ -275,6 +286,15 @@ export default function Home() {
       }
     }
 
+    // Return Stage 5 configuration when in Stage 5, but use model controls for dev controls
+    if (current3DStage === 5) {
+      return {
+        model: modelControls, // Use model controls so dev controls work
+        camera: stage5Config.camera,
+        lighting: stage5Config.lighting
+      }
+    }
+
     // Return actual control values when not animating (so dev controls work)
     return { 
       model: modelControls, 
@@ -313,6 +333,10 @@ export default function Home() {
         // For Stage 4, use the exact Stage 4 configuration
         setModelControls(stage4Config.model)
         console.log('Set model controls to Stage 4:', stage4Config.model)
+      } else if (current3DStage === 5) {
+        // For Stage 5, use the exact Stage 5 configuration
+        setModelControls(stage5Config.model)
+        console.log('Set model controls to Stage 5:', stage5Config.model)
       }
     }
   }, [current3DStage, is3DAnimating, isAnimating])
@@ -400,12 +424,12 @@ export default function Home() {
             <div className="text-center text-white space-y-8 max-w-4xl mx-auto">
               {/* Hero Title */}
               <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
-                GoColorFluent
+                Color Fluent
               </h1>
               
               {/* Subtitle */}
               <p className="text-xl md:text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
-                Revolutionary Color Brush Assembly
+                Professional Color Solutions
               </p>
               
               {/* Description */}
@@ -428,10 +452,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                Fixed 3D Background
+                Advanced Detection Systems
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                The 3D model stays in place as you scroll through different sections of content.
+                State-of-the-art color sensor technology with precision detection capabilities for professional-grade color accuracy.
               </p>
             </div>
           </section>
@@ -448,10 +472,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                Scroll Experience
+                Precision Mechanics
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                Notice how the 3D object remains fixed while the content scrolls over it.
+                Micro-gear motor technology with precision coupling and support systems for accurate brush movement and control.
               </p>
             </div>
           </section>
@@ -468,10 +492,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                Interactive Controls
+                Smart Electronics
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                Use the Dev Controls to adjust the 3D model in real-time while scrolling.
+                Advanced PCB technology with OLED display, detector switches, and intelligent control systems for seamless operation.
               </p>
             </div>
           </section>
@@ -488,10 +512,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                Stage Transitions
+                Professional Lighting
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                The model automatically transitions from Stage 1 to Stage 2 with smooth easing.
+                High-quality LED lighting system with sensor guide lights for optimal color accuracy and professional results.
               </p>
             </div>
           </section>
@@ -508,10 +532,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                Lighting Effects
+                Intuitive Controls
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                All lighting parameters follow the same smooth transition with ease-in and ease-out.
+                Ergonomic knobs, drain button actuator, and handle design for comfortable and precise professional operation.
               </p>
             </div>
           </section>
@@ -528,10 +552,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                Scroll Position Tracking
+                Technical Specifications
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                The scroll position is tracked and displayed in real-time in the header and Dev Controls.
+                Professional-grade components including micro-gear motors, precision sensors, and advanced electronic systems for reliable performance.
               </p>
             </div>
           </section>
@@ -548,10 +572,10 @@ export default function Home() {
             </div>
             <div className="text-center text-white">
               <h2 className="text-2xl font-semibold mb-4">
-                End of Content
+                Contact Us Today
               </h2>
               <p className="text-gray-300 max-w-md mx-auto">
-                This is the final section. The 3D model remains fixed throughout the entire scroll experience.
+                Ready to experience professional-grade color technology? Get in touch with our team to learn more about Color Fluent solutions.
               </p>
             </div>
           </section>
@@ -613,18 +637,24 @@ export default function Home() {
               Menu
             </h2>
             <div className="space-y-6">
-              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-1">
+              <a href="/" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-1">
                 Home
-              </div>
-              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-2">
-                About
-              </div>
-              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-3">
-                Products
-              </div>
-              <div className="text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-4">
-                Contact
-              </div>
+              </a>
+              <a href="/catalog" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-2">
+                Catalog
+              </a>
+              <a href="/shop" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-3">
+                Shop
+              </a>
+              <a href="/about" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-4">
+                About Us
+              </a>
+              <a href="/contact" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-5">
+                Contact Us
+              </a>
+              <a href="/blog" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-6">
+                Blog
+              </a>
             </div>
           </div>
         </div>
