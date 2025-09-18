@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
-import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config } from '../components/ThreeScene'
+import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import HeroSection from '../components/HeroSection'
@@ -142,9 +142,42 @@ export default function Home() {
           toStage = stage4Config
         }
       } else if (current3DStage === 6) {
-        // Going from Stage 6 to Stage 5
-        fromStage = stage6Config
-        toStage = stage5Config
+        // Check if we're animating to Stage 7 (down) or Stage 5 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 6 to Stage 7
+          fromStage = stage6Config
+          toStage = stage7Config
+        } else {
+          // Going from Stage 6 to Stage 5
+          fromStage = stage6Config
+          toStage = stage5Config
+        }
+      } else if (current3DStage === 7) {
+        // Check if we're animating to Stage 8 (down) or Stage 6 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 7 to Stage 8
+          fromStage = stage7Config
+          toStage = stage8Config
+        } else {
+          // Going from Stage 7 to Stage 6
+          fromStage = stage7Config
+          toStage = stage6Config
+        }
+      } else if (current3DStage === 8) {
+        // Check if we're animating to Stage 9 (down) or Stage 7 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 8 to Stage 9
+          fromStage = stage8Config
+          toStage = stage9Config
+        } else {
+          // Going from Stage 8 to Stage 7
+          fromStage = stage8Config
+          toStage = stage7Config
+        }
+      } else if (current3DStage === 9) {
+        // Going from Stage 9 to Stage 8
+        fromStage = stage9Config
+        toStage = stage8Config
       } else {
         fromStage = stage2Config
         toStage = stage3Config

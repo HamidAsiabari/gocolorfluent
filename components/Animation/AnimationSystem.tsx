@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config } from '../ThreeScene'
+import { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from '../ThreeScene'
 
 interface AnimationSystemProps {
   isAnimating: boolean
@@ -299,7 +299,10 @@ export default function AnimationSystem({
                               current3DStage === 2 ? stage2Config : 
                               current3DStage === 3 ? stage3Config : 
                               current3DStage === 4 ? stage4Config : 
-                              current3DStage === 5 ? stage5Config : stage6Config
+                              current3DStage === 5 ? stage5Config : 
+                              current3DStage === 6 ? stage6Config : 
+                              current3DStage === 7 ? stage7Config : 
+                              current3DStage === 8 ? stage8Config : stage9Config
     return { 
       model: currentStageConfig.model, 
       camera: currentStageConfig.camera, 
@@ -565,6 +568,228 @@ export default function AnimationSystem({
       }
       
       requestAnimationFrame(animateToStage5)
+    } else if (isTransitioning && scrollDirection === 'down' && currentSection === 5 && current3DStage === 6 && !is3DAnimating) {
+      // Start Stage 6 to Stage 7 animation when transitioning from Section 5 to Section 6
+      console.log('🚀 Starting Stage 6 to Stage 7 animation')
+      console.log('From Stage 6:', stage6Config.model)
+      console.log('To Stage 7:', stage7Config.model)
+      
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage7 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage7)
+        } else {
+          console.log('✅ Stage 6 to Stage 7 animation complete')
+          console.log('Final position should be:', stage7Config.model)
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(7)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage7)
+    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 6 && current3DStage === 7 && !is3DAnimating) {
+      // Start Stage 7 to Stage 6 animation when transitioning from Section 6 to Section 5
+      console.log('Starting Stage 7 to Stage 6 animation')
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage6 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage6)
+        } else {
+          console.log('Stage 7 to Stage 6 animation complete')
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(6)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage6)
+    } else if (isTransitioning && scrollDirection === 'down' && currentSection === 6 && current3DStage === 7 && !is3DAnimating) {
+      // Start Stage 7 to Stage 8 animation when transitioning from Section 6 to Section 7
+      console.log('🚀 Starting Stage 7 to Stage 8 animation')
+      console.log('From Stage 7:', stage7Config.model)
+      console.log('To Stage 8:', stage8Config.model)
+      
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage8 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage8)
+        } else {
+          console.log('✅ Stage 7 to Stage 8 animation complete')
+          console.log('Final position should be:', stage8Config.model)
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(8)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage8)
+    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
+      // Start Stage 8 to Stage 7 animation when transitioning from Section 7 to Section 6
+      console.log('Starting Stage 8 to Stage 7 animation')
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage7 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage7)
+        } else {
+          console.log('Stage 8 to Stage 7 animation complete')
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(7)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage7)
+    } else if (isTransitioning && scrollDirection === 'down' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
+      // Start Stage 8 to Stage 9 animation when transitioning from Section 7 to Section 8
+      console.log('🚀 Starting Stage 8 to Stage 9 animation')
+      console.log('From Stage 8:', stage8Config.model)
+      console.log('To Stage 9:', stage9Config.model)
+      
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage9 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage9)
+        } else {
+          console.log('✅ Stage 8 to Stage 9 animation complete')
+          console.log('Final position should be:', stage9Config.model)
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(9)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage9)
+    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 8 && current3DStage === 9 && !is3DAnimating) {
+      // Start Stage 9 to Stage 8 animation when transitioning from Section 8 to Section 7
+      console.log('Starting Stage 9 to Stage 8 animation')
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage8 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage8)
+        } else {
+          console.log('Stage 9 to Stage 8 animation complete')
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(8)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage8)
     }
   }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage])
 
@@ -575,7 +800,10 @@ export default function AnimationSystem({
                                 current3DStage === 2 ? stage2Config : 
                                 current3DStage === 3 ? stage3Config :
                                 current3DStage === 4 ? stage4Config : 
-                                current3DStage === 5 ? stage5Config : stage6Config
+                                current3DStage === 5 ? stage5Config : 
+                                current3DStage === 6 ? stage6Config : 
+                                current3DStage === 7 ? stage7Config : 
+                                current3DStage === 8 ? stage8Config : stage9Config
       setModelControls(currentStageConfig.model)
       setCameraControls(currentStageConfig.camera)
       setLightingControls(currentStageConfig.lighting)
