@@ -9,6 +9,13 @@ import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Conf
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import HeroSection from '../components/HeroSection'
+import Section2 from '../components/Section2'
+import Section3 from '../components/Section3'
+import Section4 from '../components/Section4'
+import Section5 from '../components/Section5'
+import Section6 from '../components/Section6'
+import Section7 from '../components/Section7'
+import Section8 from '../components/Section8'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 
 export default function Home() {
@@ -412,6 +419,32 @@ export default function Home() {
         style={{ height: isClient ? `${window.innerHeight * 8}px` : '800vh' }}
       >
 
+        {/* Section Navigation Dots */}
+        <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-50">
+          <div className="flex flex-col space-y-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((section) => (
+              <button
+                key={section}
+                onClick={() => {
+                  if (isClient) {
+                    const targetY = (section - 1) * window.innerHeight
+                    window.scrollTo({
+                      top: targetY,
+                      behavior: 'smooth'
+                    })
+                  }
+                }}
+                className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                  currentSection === section
+                    ? 'bg-white border-white scale-125'
+                    : 'bg-transparent border-gray-400 hover:border-white hover:scale-110'
+                }`}
+                title={`Section ${section}`}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Content Sections - Positioned based on scroll */}
         <div className="relative z-10">
           {/* Section 1 - Hero */}
@@ -424,144 +457,67 @@ export default function Home() {
           />
 
           {/* Section 2 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (2 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 2</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Advanced Detection Systems
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                State-of-the-art color sensor technology with precision detection capabilities for professional-grade color accuracy.
-              </p>
-            </div>
-          </section>
+          <Section2
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 3 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (3 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 3</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Precision Mechanics
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                Micro-gear motor technology with precision coupling and support systems for accurate brush movement and control.
-              </p>
-            </div>
-          </section>
+          <Section3
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 4 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (4 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 4</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Smart Electronics
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                Advanced PCB technology with OLED display, detector switches, and intelligent control systems for seamless operation.
-              </p>
-            </div>
-          </section>
+          <Section4
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 5 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (5 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 5</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Professional Lighting
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                High-quality LED lighting system with sensor guide lights for optimal color accuracy and professional results.
-              </p>
-            </div>
-          </section>
+          <Section5
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 6 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (6 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 6</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Intuitive Controls
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                Ergonomic knobs, drain button actuator, and handle design for comfortable and precise professional operation.
-              </p>
-            </div>
-          </section>
+          <Section6
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 7 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (7 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 7</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Technical Specifications
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                Professional-grade components including micro-gear motors, precision sensors, and advanced electronic systems for reliable performance.
-              </p>
-            </div>
-          </section>
+          <Section7
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 8 */}
-          <section 
-            className="flex items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (8 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
-              <span className="text-blue-400 text-sm font-mono">Section 8</span>
-            </div>
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-semibold mb-4">
-                Contact Us Today
-              </h2>
-              <p className="text-gray-300 max-w-md mx-auto">
-                Ready to experience professional-grade color technology? Get in touch with our team to learn more about Color Fluent solutions.
-              </p>
-            </div>
-          </section>
+          <Section8
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
         </div>
       </main>
 

@@ -83,15 +83,6 @@ export default function HeroSection({
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className={`transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="flex flex-col items-center space-y-2 mt-16">
-            <span className="text-sm text-gray-400 font-light tracking-wider uppercase">Scroll to explore</span>
-            <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Floating Elements */}
