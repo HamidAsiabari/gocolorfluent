@@ -42,6 +42,30 @@ export default function Stage3DIndicator({
           🚀 Go to Stage 4
         </button>
         
+        {/* Stage 5 Button */}
+        <button
+          onClick={() => setCurrent3DStage(5)}
+          className={`w-full px-2 py-1 text-xs rounded ${
+            current3DStage === 5 
+              ? 'bg-orange-600 text-white' 
+              : 'bg-orange-800 text-orange-200 hover:bg-orange-700'
+          }`}
+        >
+          🚀 Go to Stage 5
+        </button>
+        
+        {/* Stage 6 Button */}
+        <button
+          onClick={() => setCurrent3DStage(6)}
+          className={`w-full px-2 py-1 text-xs rounded ${
+            current3DStage === 6 
+              ? 'bg-orange-600 text-white' 
+              : 'bg-orange-800 text-orange-200 hover:bg-orange-700'
+          }`}
+        >
+          🚀 Go to Stage 6
+        </button>
+        
         {/* Reset to Stage 1 Button */}
         <button
           onClick={() => setCurrent3DStage(1)}

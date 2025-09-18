@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
-import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config } from '../components/ThreeScene'
+import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import HeroSection from '../components/HeroSection'
@@ -131,9 +131,20 @@ export default function Home() {
           toStage = stage3Config
         }
       } else if (current3DStage === 5) {
-        // Going from Stage 5 to Stage 4
-        fromStage = stage5Config
-        toStage = stage4Config
+        // Check if we're animating to Stage 6 (down) or Stage 4 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 5 to Stage 6
+          fromStage = stage5Config
+          toStage = stage6Config
+        } else {
+          // Going from Stage 5 to Stage 4
+          fromStage = stage5Config
+          toStage = stage4Config
+        }
+      } else if (current3DStage === 6) {
+        // Going from Stage 6 to Stage 5
+        fromStage = stage6Config
+        toStage = stage5Config
       } else {
         fromStage = stage2Config
         toStage = stage3Config

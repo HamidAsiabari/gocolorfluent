@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
-import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config } from './StageConfig'
+import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config } from './StageConfig'
 import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
 
 interface ThreeSceneManagerProps {

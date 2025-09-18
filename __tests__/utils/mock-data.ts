@@ -104,8 +104,8 @@ export const mockStage2Config = {
 
 export const mockStage3Config = {
   model: {
-    position: { x: -2.1, y: -1.2, z: 0 },
-    rotation: { x: -0.9, y: -0.15, z: -0.29 },
+    position: { x: 0.1, y: -1.1, z: 1.6 },
+    rotation: { x: -0.6, y: 0.51, z: -0.24 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config } from '../ThreeScene'
+import { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config } from '../ThreeScene'
 
 interface AnimationSystemProps {
   isAnimating: boolean
@@ -122,9 +122,20 @@ export default function AnimationSystem({
           toStage = stage3Config
         }
       } else if (current3DStage === 5) {
-        // Going from Stage 5 to Stage 4
-        fromStage = stage5Config
-        toStage = stage4Config
+        // Check if we're animating to Stage 6 (down) or Stage 4 (up)
+        if (scrollDirection === 'down') {
+          // Going from Stage 5 to Stage 6
+          fromStage = stage5Config
+          toStage = stage6Config
+        } else {
+          // Going from Stage 5 to Stage 4
+          fromStage = stage5Config
+          toStage = stage4Config
+        }
+      } else if (current3DStage === 6) {
+        // Going from Stage 6 to Stage 5
+        fromStage = stage6Config
+        toStage = stage5Config
       } else {
         // Default fallback
         fromStage = stage2Config
@@ -287,7 +298,8 @@ export default function AnimationSystem({
     const currentStageConfig = current3DStage === 1 ? stage1Config : 
                               current3DStage === 2 ? stage2Config : 
                               current3DStage === 3 ? stage3Config : 
-                              current3DStage === 4 ? stage4Config : stage5Config
+                              current3DStage === 4 ? stage4Config : 
+                              current3DStage === 5 ? stage5Config : stage6Config
     return { 
       model: currentStageConfig.model, 
       camera: currentStageConfig.camera, 
@@ -479,6 +491,80 @@ export default function AnimationSystem({
       }
       
       requestAnimationFrame(animateToStage4)
+    } else if (isTransitioning && scrollDirection === 'down' && currentSection === 4 && current3DStage === 5 && !is3DAnimating) {
+      // Start Stage 5 to Stage 6 animation when transitioning from Section 4 to Section 5
+      console.log('🚀 Starting Stage 5 to Stage 6 animation')
+      console.log('From Stage 5:', stage5Config.model)
+      console.log('To Stage 6:', stage6Config.model)
+      
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage6 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage6)
+        } else {
+          console.log('✅ Stage 5 to Stage 6 animation complete')
+          console.log('Final position should be:', stage6Config.model)
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(6)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage6)
+    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 5 && current3DStage === 6 && !is3DAnimating) {
+      // Start Stage 6 to Stage 5 animation when transitioning from Section 5 to Section 4
+      console.log('Starting Stage 6 to Stage 5 animation')
+      setIs3DAnimating(true)
+      setStage3DAnimationProgress(0)
+      
+      const startTime = Date.now()
+      const duration = 2000 // 2 seconds
+      
+      const animateToStage5 = () => {
+        const elapsed = Date.now() - startTime
+        const rawProgress = elapsed / duration
+        const progress = Math.min(rawProgress, 1)
+        
+        // Apply easing
+        const easedProgress = easeInOut(progress)
+        
+        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        setStage3DAnimationProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateToStage5)
+        } else {
+          console.log('Stage 6 to Stage 5 animation complete')
+          
+          // Set final progress to exactly 1.0
+          setStage3DAnimationProgress(1.0)
+          
+          // Complete the animation
+          setIs3DAnimating(false)
+          setCurrent3DStage(5)
+        }
+      }
+      
+      requestAnimationFrame(animateToStage5)
     }
   }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage])
 
@@ -488,7 +574,8 @@ export default function AnimationSystem({
       const currentStageConfig = current3DStage === 1 ? stage1Config : 
                                 current3DStage === 2 ? stage2Config : 
                                 current3DStage === 3 ? stage3Config :
-                                current3DStage === 4 ? stage4Config : stage5Config
+                                current3DStage === 4 ? stage4Config : 
+                                current3DStage === 5 ? stage5Config : stage6Config
       setModelControls(currentStageConfig.model)
       setCameraControls(currentStageConfig.camera)
       setLightingControls(currentStageConfig.lighting)
