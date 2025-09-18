@@ -8,6 +8,7 @@ import DevControls from '../components/DevControls'
 import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
+import HeroSection from '../components/HeroSection'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 
 export default function Home() {
@@ -414,31 +415,13 @@ export default function Home() {
         {/* Content Sections - Positioned based on scroll */}
         <div className="relative z-10">
           {/* Section 1 - Hero */}
-          <section 
-            className="flex flex-col items-center justify-center h-screen px-6 absolute inset-0"
-            style={{
-              transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
-            }}
-          >
-            {/* Main Content */}
-            <div className="text-center text-white space-y-8 max-w-4xl mx-auto">
-              {/* Hero Title */}
-              <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
-                Color Fluent
-              </h1>
-              
-              {/* Subtitle */}
-              <p className="text-xl md:text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
-                Professional Color Solutions
-              </p>
-              
-              {/* Description */}
-              <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                Experience precision, innovation, and cutting-edge technology in our advanced color brush system. 
-                Discover the future of digital artistry with our state-of-the-art assembly.
-              </p>
-            </div>
-          </section>
+          <HeroSection
+            isClient={isClient}
+            currentSection={currentSection}
+            isTransitioning={isTransitioning}
+            scrollDirection={scrollDirection}
+            transitionProgress={transitionProgress}
+          />
 
           {/* Section 2 */}
           <section 
