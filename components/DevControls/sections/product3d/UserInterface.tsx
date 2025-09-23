@@ -22,7 +22,7 @@ export default function UserInterface({
   }
 
   return (
-    <CollapsibleSection title="🎛️ User Interface" defaultExpanded={false}>
+    <CollapsibleSection title="🎛️ User Interface" icon="🎛️" color="text-indigo-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Knobs"

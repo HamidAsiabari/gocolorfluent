@@ -22,7 +22,7 @@ export default function AdditionalParts({
   }
 
   return (
-    <CollapsibleSection title="🔧 Additional Parts" defaultExpanded={false}>
+    <CollapsibleSection title="🔧 Additional Parts" icon="🔧" color="text-blue-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Product Components"

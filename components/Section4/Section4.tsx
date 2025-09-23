@@ -18,6 +18,7 @@ export default function Section4({
   transitionProgress
 }: Section4Props) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isBlurred, setIsBlurred] = useState(false)
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
@@ -26,8 +27,17 @@ export default function Section4({
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
+      setIsBlurred(false)
     }
   }, [currentSection])
+
+  useEffect(() => {
+    // Trigger blur animation after slide-in animation completes
+    if (isVisible && currentSection === 4) {
+      const blurTimer = setTimeout(() => setIsBlurred(true), 1200) // 200ms (slide-in delay) + 1000ms (slide-in duration)
+      return () => clearTimeout(blurTimer)
+    }
+  }, [isVisible, currentSection])
 
   return (
     <section 
@@ -54,10 +64,6 @@ export default function Section4({
         <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
       </div>
 
-      {/* Section Indicator */}
-      <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md rounded-xl px-4 py-2 border border-violet-500/30 shadow-lg">
-        <span className="text-violet-400 text-sm font-mono tracking-wider">Section 4</span>
-      </div>
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto">
@@ -136,7 +142,7 @@ export default function Section4({
           <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="relative">
               {/* Main visual container */}
-              <div className="relative w-full h-96 bg-gradient-to-br from-violet-900/30 to-fuchsia-900/30 rounded-2xl border border-violet-500/20 backdrop-blur-sm overflow-hidden">
+              <div className={`relative w-full h-96 bg-gradient-to-br from-violet-900/30 to-fuchsia-900/30 rounded-2xl border border-violet-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
                 {/* Electronic components visualization */}
                 <div className="absolute inset-6 space-y-6">

@@ -22,7 +22,7 @@ export default function SupportGuideComponents({
   }
 
   return (
-    <CollapsibleSection title="🛠️ Support & Guide Components" defaultExpanded={false}>
+    <CollapsibleSection title="🛠️ Support & Guide Components" icon="🛠️" color="text-pink-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Hair Guide Support"

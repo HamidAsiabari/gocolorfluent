@@ -54,10 +54,6 @@ export default function Section8({
         <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       </div>
 
-      {/* Section Indicator */}
-      <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md rounded-xl px-4 py-2 border border-indigo-500/30 shadow-lg">
-        <span className="text-indigo-400 text-sm font-mono tracking-wider">Section 8</span>
-      </div>
 
       {/* Main Content */}
       <div className="relative z-10 max-w-5xl mx-auto text-center">

@@ -55,7 +55,7 @@ export default function Product3DObject({
     // Test transformation - make ALL components large and visible
     const newControls = { ...componentControls }
     Object.keys(newControls).forEach(key => {
-      newControls[key] = {
+      newControls[key as keyof typeof componentControls] = {
         position: { x: 0, y: 5, z: 0 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 3, y: 3, z: 3 },
@@ -69,7 +69,7 @@ export default function Product3DObject({
     // Reset ALL components to default values (no transformations)
     const newControls = { ...componentControls }
     Object.keys(newControls).forEach(key => {
-      newControls[key] = {
+      newControls[key as keyof typeof componentControls] = {
         position: { x: 0, y: 0, z: 0 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1, y: 1, z: 1 },
@@ -105,7 +105,7 @@ export default function Product3DObject({
   }
 
   return (
-    <CollapsibleSection title="🎨 3D Object of Product" defaultExpanded={false}>
+    <CollapsibleSection title="🎨 3D Object of Product" icon="🎨" color="text-red-400" defaultExpanded={false}>
       <div className="space-y-2">
         {/* Test Buttons */}
         <div className="p-2 bg-gray-800 rounded">

@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable static export
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true
+  },
   // App Router is enabled by default in Next.js 14
   // Add timeout configuration for font loading
   webpack: (config, { isServer }) => {

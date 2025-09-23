@@ -1,7 +1,7 @@
 'use client'
 
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
@@ -69,9 +69,26 @@ export default function Home() {
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  
+  // Stage 8 animation functions
+  const [stage8AnimationFunctions, setStage8AnimationFunctions] = useState<{
+    stage8OpenAnimation: (() => void) | null
+    stage8CloseAnimation: (() => void) | null
+  }>({
+    stage8OpenAnimation: null,
+    stage8CloseAnimation: null
+  })
+
+  // Handle stage 8 animation functions ready
+  const handleAnimationFunctionsReady = useCallback((functions: {
+    stage8OpenAnimation: () => void
+    stage8CloseAnimation: () => void
+  }) => {
+    setStage8AnimationFunctions(functions)
+  }, [])
 
   // Animated values function that handles all animations
-  const getAnimatedValues = () => {
+  const getAnimatedValues = useCallback(() => {
     // Import easing functions
   const lerp = (start: number, end: number, progress: number) => {
     return start + (end - start) * progress
@@ -353,7 +370,7 @@ export default function Home() {
       camera: cameraControls, 
       lighting: lightingControls 
     }
-  }
+  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage, scrollDirection, modelControls, cameraControls, lightingControls])
 
 
 
@@ -366,14 +383,14 @@ export default function Home() {
     if (is3DAnimating || isAnimating) {
       const animatedValues = getAnimatedValues()
       setModelControls(animatedValues.model)
-      console.log('Animation progress - updating model controls:', animatedValues.model)
+      // console.log('Animation progress - updating model controls:', animatedValues.model)
     }
   }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage])
 
   // Update model controls when stage changes (not animating)
   useEffect(() => {
     if (!is3DAnimating && !isAnimating) {
-      console.log('Stage changed - updating model controls for stage:', current3DStage)
+      // console.log('Stage changed - updating model controls for stage:', current3DStage)
       // Update model controls to match the current stage configuration
       if (current3DStage === 1) {
         setModelControls(stage1Config.model)
@@ -420,6 +437,7 @@ export default function Home() {
         componentControls={componentControls}
         categoryVisibility={categoryVisibility}
         onComponentControlsChange={setComponentControls}
+        onAnimationFunctionsReady={handleAnimationFunctionsReady}
       />
 
       {/* Scroll Manager */}
@@ -455,6 +473,7 @@ export default function Home() {
         setModelControls={setModelControls}
         setCameraControls={setCameraControls}
         setLightingControls={setLightingControls}
+        stage8AnimationFunctions={stage8AnimationFunctions}
       />
 
       {/* Scrollable Content - 8x screen height */}
@@ -496,7 +515,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -505,7 +524,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -514,7 +533,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -523,7 +542,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -532,7 +551,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -541,7 +560,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -550,7 +569,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
 
@@ -559,7 +578,7 @@ export default function Home() {
             isClient={isClient}
             currentSection={currentSection}
             isTransitioning={isTransitioning}
-            scrollDirection={scrollDirection}
+            scrollDirection={scrollDirection || 'down'}
             transitionProgress={transitionProgress}
           />
         </div>

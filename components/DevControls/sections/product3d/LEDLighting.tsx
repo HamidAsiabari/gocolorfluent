@@ -22,7 +22,7 @@ export default function LEDLighting({
   }
 
   return (
-    <CollapsibleSection title="💡 LED & Lighting" defaultExpanded={false}>
+    <CollapsibleSection title="💡 LED & Lighting" icon="💡" color="text-cyan-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Everlight LEDs"

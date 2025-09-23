@@ -21,6 +21,10 @@ interface AnimationSystemProps {
   setModelControls: (controls: any) => void
   setCameraControls: (controls: any) => void
   setLightingControls: (controls: any) => void
+  stage8AnimationFunctions: {
+    stage8OpenAnimation: (() => void) | null
+    stage8CloseAnimation: (() => void) | null
+  }
 }
 
 export default function AnimationSystem({
@@ -41,6 +45,7 @@ export default function AnimationSystem({
   setModelControls,
   setCameraControls,
   setLightingControls,
+  stage8AnimationFunctions,
 }: AnimationSystemProps) {
   // Interpolation function for smooth animation
   const lerp = (start: number, end: number, progress: number) => {
@@ -684,80 +689,177 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
       // Start Stage 8 to Stage 7 animation when transitioning from Section 7 to Section 6
       console.log('Starting Stage 8 to Stage 7 animation')
-      setIs3DAnimating(true)
-      setStage3DAnimationProgress(0)
       
-      const startTime = Date.now()
-      const duration = 2000 // 2 seconds
-      
-      const animateToStage7 = () => {
-        const elapsed = Date.now() - startTime
-        const rawProgress = elapsed / duration
-        const progress = Math.min(rawProgress, 1)
+      // Trigger stage-8-close-animation before transitioning away from stage 8
+      console.log('🎬 Triggering stage-8-close-animation before stage transition')
+      if (stage8AnimationFunctions.stage8CloseAnimation) {
+        stage8AnimationFunctions.stage8CloseAnimation()
         
-        // Apply easing
-        const easedProgress = easeInOut(progress)
-        
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
-        setStage3DAnimationProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateToStage7)
-        } else {
-          console.log('Stage 8 to Stage 7 animation complete')
+        // Wait for close animation to complete (0.5 seconds) before starting stage transition
+        setTimeout(() => {
+          console.log('🎬 Close animation complete, starting stage transition')
+          setIs3DAnimating(true)
+          setStage3DAnimationProgress(0)
           
-          // Set final progress to exactly 1.0
-          setStage3DAnimationProgress(1.0)
+          const startTime = Date.now()
+          const duration = 2000 // 2 seconds
           
-          // Complete the animation
-          setIs3DAnimating(false)
-          setCurrent3DStage(7)
+          const animateToStage7 = () => {
+            const elapsed = Date.now() - startTime
+            const rawProgress = elapsed / duration
+            const progress = Math.min(rawProgress, 1)
+            
+            // Apply easing
+            const easedProgress = easeInOut(progress)
+            
+            console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+            setStage3DAnimationProgress(progress)
+            
+            if (progress < 1) {
+              requestAnimationFrame(animateToStage7)
+            } else {
+              console.log('Stage 8 to Stage 7 animation complete')
+              
+              // Set final progress to exactly 1.0
+              setStage3DAnimationProgress(1.0)
+              
+              // Complete the animation
+              setIs3DAnimating(false)
+              setCurrent3DStage(7)
+            }
+          }
+        
+        requestAnimationFrame(animateToStage7)
+        }, 500) // Wait 0.5 seconds for close animation to complete
+      } else {
+        // If no close animation function, start stage transition immediately
+        setIs3DAnimating(true)
+        setStage3DAnimationProgress(0)
+        
+        const startTime = Date.now()
+        const duration = 2000 // 2 seconds
+        
+        const animateToStage7 = () => {
+          const elapsed = Date.now() - startTime
+          const rawProgress = elapsed / duration
+          const progress = Math.min(rawProgress, 1)
+          
+          // Apply easing
+          const easedProgress = easeInOut(progress)
+          
+          console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+          setStage3DAnimationProgress(progress)
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateToStage7)
+          } else {
+            console.log('Stage 8 to Stage 7 animation complete')
+            
+            // Set final progress to exactly 1.0
+            setStage3DAnimationProgress(1.0)
+            
+            // Complete the animation
+            setIs3DAnimating(false)
+            setCurrent3DStage(7)
+          }
         }
+        
+        requestAnimationFrame(animateToStage7)
       }
-      
-      requestAnimationFrame(animateToStage7)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
       // Start Stage 8 to Stage 9 animation when transitioning from Section 7 to Section 8
       console.log('🚀 Starting Stage 8 to Stage 9 animation')
       console.log('From Stage 8:', stage8Config.model)
       console.log('To Stage 9:', stage9Config.model)
       
-      setIs3DAnimating(true)
-      setStage3DAnimationProgress(0)
-      
-      const startTime = Date.now()
-      const duration = 2000 // 2 seconds
-      
-      const animateToStage9 = () => {
-        const elapsed = Date.now() - startTime
-        const rawProgress = elapsed / duration
-        const progress = Math.min(rawProgress, 1)
+      // Trigger stage-8-close-animation before transitioning away from stage 8
+      console.log('🎬 Triggering stage-8-close-animation before stage transition')
+      if (stage8AnimationFunctions.stage8CloseAnimation) {
+        stage8AnimationFunctions.stage8CloseAnimation()
         
-        // Apply easing
-        const easedProgress = easeInOut(progress)
-        
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
-        setStage3DAnimationProgress(progress)
-        
-        if (progress < 1) {
+        // Wait for close animation to complete (0.5 seconds) before starting stage transition
+        setTimeout(() => {
+          console.log('🎬 Close animation complete, starting stage transition')
+          setIs3DAnimating(true)
+          setStage3DAnimationProgress(0)
+          
+          const startTime = Date.now()
+          const duration = 2000 // 2 seconds
+          
+          const animateToStage9 = () => {
+            const elapsed = Date.now() - startTime
+            const rawProgress = elapsed / duration
+            const progress = Math.min(rawProgress, 1)
+            
+            // Apply easing
+            const easedProgress = easeInOut(progress)
+            
+            console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+            setStage3DAnimationProgress(progress)
+            
+            if (progress < 1) {
+              requestAnimationFrame(animateToStage9)
+            } else {
+              console.log('✅ Stage 8 to Stage 9 animation complete')
+              console.log('Final position should be:', stage9Config.model)
+              
+              // Set final progress to exactly 1.0
+              setStage3DAnimationProgress(1.0)
+              
+              // Complete the animation
+              setIs3DAnimating(false)
+              setCurrent3DStage(9)
+            }
+          }
+          
           requestAnimationFrame(animateToStage9)
-        } else {
-          console.log('✅ Stage 8 to Stage 9 animation complete')
-          console.log('Final position should be:', stage9Config.model)
+        }, 500) // Wait 0.5 seconds for close animation to complete
+      } else {
+        // If no close animation function, start stage transition immediately
+        setIs3DAnimating(true)
+        setStage3DAnimationProgress(0)
+        
+        const startTime = Date.now()
+        const duration = 2000 // 2 seconds
+        
+        const animateToStage9 = () => {
+          const elapsed = Date.now() - startTime
+          const rawProgress = elapsed / duration
+          const progress = Math.min(rawProgress, 1)
           
-          // Set final progress to exactly 1.0
-          setStage3DAnimationProgress(1.0)
+          // Apply easing
+          const easedProgress = easeInOut(progress)
           
-          // Complete the animation
-          setIs3DAnimating(false)
-          setCurrent3DStage(9)
+          console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+          setStage3DAnimationProgress(progress)
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateToStage9)
+          } else {
+            console.log('✅ Stage 8 to Stage 9 animation complete')
+            console.log('Final position should be:', stage9Config.model)
+            
+            // Set final progress to exactly 1.0
+            setStage3DAnimationProgress(1.0)
+            
+            // Complete the animation
+            setIs3DAnimating(false)
+            setCurrent3DStage(9)
+          }
         }
+        
+        requestAnimationFrame(animateToStage9)
       }
-      
-      requestAnimationFrame(animateToStage9)
-    } else if (isTransitioning && scrollDirection === 'up' && currentSection === 8 && current3DStage === 9 && !is3DAnimating) {
+  } else if (isTransitioning && scrollDirection === 'up' && currentSection === 8 && current3DStage === 9 && !is3DAnimating) {
       // Start Stage 9 to Stage 8 animation when transitioning from Section 8 to Section 7
       console.log('Starting Stage 9 to Stage 8 animation')
+      
+      // Trigger stage-8-close-animation before transitioning away from stage 8
+      console.log('🎬 Triggering stage-8-close-animation before stage transition')
+      if (stage8AnimationFunctions.stage8CloseAnimation) {
+        stage8AnimationFunctions.stage8CloseAnimation()
+      }
+      
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       

@@ -2,8 +2,22 @@
 
 import { useState } from 'react'
 
+interface Product {
+  id: number
+  name: string
+  price: number
+  originalPrice?: number
+  discount?: number
+  description: string
+  image: string
+  inStock: boolean
+  rating: number
+  reviews: number
+  features: string[]
+}
+
 export default function Shop() {
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState<Product[]>([])
   const [cartCount, setCartCount] = useState(0)
 
   const products = [
@@ -59,12 +73,12 @@ export default function Shop() {
     }
   ]
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product) => {
     setCart([...cart, product])
     setCartCount(cartCount + 1)
   }
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = (productId: number) => {
     const updatedCart = cart.filter(item => item.id !== productId)
     setCart(updatedCart)
     setCartCount(updatedCart.length)

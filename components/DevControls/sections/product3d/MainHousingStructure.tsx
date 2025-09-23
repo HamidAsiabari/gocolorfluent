@@ -22,7 +22,7 @@ export default function MainHousingStructure({
   }
 
   return (
-    <CollapsibleSection title="🏠 Main Housing & Structure" defaultExpanded={false}>
+    <CollapsibleSection title="🏠 Main Housing & Structure" icon="🏠" color="text-orange-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Upper Side Main Holder"

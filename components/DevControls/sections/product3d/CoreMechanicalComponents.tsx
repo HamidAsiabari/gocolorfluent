@@ -22,7 +22,7 @@ export default function CoreMechanicalComponents({
   }
 
   return (
-    <CollapsibleSection title="⚙️ Core Mechanical Components" defaultExpanded={false}>
+    <CollapsibleSection title="⚙️ Core Mechanical Components" icon="⚙️" color="text-yellow-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="MicroGearmotor"

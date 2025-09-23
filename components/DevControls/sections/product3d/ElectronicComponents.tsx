@@ -22,7 +22,7 @@ export default function ElectronicComponents({
   }
 
   return (
-    <CollapsibleSection title="🔌 Electronic Components" defaultExpanded={false}>
+    <CollapsibleSection title="🔌 Electronic Components" icon="🔌" color="text-purple-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Color Sensor PCB"

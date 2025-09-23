@@ -18,6 +18,7 @@ export default function Section2({
   transitionProgress
 }: Section2Props) {
   const [isVisible, setIsVisible] = useState(false)
+  const [isBlurred, setIsBlurred] = useState(false)
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
@@ -26,8 +27,17 @@ export default function Section2({
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
+      setIsBlurred(false)
     }
   }, [currentSection])
+
+  useEffect(() => {
+    // Trigger blur animation after slide-in animation completes
+    if (isVisible && currentSection === 2) {
+      const blurTimer = setTimeout(() => setIsBlurred(true), 1200) // 200ms (slide-in delay) + 1000ms (slide-in duration)
+      return () => clearTimeout(blurTimer)
+    }
+  }, [isVisible, currentSection])
 
   return (
     <section 
@@ -50,10 +60,6 @@ export default function Section2({
         <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       </div>
 
-      {/* Section Indicator */}
-      <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md rounded-xl px-4 py-2 border border-blue-500/30 shadow-lg">
-        <span className="text-blue-400 text-sm font-mono tracking-wider">Section 2</span>
-      </div>
 
       {/* Main Content */}
       <div className="relative z-10 max-w-6xl mx-auto">
@@ -103,7 +109,7 @@ export default function Section2({
           <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="relative">
               {/* Main visual container */}
-              <div className="relative w-full h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 backdrop-blur-sm overflow-hidden">
+              <div className={`relative w-full h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
                 {/* Animated elements inside */}
                 <div className="absolute inset-4 space-y-6">

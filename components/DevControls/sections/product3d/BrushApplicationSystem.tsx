@@ -22,7 +22,7 @@ export default function BrushApplicationSystem({
   }
 
   return (
-    <CollapsibleSection title="🖌️ Brush & Application System" defaultExpanded={false}>
+    <CollapsibleSection title="🖌️ Brush & Application System" icon="🖌️" color="text-green-400" defaultExpanded={false}>
       <div className="space-y-1">
         <ComponentControl
           title="Moving Plate"

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './StageConfig'
@@ -52,6 +52,7 @@ interface ThreeSceneManagerProps {
   componentControls: ComponentControls
   categoryVisibility: CategoryVisibility
   onComponentControlsChange?: (controls: ComponentControls) => void
+  onAnimationFunctionsReady?: (functions: { stage8OpenAnimation: () => void; stage8CloseAnimation: () => void }) => void
 }
 
 export default function ThreeSceneManager({
@@ -67,7 +68,8 @@ export default function ThreeSceneManager({
   getAnimatedValues,
   componentControls,
   categoryVisibility,
-  onComponentControlsChange
+  onComponentControlsChange,
+  onAnimationFunctionsReady
 }: ThreeSceneManagerProps) {
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -79,6 +81,10 @@ export default function ThreeSceneManager({
   const componentRefs = useRef<Map<string, THREE.Object3D>>(new Map())
   const spotLightRef = useRef<THREE.SpotLight | null>(null)
   const textureLoader = useRef<THREE.TextureLoader | null>(null)
+  const upperCoverRef = useRef<THREE.Object3D | null>(null)
+  const upperCoverOriginalPosition = useRef<THREE.Vector3 | null>(null)
+  const stage8OpenAnimationRef = useRef<number | null>(null)
+  const stage8CloseAnimationRef = useRef<number | null>(null)
   const oledTextureRef = useRef<THREE.Texture | null>(null)
 
   useEffect(() => {
@@ -151,28 +157,37 @@ export default function ThreeSceneManager({
       modelRef.current = model
       
       // Analyze the 3D object structure
-      console.log('=== 3D Object Analysis ===')
-      console.log('Model name:', model.name)
-      console.log('Model children count:', model.children.length)
-      console.log('Model type:', model.type)
+      // console.log('=== 3D Object Analysis ===')
+      // console.log('Model name:', model.name)
+      // console.log('Model children count:', model.children.length)
+      // console.log('Model type:', model.type)
       
-      // Log all children and their hierarchy
+      // Log all children and their hierarchy (reduced verbosity)
       let childIndex = 0
+      const totalChildren = model.children.length
+      // console.log(`📊 Model has ${totalChildren} top-level children`)
+      
       model.traverse((child) => {
-        console.log(`Child ${childIndex}:`, {
-          name: child.name,
-          type: child.type,
-          position: child.position,
-          rotation: child.rotation,
-          scale: child.scale,
-          userData: child.userData,
-          isMesh: child instanceof THREE.Mesh,
-          isGroup: child instanceof THREE.Group,
-          isBone: child instanceof THREE.Bone,
-          isObject3D: child instanceof THREE.Object3D
-        })
+        // if (childIndex < 5) { // Only log first 5 children to reduce console spam
+        //   console.log(`Child ${childIndex}:`, {
+        //     name: child.name,
+        //     type: child.type,
+        //     position: child.position,
+        //     rotation: child.rotation,
+        //     scale: child.scale,
+        //     userData: child.userData,
+        //     isMesh: child instanceof THREE.Mesh,
+        //     isGroup: child instanceof THREE.Group,
+        //     isBone: child instanceof THREE.Bone,
+        //     isObject3D: child instanceof THREE.Object3D
+        //   })
+        // }
         childIndex++
       })
+      
+      // if (totalChildren > 5) {
+      //   console.log(`... and ${totalChildren - 5} more children (use dev tools to inspect full hierarchy)`)
+      // }
 
       // Enhanced component mapping with correct names from the actual 3D model
       const componentMapping: { [key: string]: string[] } = {
@@ -223,29 +238,20 @@ export default function ThreeSceneManager({
       }
 
       // Enhanced component finding with better debugging
-      console.log('=== Component Mapping Debug ===')
+      // console.log('=== Component Mapping Debug ===')
       const foundComponents: string[] = []
       
       model.traverse((child) => {
         if (child.name) {
           foundComponents.push(child.name)
-          console.log(`Found component: "${child.name}" (Type: ${child.type})`)
+          // Only log important components to reduce console spam
+          if (child.name.includes('Upper_cover') || child.name.includes('Lower_Side_Main') || child.name.includes('OLED_Display')) {
+            // console.log(`Found important component: "${child.name}" (Type: ${child.type})`)
+          }
           
-          // Special debugging for Lower Side Main hierarchy
-          if (child.name.includes('Lower') || child.name.includes('lower')) {
-            console.log(`🔍 Lower Side Debug - "${child.name}":`, {
-              type: child.type,
-              children: child.children.length,
-              parent: child.parent?.name || 'No parent',
-              position: child.position,
-              rotation: child.rotation,
-              scale: child.scale
-            })
-            
-            // Log all children of Lower Side Main objects
-            if (child.name.includes('Lower_Side_Main')) {
-              console.log(`📦 Children of ${child.name}:`, child.children.map(c => c.name))
-            }
+          // Special debugging for Lower Side Main hierarchy (reduced verbosity)
+          if (child.name.includes('Lower_Side_Main')) {
+            // console.log(`🔍 Lower Side Main found: "${child.name}" with ${child.children.length} children`)
           }
           
           Object.entries(componentMapping).forEach(([controlKey, componentNames]) => {
@@ -262,7 +268,18 @@ export default function ThreeSceneManager({
                   z: child.position.z
                 }
                 
-                console.log(`✅ Mapped component: ${controlKey} -> "${child.name}"`)
+                // console.log(`✅ Mapped component: ${controlKey} -> "${child.name}"`)
+                
+                // Store Upper Cover reference for stage 8 animations
+                if (controlKey === 'upperCover') {
+                  upperCoverRef.current = child
+                  upperCoverOriginalPosition.current = new THREE.Vector3(
+                    child.position.x,
+                    child.position.y,
+                    child.position.z
+                  )
+                  // console.log(`🎯 Upper Cover reference stored for stage 8 animations`)
+                }
             }
           })
         }
@@ -272,7 +289,7 @@ export default function ThreeSceneManager({
       console.log(`🔍 Searching for proper parent containers for group movement`)
       
       // Find Lower Side Main parent container
-      let lowerSideMainParent = null
+      let lowerSideMainParent: THREE.Object3D | null = null
       model.traverse((child) => {
         if (child.name && child.name.includes('Lower_Side_Main')) {
           console.log(`🔍 Found Lower_Side_Main: "${child.name}"`)
@@ -305,7 +322,7 @@ export default function ThreeSceneManager({
       })
       
       // Find Upper Side Main Holder parent container
-      let upperSideMainParent = null
+      let upperSideMainParent: THREE.Object3D | null = null
       model.traverse((child) => {
         if (child.name && child.name.includes('Upper_side_main_holder')) {
           console.log(`🔍 Found Upper_side_main_holder: "${child.name}"`)
@@ -339,13 +356,13 @@ export default function ThreeSceneManager({
       
       // Use the found parent containers
       if (lowerSideMainParent) {
-        componentRefs.current.set('lowerSideMain', lowerSideMainParent)
-        console.log(`✅ Mapped lowerSideMain to parent: "${lowerSideMainParent.name}"`)
+        componentRefs.current.set('lowerSideMain', lowerSideMainParent) 
+        console.log(`✅ Mapped lowerSideMain to parent: "${(lowerSideMainParent as THREE.Object3D).name || 'unnamed'}"`)
       }
       
       if (upperSideMainParent) {
         componentRefs.current.set('upperSideMainHolder', upperSideMainParent)
-        console.log(`✅ Mapped upperSideMainHolder to parent: "${upperSideMainParent.name}"`)
+        console.log(`✅ Mapped upperSideMainHolder to parent: "${(upperSideMainParent as THREE.Object3D).name || 'unnamed'}"`)
       }
 
       // Fallback mapping for components that might not have exact matches
@@ -382,21 +399,23 @@ export default function ThreeSceneManager({
       }
       
       // Try fallback mapping for unmapped components
-      Object.entries(fallbackMapping).forEach(([controlKey, keywords]) => {
-        if (!componentRefs.current.has(controlKey)) {
-          model.traverse((child) => {
-            if (child.name && keywords.some(keyword => child.name.toLowerCase().includes(keyword.toLowerCase()))) {
-              componentRefs.current.set(controlKey, child)
-              console.log(`🔄 Fallback mapped component: ${controlKey} -> "${child.name}"`)
-            }
-          })
-        }
-      })
+      if (model) {
+        Object.entries(fallbackMapping).forEach(([controlKey, keywords]) => {
+          if (!componentRefs.current.has(controlKey)) {
+            model!.traverse((child) => {
+              if (child.name && keywords.some(keyword => child.name.toLowerCase().includes(keyword.toLowerCase()))) {
+                componentRefs.current.set(controlKey, child)
+                console.log(`🔄 Fallback mapped component: ${controlKey} -> "${child.name}"`)
+              }
+            })
+          }
+        })
+      }
       
-      console.log('=== All Found Components ===')
-      console.log(foundComponents)
-      console.log('=== Mapped Components ===')
-      console.log(Array.from(componentRefs.current.keys()))
+      // console.log('=== All Found Components ===')
+      // console.log(foundComponents)
+      // console.log('=== Mapped Components ===')
+      // console.log(Array.from(componentRefs.current.keys()))
       
       // Debug: Show which components are mapped vs which are in componentControls
       const mappedComponents = Array.from(componentRefs.current.keys())
@@ -404,11 +423,11 @@ export default function ThreeSceneManager({
       const unmappedControls = controlComponents.filter(key => !mappedComponents.includes(key))
       const unmappedRefs = mappedComponents.filter(key => !controlComponents.includes(key))
       
-      console.log('🔍 Component Mapping Analysis:')
-      console.log('📋 Components in controls:', controlComponents.length)
-      console.log('🎯 Components mapped to 3D objects:', mappedComponents.length)
-      console.log('❌ Controls without 3D mapping:', unmappedControls)
-      console.log('❌ 3D objects without controls:', unmappedRefs)
+      // console.log('🔍 Component Mapping Analysis:')
+      // console.log('📋 Components in controls:', controlComponents.length)
+      // console.log('🎯 Components mapped to 3D objects:', mappedComponents.length)
+      // console.log('❌ Controls without 3D mapping:', unmappedControls)
+      // console.log('❌ 3D objects without controls:', unmappedRefs)
       
       if (unmappedControls.length > 0) {
         console.warn('⚠️ These component controls have no 3D object mapping and will not work:', unmappedControls)
@@ -422,13 +441,20 @@ export default function ThreeSceneManager({
       
       const unmappedComponents = foundComponents.filter(name => !mappedComponentNames.has(name))
       if (unmappedComponents.length > 0) {
-        console.warn('⚠️ UNMAPPED COMPONENTS (these will always be visible):', unmappedComponents)
+        // console.log(`ℹ️ Found ${unmappedComponents.length} unmapped components (these will always be visible)`)
+        // Only log the first 10 unmapped components to reduce console spam
+        // if (unmappedComponents.length <= 10) {
+        //   console.log('Unmapped components:', unmappedComponents)
+        // } else {
+        //   console.log('First 10 unmapped components:', unmappedComponents.slice(0, 10))
+        //   console.log(`... and ${unmappedComponents.length - 10} more`)
+        // }
       } else {
         console.log('✅ All components are properly mapped to categories')
       }
       
       // Store original component states (don't apply any transformations initially)
-      console.log('=== Storing Original Component States ===')
+      // console.log('=== Storing Original Component States ===')
       const originalStates = new Map<string, { position: THREE.Vector3, rotation: THREE.Euler, scale: THREE.Vector3, visible: boolean }>()
       
       Object.entries(componentControls).forEach(([componentKey, transform]) => {
@@ -442,14 +468,14 @@ export default function ThreeSceneManager({
             visible: component.visible
           })
           
-          console.log(`✅ Stored original state for ${componentKey}:`, {
-            position: component.position,
-            rotation: component.rotation,
-            scale: component.scale,
-            visible: component.visible,
-            componentName: component.name,
-            componentType: component.type
-          })
+          // console.log(`✅ Stored original state for ${componentKey}:`, {
+          //   position: component.position,
+          //   rotation: component.rotation,
+          //   scale: component.scale,
+          //   visible: component.visible,
+          //   componentName: component.name,
+          //   componentType: component.type
+          // })
         } else {
           console.warn(`❌ Component not found for storing original state: ${componentKey}`)
         }
@@ -777,14 +803,14 @@ export default function ThreeSceneManager({
   useEffect(() => {
     // Only apply if model is loaded and components are mapped
     if (!modelRef.current || componentRefs.current.size === 0) {
-      console.log('⏳ Skipping component transformations - model not loaded yet')
+      // console.log('⏳ Skipping component transformations - model not loaded yet')
       return
     }
 
     
-    console.log('=== Applying Component Transformations (User Changes) ===')
-    console.log('Component controls changed:', componentControls)
-    console.log('Available component refs:', Array.from(componentRefs.current.keys()))
+    // console.log('=== Applying Component Transformations (User Changes) ===')
+    // console.log('Component controls changed:', componentControls)
+    // console.log('Available component refs:', Array.from(componentRefs.current.keys()))
     
     Object.entries(componentControls).forEach(([componentKey, transform]) => {
       const component = componentRefs.current.get(componentKey)
@@ -810,12 +836,12 @@ export default function ThreeSceneManager({
         
         // Debug: Log visibility decisions
         if (!finalVisibility) {
-          console.log(`👁️ Hiding component "${componentKey}":`, {
-            componentVisible: transform.visible,
-            categoryKey: categoryKey || 'UNMAPPED',
-            categoryVisible: isCategoryVisible,
-            finalVisibility
-          })
+          // console.log(`👁️ Hiding component "${componentKey}":`, {
+            // componentVisible: transform.visible,
+            // categoryKey: categoryKey || 'UNMAPPED',
+            // categoryVisible: isCategoryVisible,
+            // finalVisibility
+          // })
         }
         
         component.visible = finalVisibility
@@ -829,7 +855,7 @@ export default function ThreeSceneManager({
         
         // Only apply position, rotation, and scale if they're not default values
         if (!isDefaultTransform) {
-          console.log(`🔄 Applying non-default transforms to ${componentKey}`)
+          // console.log(`🔄 Applying non-default transforms to ${componentKey}`)
           
           // Apply position
           component.position.set(transform.position.x, transform.position.y, transform.position.z)
@@ -844,20 +870,20 @@ export default function ThreeSceneManager({
           component.updateMatrix()
           component.updateMatrixWorld(true)
         } else {
-          console.log(`⏭️ Skipping position/rotation/scale for ${componentKey} - using default values`)
+          // console.log(`⏭️ Skipping position/rotation/scale for ${componentKey} - using default values`)
         }
         
-        console.log(`✅ Applied visibility update to ${componentKey}:`, {
-          position: transform.position,
-          rotation: transform.rotation,
-          scale: transform.scale,
-          visible: transform.visible,
-          categoryVisible: isCategoryVisible,
-          finalVisibility: finalVisibility,
-          componentName: component.name,
-          componentType: component.type,
-          actualVisible: component.visible
-        })
+        // console.log(`✅ Applied visibility update to ${componentKey}:`, {
+        //   position: transform.position,
+        //   rotation: transform.rotation,
+        //   scale: transform.scale,
+        //   visible: transform.visible,
+        //   categoryVisible: isCategoryVisible,
+        //   finalVisibility: finalVisibility,
+        //   componentName: component.name,
+        //   componentType: component.type,
+        //   actualVisible: component.visible
+        // })
       } else {
         console.warn(`❌ Component not found for update: ${componentKey}`)
       }
@@ -868,7 +894,7 @@ export default function ThreeSceneManager({
     
     // If not all categories are hidden, restore original visibility of unmapped objects
     if (!allCategoriesHidden && modelRef.current) {
-      console.log('🔧 Restoring original visibility of unmapped objects...')
+      // console.log('🔧 Restoring original visibility of unmapped objects...')
       modelRef.current.traverse((child) => {
         if (child.name && !child.userData.isMappedComponent && child.userData.originalVisibility !== undefined) {
           child.visible = child.userData.originalVisibility
@@ -879,7 +905,7 @@ export default function ThreeSceneManager({
     }
     
     if (allCategoriesHidden) {
-      console.log('🔍 DEBUG: All categories are hidden, checking which components are still visible...')
+      // console.log('🔍 DEBUG: All categories are hidden, checking which components are still visible...')
       
       // Check our mapped components
       const stillVisibleComponents = Object.entries(componentControls)
@@ -892,12 +918,12 @@ export default function ThreeSceneManager({
       if (stillVisibleComponents.length > 0) {
         console.warn(`⚠️ These mapped components are still visible when all categories are hidden:`, stillVisibleComponents)
       } else {
-        console.log('✅ All mapped components are properly hidden when all categories are disabled')
+        // console.log('✅ All mapped components are properly hidden when all categories are disabled')
       }
       
       // Check ALL objects in the 3D model for visibility
       if (modelRef.current) {
-        console.log('🔍 Checking ALL objects in the 3D model for visibility...')
+        // console.log('🔍 Checking ALL objects in the 3D model for visibility...')
         const allVisibleObjects: string[] = []
         
         modelRef.current.traverse((child) => {
@@ -910,7 +936,7 @@ export default function ThreeSceneManager({
           console.warn(`⚠️ These 3D model objects are still visible when all categories are hidden:`, allVisibleObjects)
           
           // Hide all unmapped objects when all categories are hidden
-          console.log('🔧 Hiding all unmapped objects...')
+          // console.log('🔧 Hiding all unmapped objects...')
           modelRef.current.traverse((child) => {
             if (child.name && !child.userData.isMappedComponent) {
               // Store original visibility if not already stored
@@ -923,7 +949,7 @@ export default function ThreeSceneManager({
             }
           })
         } else {
-          console.log('✅ No 3D model objects are visible when all categories are disabled')
+          // console.log('✅ No 3D model objects are visible when all categories are disabled')
         }
       }
     }
@@ -935,7 +961,7 @@ export default function ThreeSceneManager({
   useEffect(() => {
     if (current3DStage !== 4 || !modelRef.current || !componentRefs.current.size) return
 
-    console.log('Applying visibility changes in Stage 4...')
+    // console.log('Applying visibility changes in Stage 4...')
 
     // Apply individual component visibility
     Object.entries(componentControls).forEach(([componentKey, transform]) => {
@@ -949,7 +975,7 @@ export default function ThreeSceneManager({
         const isCategoryVisible = categoryKey ? categoryVisibility[categoryKey] : true
         const finalVisibility = transform.visible && isCategoryVisible
         
-        console.log(`👁️ Stage 4 visibility: ${componentKey} (transform.visible: ${transform.visible}, isCategoryVisible: ${isCategoryVisible}, finalVisibility: ${finalVisibility})`)
+        // console.log(`👁️ Stage 4 visibility: ${componentKey} (transform.visible: ${transform.visible}, isCategoryVisible: ${isCategoryVisible}, finalVisibility: ${finalVisibility})`)
         
         // Apply visibility to ALL child objects (not just meshes)
         component.traverse((child) => {
@@ -963,7 +989,7 @@ export default function ThreeSceneManager({
     // Handle category visibility for unmapped objects
     const allCategoriesHidden = Object.values(categoryVisibility).every(visible => !visible)
     if (allCategoriesHidden && modelRef.current) {
-      console.log('🔧 All categories hidden - hiding unmapped objects...')
+      // console.log('🔧 All categories hidden - hiding unmapped objects...')
       modelRef.current.traverse((child) => {
         if (child.name && !child.userData.isMappedComponent) {
           // Store original visibility if not already stored
@@ -976,7 +1002,7 @@ export default function ThreeSceneManager({
         }
       })
     } else if (!allCategoriesHidden && modelRef.current) {
-      console.log('🔧 Some categories visible - restoring unmapped objects...')
+      // console.log('🔧 Some categories visible - restoring unmapped objects...')
       modelRef.current.traverse((child) => {
         if (child.name && !child.userData.isMappedComponent && child.userData.originalVisibility !== undefined) {
           child.visible = child.userData.originalVisibility
@@ -991,20 +1017,146 @@ export default function ThreeSceneManager({
 
 
 
+  // Stage 8 Upper Cover Animation Functions
+  const stage8OpenAnimation = useCallback(() => {
+    if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
+      console.warn('⚠️ Upper Cover not found for stage-8-open-animation')
+      return
+    }
+
+    // console.log('🎬 Starting stage-8-open-animation: Moving Upper Cover Z to 70')
+    
+    const startTime = Date.now()
+    const duration = 1500 // 1.5 seconds
+    const startZ = upperCoverRef.current.position.z
+    const targetZ = 70
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      
+      // Easing function for smooth animation
+      const easeInOutCubic = (t: number) => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+      }
+      
+      const easedProgress = easeInOutCubic(progress)
+      const currentZ = startZ + (targetZ - startZ) * easedProgress
+      
+      upperCoverRef.current!.position.z = currentZ
+      upperCoverRef.current!.updateMatrix()
+      upperCoverRef.current!.updateMatrixWorld(true)
+      
+      if (progress < 1) {
+        stage8OpenAnimationRef.current = requestAnimationFrame(animate)
+      } else {
+        // console.log('✅ stage-8-open-animation complete: Upper Cover Z = 70')
+        stage8OpenAnimationRef.current = null
+      }
+    }
+    
+    stage8OpenAnimationRef.current = requestAnimationFrame(animate)
+  }, [])
+
+  const stage8CloseAnimation = useCallback(() => {
+    if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
+      console.warn('⚠️ Upper Cover not found for stage-8-close-animation')
+      return
+    }
+
+    // console.log('🎬 Starting stage-8-close-animation: Moving Upper Cover Z to 0')
+    
+    const startTime = Date.now()
+    const duration = 500 // 0.5 seconds
+    const startZ = upperCoverRef.current.position.z
+    const targetZ = upperCoverOriginalPosition.current.z
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      
+      // Easing function for smooth animation
+      const easeInOutCubic = (t: number) => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+      }
+      
+      const easedProgress = easeInOutCubic(progress)
+      const currentZ = startZ + (targetZ - startZ) * easedProgress
+      
+      upperCoverRef.current!.position.z = currentZ
+      upperCoverRef.current!.updateMatrix()
+      upperCoverRef.current!.updateMatrixWorld(true)
+      
+      if (progress < 1) {
+        stage8CloseAnimationRef.current = requestAnimationFrame(animate)
+      } else {
+        // console.log('✅ stage-8-close-animation complete: Upper Cover Z = 0')
+        stage8CloseAnimationRef.current = null
+      }
+    }
+    
+    stage8CloseAnimationRef.current = requestAnimationFrame(animate)
+  }, [])
+
+  // Store animation functions in a ref for external access
+  const animationFunctionsRef = useRef({
+    stage8OpenAnimation,
+    stage8CloseAnimation
+  })
+
+  // Update the ref when functions change and notify parent
+  useEffect(() => {
+    animationFunctionsRef.current = {
+      stage8OpenAnimation,
+      stage8CloseAnimation
+    }
+    
+    // Notify parent component that animation functions are ready
+    if (onAnimationFunctionsReady) {
+      onAnimationFunctionsReady({
+        stage8OpenAnimation,
+        stage8CloseAnimation
+      })
+    }
+  }, [onAnimationFunctionsReady, stage8OpenAnimation, stage8CloseAnimation])
+
   // Apply OLED Display texture in Stage 5
   useEffect(() => {
     if (current3DStage === 5) {
-      console.log('🎬 Stage 5: Applying OLED Display texture...')
+      // console.log('🎬 Stage 5: Applying OLED Display texture...')
       // Try PNG first, then fallback to GIF
       if ((window as any).applyOLEDTexture) {
         (window as any).applyOLEDTexture('/screen.png')
       }
     } else if (current3DStage !== 5 && oledTextureRef.current) {
-      console.log('🎬 Leaving Stage 5: Removing OLED Display texture...')
+      // console.log('🎬 Leaving Stage 5: Removing OLED Display texture...')
       // Remove the texture when leaving Stage 5
       if ((window as any).removeOLEDTexture) {
         (window as any).removeOLEDTexture()
       }
+    }
+  }, [current3DStage])
+
+  // Stage 8 Upper Cover Animations
+  useEffect(() => {
+    if (current3DStage === 8) {
+      // console.log('🎬 Stage 8: Starting stage-8-open-animation')
+      // Cancel any existing close animation
+      if (stage8CloseAnimationRef.current) {
+        cancelAnimationFrame(stage8CloseAnimationRef.current)
+        stage8CloseAnimationRef.current = null
+      }
+      // Start open animation
+      stage8OpenAnimation()
+    } else if (current3DStage !== 8 && upperCoverRef.current) {
+      // console.log('🎬 Leaving Stage 8: Starting stage-8-close-animation')
+      // Cancel any existing open animation
+      if (stage8OpenAnimationRef.current) {
+        cancelAnimationFrame(stage8OpenAnimationRef.current)
+        stage8OpenAnimationRef.current = null
+      }
+      // Start close animation
+      stage8CloseAnimation()
     }
   }, [current3DStage])
 
