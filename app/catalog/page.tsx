@@ -1,50 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import Link from 'next/link'
+import Menu from '../../components/Menu'
+import MobileMenu from '../../components/MobileMenu'
+import Footer from '../../components/Footer'
 
 export default function Catalog() {
-  const [selectedCategory, setSelectedCategory] = useState('all')
-
-  const products = [
-    {
-      id: 1,
-      name: 'Color Fluent Pro',
-      category: 'professional',
-      description: 'Professional-grade color brush assembly with advanced sensing technology',
-      price: '$2,499',
-      image: '/product-3d/Color_Brush_assembly_V1_1.glb',
-      features: ['Color Sensor PCB', 'OLED Display', 'Micro-Gear Motor', 'LED Lighting']
-    },
-    {
-      id: 2,
-      name: 'Color Fluent Studio',
-      category: 'studio',
-      description: 'Studio edition with precision mechanics and smart electronics',
-      price: '$1,899',
-      image: '/product-3d/Color_Brush_assembly_V1_1.glb',
-      features: ['Precision Mechanics', 'Smart Electronics', 'Professional Lighting', 'Intuitive Controls']
-    },
-    {
-      id: 3,
-      name: 'Color Fluent Basic',
-      category: 'basic',
-      description: 'Entry-level model with core functionality and reliable performance',
-      price: '$1,299',
-      image: '/product-3d/Color_Brush_assembly_V1_1.glb',
-      features: ['Core Mechanical Components', 'Basic Electronics', 'Standard Lighting', 'Essential Controls']
-    }
+  const features = [
+    'Advanced image and RGB color processing for precise shade matching',
+    'Data-driven performance for consistent, salon-quality results',
+    'TFT-LCD screen and intuitive control panel for easy operation',
+    'Even-flow nozzle system with a built-in vibration feature for flawless color distribution',
+    'Tank display and empty-warning alert for uninterrupted coloring',
+    'Configurable sound cues to detect color transition zones',
+    'Wi-Fi connectivity for full app access and updates',
+    'Personalized color guidance and survey-based recommendations'
   ]
-
-  const categories = [
-    { id: 'all', name: 'All Products' },
-    { id: 'professional', name: 'Professional' },
-    { id: 'studio', name: 'Studio' },
-    { id: 'basic', name: 'Basic' }
-  ]
-
-  const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(product => product.category === selectedCategory)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
@@ -53,104 +24,107 @@ export default function Catalog() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <h1 className="text-3xl font-bold text-white">Color Fluent</h1>
-            <nav className="hidden md:flex space-x-8">
-              <a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a>
-              <a href="/catalog" className="text-white font-semibold">Catalog</a>
-              <a href="/shop" className="text-gray-300 hover:text-white transition-colors">Shop</a>
-              <a href="/about" className="text-gray-300 hover:text-white transition-colors">About</a>
-              <a href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
-              <a href="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</a>
-            </nav>
+            <div className="flex items-center space-x-4">
+              <Menu variant="header" />
+              <MobileMenu />
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Page Title */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Hero Section */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Product Catalog</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Explore our range of professional color brush assemblies designed for precision and reliability
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+            Color Fluent – The Smart Way to Color Your Hair
+          </h2>
+          <p className="text-lg sm:text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+            Experience the future of hair coloring with <strong className="text-blue-400">Color Fluent</strong>, the intelligent device that makes at-home coloring effortless, precise, and beautifully even.
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-black/30 backdrop-blur-sm rounded-lg p-2 border border-gray-600">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-6 py-3 rounded-md transition-all duration-200 ${
-                  selectedCategory === category.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                }`}
-              >
-                {category.name}
-              </button>
+        {/* Main Description */}
+        <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-6 sm:p-8 mb-8">
+          <p className="text-base sm:text-lg text-gray-300 leading-relaxed mb-6">
+            Designed for total independence, Color Fluent helps you reach every strand — even the back of your head — with professional-level accuracy. Its smart root-detection system identifies and colors only the areas that need touch-ups, saving time and formula.
+          </p>
+          
+          <p className="text-base sm:text-lg text-gray-300 leading-relaxed mb-6">
+            Paired with the <strong className="text-blue-400">Color Fluent App</strong>, you're guided through every step — from choosing your perfect shade to following real-time instructions. The app saves your custom settings and color history, so repeating your favorite look is as easy as one tap.
+          </p>
+
+          <p className="text-base sm:text-lg text-gray-300 leading-relaxed">
+            Behind its sleek, lightweight design lies powerful technology:
+          </p>
+        </div>
+
+        {/* Features Grid */}
+        <div className="mb-8">
+          <h3 className="text-2xl sm:text-3xl font-bold text-white text-center mb-8">Advanced Technology Features</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {features.map((feature, index) => (
+              <div key={index} className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-4 sm:p-6">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
+                    <strong className="text-blue-400">Advanced image and RGB color processing</strong> for precise shade matching
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 overflow-hidden hover:border-blue-500 transition-all duration-300">
-              {/* Product Image Placeholder */}
-              <div className="h-64 bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-2xl">🎨</span>
-                  </div>
-                  <p className="text-gray-400 text-sm">3D Model View</p>
-                </div>
-              </div>
-
-              {/* Product Info */}
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-white mb-2">{product.name}</h3>
-                <p className="text-gray-300 mb-4">{product.description}</p>
-                
-                {/* Features */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-400 mb-2">Key Features:</h4>
-                  <ul className="text-sm text-gray-300 space-y-1">
-                    {product.features.map((feature, index) => (
-                      <li key={index} className="flex items-center">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Price and CTA */}
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-white">{product.price}</span>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-200">
-                    View Details
-                  </button>
-                </div>
-              </div>
+        {/* Technical Specifications */}
+        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg border border-blue-500/30 p-6 sm:p-8 mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">Technical Specifications</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-2">12V DC 2A</div>
+              <div className="text-gray-300">Power Input</div>
             </div>
-          ))}
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-2">Lightweight</div>
+              <div className="text-gray-300">Plastic Body</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Final Description */}
+        <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-6 sm:p-8 mb-8">
+          <p className="text-base sm:text-lg text-gray-300 leading-relaxed text-center">
+            With a <strong className="text-blue-400">12V DC 2A</strong> power input, <strong className="text-blue-400">lightweight plastic body</strong>, and smart ergonomic design, Color Fluent turns home hair coloring into a professional, personalized experience — every single time.
+          </p>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-white mb-4">Need Help Choosing?</h3>
-            <p className="text-gray-300 mb-6">
-              Our team of experts can help you select the perfect Color Fluent model for your needs.
+        <div className="text-center">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 sm:p-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">Ready to Experience Smart Hair Coloring?</h3>
+            <p className="text-blue-100 mb-6">
+              Join thousands of users who have transformed their hair coloring routine with Color Fluent.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors duration-200">
-              Contact Our Experts
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link 
+                href="/contact" 
+                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Get Started Today
+              </Link>
+              <Link 
+                href="/about" 
+                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+              >
+                Learn More
+              </Link>
+            </div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }

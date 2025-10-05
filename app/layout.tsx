@@ -13,6 +13,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'GoColorFluent',
   description: 'A modern web application built with Next.js, Tailwind CSS, and Three.js',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 }
 
 export default function RootLayout({

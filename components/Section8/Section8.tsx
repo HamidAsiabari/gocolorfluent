@@ -31,7 +31,7 @@ export default function Section8({
 
   return (
     <section 
-      className="flex items-center justify-center h-screen px-6 absolute inset-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (8 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
       }}
@@ -56,31 +56,31 @@ export default function Section8({
 
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-5xl mx-auto text-center">
+      <div className="relative z-10 max-w-5xl mx-auto text-center" style={{ paddingTop: '10%' }}>
         <div className="space-y-8">
           
           {/* Section Title */}
-          <div className={`space-y-4 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-purple-400 leading-tight">
+          <div className={`space-y-2 lg:space-y-4 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-purple-400 leading-tight">
               Contact Us
             </h2>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-400 to-blue-400 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-400 to-blue-400 leading-tight">
               Today
             </h2>
           </div>
 
           {/* Description */}
           <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <p className="text-lg md:text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
               Ready to experience professional-grade color technology? Get in touch with our team to learn more about Color Fluent solutions.
             </p>
           </div>
 
           {/* Contact Methods */}
           <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
               {/* Email */}
-              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-indigo-500/20 p-6 hover:border-indigo-400/40 transition-all duration-300 hover:scale-105">
+              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-indigo-500/20 p-4 sm:p-6 hover:border-indigo-400/40 transition-all duration-300 hover:scale-105">
                 <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -94,7 +94,7 @@ export default function Section8({
               </div>
 
               {/* Phone */}
-              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-blue-500/20 p-6 hover:border-blue-400/40 transition-all duration-300 hover:scale-105">
+              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-blue-500/20 p-4 sm:p-6 hover:border-blue-400/40 transition-all duration-300 hover:scale-105">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -108,7 +108,7 @@ export default function Section8({
               </div>
 
               {/* Schedule Demo */}
-              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-purple-500/20 p-6 hover:border-purple-400/40 transition-all duration-300 hover:scale-105">
+              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-purple-500/20 p-4 sm:p-6 hover:border-purple-400/40 transition-all duration-300 hover:scale-105">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

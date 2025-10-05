@@ -2,10 +2,13 @@
 
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import Menu from '../components/Menu'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
-import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from '../components/ThreeScene'
+import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config, stage1MobileConfig, stage2MobileConfig, stage3MobileConfig, stage4MobileConfig, stage5MobileConfig, stage6MobileConfig, stage7MobileConfig, stage8MobileConfig, stage9MobileConfig, stage1TabletConfig, stage2TabletConfig, stage3TabletConfig, stage4TabletConfig, stage5TabletConfig, stage6TabletConfig, stage7TabletConfig, stage8TabletConfig, stage9TabletConfig } from '../components/ThreeScene'
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import HeroSection from '../components/HeroSection'
@@ -17,9 +20,11 @@ import Section6 from '../components/Section6'
 import Section7 from '../components/Section7'
 import Section8 from '../components/Section8'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
+import { LoadingScreen } from '../components/Loading'
 
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
   
   const [modelControls, setModelControls] = useState({
     position: { x: 2, y: -0.3, z: 0 },
@@ -52,7 +57,7 @@ export default function Home() {
     shadowMapSize: 2048,
     shadowBias: -0.0001
   })
-  const [isDevMode, setIsDevMode] = useState(true)
+  const [isDevMode, setIsDevMode] = useState(false)
   const [scrollPosition, setScrollPosition] = useState(0)
   const [isClient, setIsClient] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -69,6 +74,14 @@ export default function Home() {
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
+  
+  // Handle menu item click
+  const handleMenuItemClick = () => {
+    setIsMenuOpen(false)
+  }
   
   // Stage 8 animation functions
   const [stage8AnimationFunctions, setStage8AnimationFunctions] = useState<{
@@ -86,6 +99,122 @@ export default function Home() {
   }) => {
     setStage8AnimationFunctions(functions)
   }, [])
+
+  // Device type detection - initialize synchronously to avoid timing issues
+  const getInitialDeviceType = () => {
+    if (typeof window === 'undefined') return 'desktop'
+    const width = window.innerWidth
+    if (width <= 768) return 'mobile'
+    if (width <= 1024) return 'tablet'
+    return 'desktop'
+  }
+  
+  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>(getInitialDeviceType)
+  
+  // Check device type based on window width
+  useEffect(() => {
+    const checkDeviceType = () => {
+      const width = window.innerWidth
+      if (width <= 768) {
+        setDeviceType('mobile')
+      } else if (width <= 1024) {
+        setDeviceType('tablet')
+      } else {
+        setDeviceType('desktop')
+      }
+    }
+    
+    // Only add resize listener, initial check is done synchronously
+    window.addEventListener('resize', checkDeviceType)
+    
+    return () => window.removeEventListener('resize', checkDeviceType)
+  }, [])
+  
+  // Function to get stage configuration based on device type
+  const getStageConfig = useCallback((stage: number) => {
+    console.log(`getStageConfig called for stage ${stage}, deviceType: ${deviceType}`)
+    switch (deviceType) {
+      case 'mobile':
+        switch (stage) {
+          case 1: return stage1MobileConfig
+          case 2: return stage2MobileConfig
+          case 3: return stage3MobileConfig
+          case 4: return stage4MobileConfig
+          case 5: return stage5MobileConfig
+          case 6: return stage6MobileConfig
+          case 7: return stage7MobileConfig
+          case 8: return stage8MobileConfig
+          case 9: return stage9MobileConfig
+          default: 
+            console.warn(`Unknown stage ${stage} for mobile, falling back to stage 1`)
+            return stage1MobileConfig
+        }
+      case 'tablet':
+        switch (stage) {
+          case 1: return stage1TabletConfig
+          case 2: return stage2TabletConfig
+          case 3: return stage3TabletConfig
+          case 4: return stage4TabletConfig
+          case 5: return stage5TabletConfig
+          case 6: return stage6TabletConfig
+          case 7: return stage7TabletConfig
+          case 8: return stage8TabletConfig
+          case 9: return stage9TabletConfig
+          default: 
+            console.warn(`Unknown stage ${stage} for tablet, falling back to stage 1`)
+            return stage1TabletConfig
+        }
+      case 'desktop':
+      default:
+        switch (stage) {
+          case 1: return stage1Config
+          case 2: return stage2Config
+          case 3: return stage3Config
+          case 4: return stage4Config
+          case 5: return stage5Config
+          case 6: return stage6Config
+          case 7: return stage7Config
+          case 8: return stage8Config
+          case 9: return stage9Config
+          default: 
+            console.warn(`Unknown stage ${stage} for desktop, falling back to stage 1`)
+            return stage1Config
+        }
+    }
+  }, [deviceType])
+
+  // Set loading start time when component mounts
+  useEffect(() => {
+    setLoadingStartTime(Date.now())
+  }, [])
+
+  // Handle loading progress
+  const handleLoadingProgress = useCallback((progress: number) => {
+    setLoadingProgress(progress)
+  }, [])
+
+  // Handle loading complete with minimum 2 second display time
+  const handleLoadingComplete = useCallback(() => {
+    const minLoadingTime = 2000 // 2 seconds minimum
+    
+    const completeLoading = () => {
+      if (loadingStartTime) {
+        const elapsedTime = Date.now() - loadingStartTime
+        const remainingTime = Math.max(0, minLoadingTime - elapsedTime)
+        
+        setTimeout(() => {
+          setIsLoading(false)
+        }, remainingTime)
+      } else {
+        // Fallback: if loadingStartTime is not set, wait the full 2 seconds
+        setTimeout(() => {
+          setIsLoading(false)
+        }, minLoadingTime)
+      }
+    }
+    
+    completeLoading()
+  }, [loadingStartTime])
 
   // Animated values function that handles all animations
   const getAnimatedValues = useCallback(() => {
@@ -123,81 +252,81 @@ export default function Home() {
       let fromStage, toStage
       
       if (current3DStage === 2) {
-        fromStage = stage2Config
-        toStage = stage3Config
+        fromStage = getStageConfig(2)
+        toStage = getStageConfig(3)
       } else if (current3DStage === 3) {
         // Check scroll direction to determine correct target stage
         if (scrollDirection === 'down') {
           // Going from Stage 3 to Stage 4
-          fromStage = stage3Config
-          toStage = stage4Config
+          fromStage = getStageConfig(3)
+          toStage = getStageConfig(4)
         } else {
           // Going from Stage 3 to Stage 2
-          fromStage = stage3Config
-          toStage = stage2Config
+          fromStage = getStageConfig(3)
+          toStage = getStageConfig(2)
         }
       } else if (current3DStage === 4) {
         // Check if we're animating to Stage 5 (down) or Stage 3 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 4 to Stage 5
-          fromStage = stage4Config
-          toStage = stage5Config
+          fromStage = getStageConfig(4)
+          toStage = getStageConfig(5)
         } else {
           // Going from Stage 4 to Stage 3
-          fromStage = stage4Config
-          toStage = stage3Config
+          fromStage = getStageConfig(4)
+          toStage = getStageConfig(3)
         }
       } else if (current3DStage === 5) {
         // Check if we're animating to Stage 6 (down) or Stage 4 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 5 to Stage 6
-          fromStage = stage5Config
-          toStage = stage6Config
+          fromStage = getStageConfig(5)
+          toStage = getStageConfig(6)
         } else {
           // Going from Stage 5 to Stage 4
-          fromStage = stage5Config
-          toStage = stage4Config
+          fromStage = getStageConfig(5)
+          toStage = getStageConfig(4)
         }
       } else if (current3DStage === 6) {
         // Check if we're animating to Stage 7 (down) or Stage 5 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 6 to Stage 7
-          fromStage = stage6Config
-          toStage = stage7Config
+          fromStage = getStageConfig(6)
+          toStage = getStageConfig(7)
         } else {
           // Going from Stage 6 to Stage 5
-          fromStage = stage6Config
-          toStage = stage5Config
+          fromStage = getStageConfig(6)
+          toStage = getStageConfig(5)
         }
       } else if (current3DStage === 7) {
         // Check if we're animating to Stage 8 (down) or Stage 6 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 7 to Stage 8
-          fromStage = stage7Config
-          toStage = stage8Config
+          fromStage = getStageConfig(7)
+          toStage = getStageConfig(8)
         } else {
           // Going from Stage 7 to Stage 6
-          fromStage = stage7Config
-          toStage = stage6Config
+          fromStage = getStageConfig(7)
+          toStage = getStageConfig(6)
         }
       } else if (current3DStage === 8) {
         // Check if we're animating to Stage 9 (down) or Stage 7 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 8 to Stage 9
-          fromStage = stage8Config
-          toStage = stage9Config
+          fromStage = getStageConfig(8)
+          toStage = getStageConfig(9)
         } else {
           // Going from Stage 8 to Stage 7
-          fromStage = stage8Config
-          toStage = stage7Config
+          fromStage = getStageConfig(8)
+          toStage = getStageConfig(7)
         }
       } else if (current3DStage === 9) {
         // Going from Stage 9 to Stage 8
-        fromStage = stage9Config
-        toStage = stage8Config
+        fromStage = getStageConfig(9)
+        toStage = getStageConfig(8)
       } else {
-        fromStage = stage2Config
-        toStage = stage3Config
+        fromStage = getStageConfig(2)
+        toStage = getStageConfig(3)
       }
       
       return {
@@ -392,33 +521,36 @@ export default function Home() {
     if (!is3DAnimating && !isAnimating) {
       // console.log('Stage changed - updating model controls for stage:', current3DStage)
       // Update model controls to match the current stage configuration
-      if (current3DStage === 1) {
-        setModelControls(stage1Config.model)
-      } else if (current3DStage === 2) {
-        setModelControls(stage2Config.model)
-      } else if (current3DStage === 3) {
-        setModelControls(stage3Config.model)
-      } else if (current3DStage === 4) {
-        // For Stage 4, use the exact Stage 4 configuration
-        setModelControls(stage4Config.model)
-        console.log('Set model controls to Stage 4:', stage4Config.model)
-      } else if (current3DStage === 5) {
-        // For Stage 5, use the exact Stage 5 configuration
-        setModelControls(stage5Config.model)
-        console.log('Set model controls to Stage 5:', stage5Config.model)
+      const stageConfig = getStageConfig(current3DStage)
+      
+      // Safety check to prevent undefined errors
+      if (stageConfig && stageConfig.model) {
+        setModelControls(stageConfig.model)
+        console.log(`Set model controls to Stage ${current3DStage} (${deviceType}):`, stageConfig.model)
+      } else {
+        console.error(`Invalid stage configuration for stage ${current3DStage} (${deviceType})`)
+        // Fallback to stage 1 configuration
+        const fallbackConfig = getStageConfig(1)
+        if (fallbackConfig && fallbackConfig.model) {
+          setModelControls(fallbackConfig.model)
+          console.log('Using fallback stage 1 configuration')
+        }
       }
     }
-  }, [current3DStage, is3DAnimating, isAnimating])
+  }, [current3DStage, is3DAnimating, isAnimating, getStageConfig, deviceType])
 
 
 
 
   return (
     <div className="relative">
+      {/* Loading Screen */}
+      <LoadingScreen isLoading={isLoading} progress={loadingProgress} />
+      
       {/* Fixed 3D Container - Always full screen */}
       <div 
         ref={mountRef} 
-        className="fixed inset-0 w-screen h-screen"
+        className="fixed inset-0 w-screen h-screen touch-none"
         style={{ zIndex: 1 }}
       />
       
@@ -438,6 +570,8 @@ export default function Home() {
         categoryVisibility={categoryVisibility}
         onComponentControlsChange={setComponentControls}
         onAnimationFunctionsReady={handleAnimationFunctionsReady}
+        onLoadingProgress={handleLoadingProgress}
+        onLoadingComplete={handleLoadingComplete}
       />
 
       {/* Scroll Manager */}
@@ -474,17 +608,22 @@ export default function Home() {
         setCameraControls={setCameraControls}
         setLightingControls={setLightingControls}
         stage8AnimationFunctions={stage8AnimationFunctions}
+        getStageConfig={getStageConfig}
       />
 
       {/* Scrollable Content - 8x screen height */}
       <main 
-        className="relative bg-gradient-to-br from-gray-900 to-gray-800"
-        style={{ height: isClient ? `${window.innerHeight * 8}px` : '800vh' }}
+        className={`relative bg-gradient-to-br from-gray-900 to-gray-800 transition-opacity duration-500 smooth-scroll ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        style={{ 
+          height: isClient ? `${window.innerHeight * 8}px` : '800vh',
+          minHeight: isClient ? `${window.innerHeight * 8}px` : '800vh',
+          touchAction: 'pan-y' // Allow vertical scrolling on mobile
+        }}
       >
 
         {/* Section Navigation Dots */}
-        <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-50">
-          <div className="flex flex-col space-y-4">
+        <div className="fixed right-4 md:left-8 top-1/2 transform -translate-y-1/2 z-50">
+          <div className="flex flex-col space-y-3 md:space-y-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((section) => (
               <button
                 key={section}
@@ -497,14 +636,33 @@ export default function Home() {
                     })
                   }
                 }}
-                className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                className={`rounded-full border-2 transition-all duration-300 touch-manipulation ${
                   currentSection === section
-                    ? 'bg-white border-white scale-125'
-                    : 'bg-transparent border-gray-400 hover:border-white hover:scale-110'
+                    ? 'bg-white border-white'
+                    : 'bg-transparent border-gray-400 hover:border-white'
                 }`}
                 title={`Section ${section}`}
+                style={{ 
+                  touchAction: 'manipulation',
+                  width: '20px',
+                  height: '20px',
+                  maxWidth: '20px',
+                  maxHeight: '20px'
+                }}
               />
             ))}
+          </div>
+        </div>
+
+        {/* Mobile Scroll Indicator */}
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+          <div className="flex flex-col items-center space-y-2 text-white/70">
+            <div className="text-sm font-medium">Swipe to navigate</div>
+            <div className="flex space-x-1">
+              <div className="w-1 h-1 bg-white/50 rounded-full animate-bounce"></div>
+              <div className="w-1 h-1 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+              <div className="w-1 h-1 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            </div>
           </div>
         </div>
 
@@ -585,7 +743,7 @@ export default function Home() {
       </main>
 
       {/* Compact Development Helper Box */}
-      <DevControls
+      {!isLoading && <DevControls
         isDevMode={isDevMode}
         onToggleDevMode={() => setIsDevMode(false)}
         modelControls={modelControls}
@@ -610,63 +768,51 @@ export default function Home() {
         onComponentControlsChange={setComponentControls}
         categoryVisibility={categoryVisibility}
         onCategoryVisibilityChange={setCategoryVisibility}
-      />
+      />}
 
       {/* Menu Button - Fixed top right */}
-      <button
+      {!isLoading && <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-4 right-4 z-30 text-white text-2xl font-bold hover:text-gray-300 transition-colors duration-200"
+        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-30 text-white text-xl sm:text-2xl font-bold hover:text-gray-300 transition-all duration-200 p-2 sm:p-1 hover:scale-105"
         style={{ 
-          background: 'none', 
+          background: 'rgba(0,0,0,0.3)', 
           border: 'none',
-          outline: 'none'
+          outline: 'none',
+          borderRadius: '8px',
+          minWidth: '44px',
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         ☰
-      </button>
+      </button>}
 
       {/* Full Screen Menu */}
-      {isMenuOpen && (
+      {!isLoading && isMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/90 backdrop-blur-sm flex items-center justify-center menu-fade-in"
+          className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center menu-fade-in"
           onClick={() => setIsMenuOpen(false)}
         >
           <div 
-            className="text-center space-y-8"
+            className="text-center space-y-6 sm:space-y-8 px-4 sm:px-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-4xl font-bold text-white mb-12 menu-title-animate">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 sm:mb-12 menu-title-animate">
               Menu
             </h2>
-            <div className="space-y-6">
-              <a href="/" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-1">
-                Home
-              </a>
-              <a href="/catalog" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-2">
-                Catalog
-              </a>
-              <a href="/shop" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-3">
-                Shop
-              </a>
-              <a href="/about" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-4">
-                About Us
-              </a>
-              <a href="/contact" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-5">
-                Contact Us
-              </a>
-              <a href="/blog" className="block text-2xl text-white hover:text-gray-300 cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-6">
-                Blog
-              </a>
-            </div>
+            <Menu variant="mobile" onItemClick={handleMenuItemClick} />
           </div>
         </div>
       )}
 
       {/* Show Dev Mode Button when hidden */}
-      {!isDevMode && (
+      {!isLoading && !isDevMode && (
         <button
           onClick={() => setIsDevMode(true)}
-          className="fixed bottom-4 left-4 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-gray-600 rounded-lg px-3 py-2 text-white text-sm"
+          className="fixed bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-auto z-20 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-gray-600 rounded-lg px-3 py-2 text-white text-xs sm:text-sm text-center"
+          style={{ minHeight: '44px' }}
         >
           Show Dev Controls
         </button>

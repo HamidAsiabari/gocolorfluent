@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from '../ThreeScene'
+import { StageConfig } from '../ThreeScene'
 
 interface AnimationSystemProps {
   isAnimating: boolean
@@ -25,6 +25,7 @@ interface AnimationSystemProps {
     stage8OpenAnimation: (() => void) | null
     stage8CloseAnimation: (() => void) | null
   }
+  getStageConfig: (stage: number) => StageConfig
 }
 
 export default function AnimationSystem({
@@ -46,6 +47,7 @@ export default function AnimationSystem({
   setCameraControls,
   setLightingControls,
   stage8AnimationFunctions,
+  getStageConfig,
 }: AnimationSystemProps) {
   // Interpolation function for smooth animation
   const lerp = (start: number, end: number, progress: number) => {
@@ -102,53 +104,61 @@ export default function AnimationSystem({
       let fromStage, toStage
       if (current3DStage === 2) {
         // Going from Stage 2 to Stage 3
-        fromStage = stage2Config
-        toStage = stage3Config
+        fromStage = getStageConfig(2)
+        toStage = getStageConfig(3)
       } else if (current3DStage === 3) {
         // Check if we're animating to Stage 4 (down) or Stage 2 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 3 to Stage 4
-          fromStage = stage3Config
-          toStage = stage4Config
+          fromStage = getStageConfig(3)
+          toStage = getStageConfig(4)
         } else {
           // Going from Stage 3 to Stage 2
-          fromStage = stage3Config
-          toStage = stage2Config
+          fromStage = getStageConfig(3)
+          toStage = getStageConfig(2)
         }
       } else if (current3DStage === 4) {
         // Check if we're animating to Stage 5 (down) or Stage 3 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 4 to Stage 5
-          fromStage = stage4Config
-          toStage = stage5Config
+          fromStage = getStageConfig(4)
+          toStage = getStageConfig(5)
         } else {
           // Going from Stage 4 to Stage 3
-          fromStage = stage4Config
-          toStage = stage3Config
+          fromStage = getStageConfig(4)
+          toStage = getStageConfig(3)
         }
       } else if (current3DStage === 5) {
         // Check if we're animating to Stage 6 (down) or Stage 4 (up)
         if (scrollDirection === 'down') {
           // Going from Stage 5 to Stage 6
-          fromStage = stage5Config
-          toStage = stage6Config
+          fromStage = getStageConfig(5)
+          toStage = getStageConfig(6)
         } else {
           // Going from Stage 5 to Stage 4
-          fromStage = stage5Config
-          toStage = stage4Config
+          fromStage = getStageConfig(5)
+          toStage = getStageConfig(4)
         }
       } else if (current3DStage === 6) {
         // Going from Stage 6 to Stage 5
-        fromStage = stage6Config
-        toStage = stage5Config
+        fromStage = getStageConfig(6)
+        toStage = getStageConfig(5)
       } else {
         // Default fallback
-        fromStage = stage2Config
-        toStage = stage3Config
+        fromStage = getStageConfig(2)
+        toStage = getStageConfig(3)
       }
       
       // Calculate animated values with proper easing
       const easedProgress = easeInOut(progress)
+      
+      // Debug: Log the interpolation values for Stage 4 animations
+      if (current3DStage === 3 || current3DStage === 5) {
+        console.log(`Animation progress: ${progress.toFixed(3)}, eased: ${easedProgress.toFixed(3)}`)
+        console.log(`From: (${fromStage.model.position.x.toFixed(2)}, ${fromStage.model.position.y.toFixed(2)}, ${fromStage.model.position.z.toFixed(2)})`)
+        console.log(`To: (${toStage.model.position.x.toFixed(2)}, ${toStage.model.position.y.toFixed(2)}, ${toStage.model.position.z.toFixed(2)})`)
+        console.log(`Current device type in animation: ${typeof getStageConfig}`)
+      }
       
       const animatedModel = {
         position: {
@@ -228,86 +238,82 @@ export default function AnimationSystem({
     if (isAnimating) {
       const progress = easeInOut(animationProgress)
       
+      const stage1 = getStageConfig(1)
+      const stage2 = getStageConfig(2)
+      
       return {
         model: {
           position: {
-            x: lerp(stage1Config.model.position.x, stage2Config.model.position.x, progress),
-            y: lerp(stage1Config.model.position.y, stage2Config.model.position.y, progress),
-            z: lerp(stage1Config.model.position.z, stage2Config.model.position.z, progress)
+            x: lerp(stage1.model.position.x, stage2.model.position.x, progress),
+            y: lerp(stage1.model.position.y, stage2.model.position.y, progress),
+            z: lerp(stage1.model.position.z, stage2.model.position.z, progress)
           },
           rotation: {
-            x: lerp(stage1Config.model.rotation.x, stage2Config.model.rotation.x, progress),
-            y: lerp(stage1Config.model.rotation.y, stage2Config.model.rotation.y, progress),
-            z: lerp(stage1Config.model.rotation.z, stage2Config.model.rotation.z, progress)
+            x: lerp(stage1.model.rotation.x, stage2.model.rotation.x, progress),
+            y: lerp(stage1.model.rotation.y, stage2.model.rotation.y, progress),
+            z: lerp(stage1.model.rotation.z, stage2.model.rotation.z, progress)
           },
           scale: {
-            x: lerp(stage1Config.model.scale.x, stage2Config.model.scale.x, progress),
-            y: lerp(stage1Config.model.scale.y, stage2Config.model.scale.y, progress),
-            z: lerp(stage1Config.model.scale.z, stage2Config.model.scale.z, progress)
+            x: lerp(stage1.model.scale.x, stage2.model.scale.x, progress),
+            y: lerp(stage1.model.scale.y, stage2.model.scale.y, progress),
+            z: lerp(stage1.model.scale.z, stage2.model.scale.z, progress)
           }
         },
         camera: {
           position: {
-            x: lerp(stage1Config.camera.position.x, stage2Config.camera.position.x, progress),
-            y: lerp(stage1Config.camera.position.y, stage2Config.camera.position.y, progress),
-            z: lerp(stage1Config.camera.position.z, stage2Config.camera.position.z, progress)
+            x: lerp(stage1.camera.position.x, stage2.camera.position.x, progress),
+            y: lerp(stage1.camera.position.y, stage2.camera.position.y, progress),
+            z: lerp(stage1.camera.position.z, stage2.camera.position.z, progress)
           },
-          fov: lerp(stage1Config.camera.fov, stage2Config.camera.fov, progress)
+          fov: lerp(stage1.camera.fov, stage2.camera.fov, progress)
         },
         lighting: {
-          ambientIntensity: lerp(stage1Config.lighting.ambientIntensity, stage2Config.lighting.ambientIntensity, progress),
-          ambientColor: lerpColor(stage1Config.lighting.ambientColor, stage2Config.lighting.ambientColor, progress),
-          directionalIntensity: lerp(stage1Config.lighting.directionalIntensity, stage2Config.lighting.directionalIntensity, progress),
-          directionalColor: lerpColor(stage1Config.lighting.directionalColor, stage2Config.lighting.directionalColor, progress),
+          ambientIntensity: lerp(stage1.lighting.ambientIntensity, stage2.lighting.ambientIntensity, progress),
+          ambientColor: lerpColor(stage1.lighting.ambientColor, stage2.lighting.ambientColor, progress),
+          directionalIntensity: lerp(stage1.lighting.directionalIntensity, stage2.lighting.directionalIntensity, progress),
+          directionalColor: lerpColor(stage1.lighting.directionalColor, stage2.lighting.directionalColor, progress),
           directionalPosition: {
-            x: lerp(stage1Config.lighting.directionalPosition.x, stage2Config.lighting.directionalPosition.x, progress),
-            y: lerp(stage1Config.lighting.directionalPosition.y, stage2Config.lighting.directionalPosition.y, progress),
-            z: lerp(stage1Config.lighting.directionalPosition.z, stage2Config.lighting.directionalPosition.z, progress)
+            x: lerp(stage1.lighting.directionalPosition.x, stage2.lighting.directionalPosition.x, progress),
+            y: lerp(stage1.lighting.directionalPosition.y, stage2.lighting.directionalPosition.y, progress),
+            z: lerp(stage1.lighting.directionalPosition.z, stage2.lighting.directionalPosition.z, progress)
           },
           directionalTarget: {
-            x: lerp(stage1Config.lighting.directionalTarget.x, stage2Config.lighting.directionalTarget.x, progress),
-            y: lerp(stage1Config.lighting.directionalTarget.y, stage2Config.lighting.directionalTarget.y, progress),
-            z: lerp(stage1Config.lighting.directionalTarget.z, stage2Config.lighting.directionalTarget.z, progress)
+            x: lerp(stage1.lighting.directionalTarget.x, stage2.lighting.directionalTarget.x, progress),
+            y: lerp(stage1.lighting.directionalTarget.y, stage2.lighting.directionalTarget.y, progress),
+            z: lerp(stage1.lighting.directionalTarget.z, stage2.lighting.directionalTarget.z, progress)
           },
-          pointLightIntensity: lerp(stage1Config.lighting.pointLightIntensity, stage2Config.lighting.pointLightIntensity, progress),
-          pointLightColor: lerpColor(stage1Config.lighting.pointLightColor, stage2Config.lighting.pointLightColor, progress),
+          pointLightIntensity: lerp(stage1.lighting.pointLightIntensity, stage2.lighting.pointLightIntensity, progress),
+          pointLightColor: lerpColor(stage1.lighting.pointLightColor, stage2.lighting.pointLightColor, progress),
           pointLightPosition: {
-            x: lerp(stage1Config.lighting.pointLightPosition.x, stage2Config.lighting.pointLightPosition.x, progress),
-            y: lerp(stage1Config.lighting.pointLightPosition.y, stage2Config.lighting.pointLightPosition.y, progress),
-            z: lerp(stage1Config.lighting.pointLightPosition.z, stage2Config.lighting.pointLightPosition.z, progress)
+            x: lerp(stage1.lighting.pointLightPosition.x, stage2.lighting.pointLightPosition.x, progress),
+            y: lerp(stage1.lighting.pointLightPosition.y, stage2.lighting.pointLightPosition.y, progress),
+            z: lerp(stage1.lighting.pointLightPosition.z, stage2.lighting.pointLightPosition.z, progress)
           },
-          pointLightDistance: lerp(stage1Config.lighting.pointLightDistance, stage2Config.lighting.pointLightDistance, progress),
-          spotLightIntensity: lerp(stage1Config.lighting.spotLightIntensity, stage2Config.lighting.spotLightIntensity, progress),
-          spotLightColor: lerpColor(stage1Config.lighting.spotLightColor, stage2Config.lighting.spotLightColor, progress),
+          pointLightDistance: lerp(stage1.lighting.pointLightDistance, stage2.lighting.pointLightDistance, progress),
+          spotLightIntensity: lerp(stage1.lighting.spotLightIntensity, stage2.lighting.spotLightIntensity, progress),
+          spotLightColor: lerpColor(stage1.lighting.spotLightColor, stage2.lighting.spotLightColor, progress),
           spotLightPosition: {
-            x: lerp(stage1Config.lighting.spotLightPosition.x, stage2Config.lighting.spotLightPosition.x, progress),
-            y: lerp(stage1Config.lighting.spotLightPosition.y, stage2Config.lighting.spotLightPosition.y, progress),
-            z: lerp(stage1Config.lighting.spotLightPosition.z, stage2Config.lighting.spotLightPosition.z, progress)
+            x: lerp(stage1.lighting.spotLightPosition.x, stage2.lighting.spotLightPosition.x, progress),
+            y: lerp(stage1.lighting.spotLightPosition.y, stage2.lighting.spotLightPosition.y, progress),
+            z: lerp(stage1.lighting.spotLightPosition.z, stage2.lighting.spotLightPosition.z, progress)
           },
           spotLightTarget: {
-            x: lerp(stage1Config.lighting.spotLightTarget.x, stage2Config.lighting.spotLightTarget.x, progress),
-            y: lerp(stage1Config.lighting.spotLightTarget.y, stage2Config.lighting.spotLightTarget.y, progress),
-            z: lerp(stage1Config.lighting.spotLightTarget.z, stage2Config.lighting.spotLightTarget.z, progress)
+            x: lerp(stage1.lighting.spotLightTarget.x, stage2.lighting.spotLightTarget.x, progress),
+            y: lerp(stage1.lighting.spotLightTarget.y, stage2.lighting.spotLightTarget.y, progress),
+            z: lerp(stage1.lighting.spotLightTarget.z, stage2.lighting.spotLightTarget.z, progress)
           },
-          spotLightDistance: lerp(stage1Config.lighting.spotLightDistance, stage2Config.lighting.spotLightDistance, progress),
-          spotLightAngle: lerp(stage1Config.lighting.spotLightAngle, stage2Config.lighting.spotLightAngle, progress),
-          spotLightPenumbra: lerp(stage1Config.lighting.spotLightPenumbra, stage2Config.lighting.spotLightPenumbra, progress),
-          shadowsEnabled: stage1Config.lighting.shadowsEnabled,
-          shadowMapSize: stage1Config.lighting.shadowMapSize,
-          shadowBias: stage1Config.lighting.shadowBias
+          spotLightDistance: lerp(stage1.lighting.spotLightDistance, stage2.lighting.spotLightDistance, progress),
+          spotLightAngle: lerp(stage1.lighting.spotLightAngle, stage2.lighting.spotLightAngle, progress),
+          spotLightPenumbra: lerp(stage1.lighting.spotLightPenumbra, stage2.lighting.spotLightPenumbra, progress),
+          shadowsEnabled: stage1.lighting.shadowsEnabled,
+          shadowMapSize: stage1.lighting.shadowMapSize,
+          shadowBias: stage1.lighting.shadowBias
         }
       }
     }
 
     // Return current stage configuration if no animation
-    const currentStageConfig = current3DStage === 1 ? stage1Config : 
-                              current3DStage === 2 ? stage2Config : 
-                              current3DStage === 3 ? stage3Config : 
-                              current3DStage === 4 ? stage4Config : 
-                              current3DStage === 5 ? stage5Config : 
-                              current3DStage === 6 ? stage6Config : 
-                              current3DStage === 7 ? stage7Config : 
-                              current3DStage === 8 ? stage8Config : stage9Config
+    const currentStageConfig = getStageConfig(current3DStage)
     return { 
       model: currentStageConfig.model, 
       camera: currentStageConfig.camera, 
@@ -324,7 +330,7 @@ export default function AnimationSystem({
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 3000 // 3 seconds
+      const duration = 1000 // 1 second
       
       const animateStage3 = () => {
         const elapsed = Date.now() - startTime
@@ -346,14 +352,18 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
       // Start Stage 3 to Stage 4 animation when transitioning to Section 3
       console.log('🚀 Starting Stage 3 to Stage 4 animation')
+      const stage3Config = getStageConfig(3)
+      const stage4Config = getStageConfig(4)
       console.log('From Stage 3:', stage3Config.model)
       console.log('To Stage 4:', stage4Config.model)
+      console.log('Device type should be mobile for correct positioning')
+      console.log('Stage 4 mobile config should be:', stage4Config.model.position)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage4 = () => {
         const elapsed = Date.now() - startTime
@@ -370,10 +380,16 @@ export default function AnimationSystem({
           requestAnimationFrame(animateToStage4)
         } else {
           console.log('✅ Stage 3 to Stage 4 animation complete')
-          console.log('Final position should be:', stage4Config.model)
+          console.log('Final position should be:', getStageConfig(4).model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
+          
+          // Explicitly set the final stage 4 configuration to prevent jumping
+          const stage4Config = getStageConfig(4)
+          setModelControls(stage4Config.model)
+          setCameraControls(stage4Config.camera)
+          setLightingControls(stage4Config.lighting)
           
           // Complete the animation
           setIs3DAnimating(false)
@@ -389,7 +405,7 @@ export default function AnimationSystem({
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds for position animation
+      const duration = 1000 // 1 second for position animation
       
       const animateStage3 = () => {
         const elapsed = Date.now() - startTime
@@ -402,6 +418,13 @@ export default function AnimationSystem({
           requestAnimationFrame(animateStage3)
         } else {
           console.log('Stage 4 to Stage 3 animation complete')
+          
+          // Explicitly set the final stage 3 configuration to prevent jumping
+          const stage3Config = getStageConfig(3)
+          setModelControls(stage3Config.model)
+          setCameraControls(stage3Config.camera)
+          setLightingControls(stage3Config.lighting)
+          
           setIs3DAnimating(false)
           setCurrent3DStage(3)
         }
@@ -415,7 +438,7 @@ export default function AnimationSystem({
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 3000 // 3 seconds
+      const duration = 1000 // 1 second
       
       const animateStage2 = () => {
         const elapsed = Date.now() - startTime
@@ -437,14 +460,14 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 3 && current3DStage === 4 && !is3DAnimating) {
       // Start Stage 4 to Stage 5 animation when transitioning to Section 4
       console.log('🚀 Starting Stage 4 to Stage 5 animation')
-      console.log('From Stage 4:', stage4Config.model)
-      console.log('To Stage 5:', stage5Config.model)
+      console.log('From Stage 4:', getStageConfig(4).model)
+      console.log('To Stage 5:', getStageConfig(5).model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage5 = () => {
         const elapsed = Date.now() - startTime
@@ -461,7 +484,7 @@ export default function AnimationSystem({
           requestAnimationFrame(animateToStage5)
         } else {
           console.log('✅ Stage 4 to Stage 5 animation complete')
-          console.log('Final position should be:', stage5Config.model)
+          console.log('Final position should be:', getStageConfig(5).model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -476,11 +499,16 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 4 && current3DStage === 5 && !is3DAnimating) {
       // Start Stage 5 to Stage 4 animation when transitioning to Section 3
       console.log('Starting Stage 5 to Stage 4 animation')
+      const stage5Config = getStageConfig(5)
+      const stage4Config = getStageConfig(4)
+      console.log('From Stage 5:', stage5Config.model)
+      console.log('To Stage 4:', stage4Config.model)
+      console.log('Device type should be mobile for correct positioning')
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage4 = () => {
         const elapsed = Date.now() - startTime
@@ -493,6 +521,13 @@ export default function AnimationSystem({
           requestAnimationFrame(animateToStage4)
         } else {
           console.log('Stage 5 to Stage 4 animation complete')
+          
+          // Explicitly set the final stage 4 configuration to prevent jumping
+          const stage4Config = getStageConfig(4)
+          setModelControls(stage4Config.model)
+          setCameraControls(stage4Config.camera)
+          setLightingControls(stage4Config.lighting)
+          
           setIs3DAnimating(false)
           setCurrent3DStage(4)
         }
@@ -502,14 +537,14 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 4 && current3DStage === 5 && !is3DAnimating) {
       // Start Stage 5 to Stage 6 animation when transitioning from Section 4 to Section 5
       console.log('🚀 Starting Stage 5 to Stage 6 animation')
-      console.log('From Stage 5:', stage5Config.model)
-      console.log('To Stage 6:', stage6Config.model)
+      console.log('From Stage 5:', getStageConfig(5).model)
+      console.log('To Stage 6:', getStageConfig(6).model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage6 = () => {
         const elapsed = Date.now() - startTime
@@ -526,7 +561,7 @@ export default function AnimationSystem({
           requestAnimationFrame(animateToStage6)
         } else {
           console.log('✅ Stage 5 to Stage 6 animation complete')
-          console.log('Final position should be:', stage6Config.model)
+          console.log('Final position should be:', getStageConfig(6).model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -545,7 +580,7 @@ export default function AnimationSystem({
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage5 = () => {
         const elapsed = Date.now() - startTime
@@ -576,14 +611,14 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 5 && current3DStage === 6 && !is3DAnimating) {
       // Start Stage 6 to Stage 7 animation when transitioning from Section 5 to Section 6
       console.log('🚀 Starting Stage 6 to Stage 7 animation')
-      console.log('From Stage 6:', stage6Config.model)
-      console.log('To Stage 7:', stage7Config.model)
+      console.log('From Stage 6:', getStageConfig(6).model)
+      console.log('To Stage 7:', getStageConfig(7).model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage7 = () => {
         const elapsed = Date.now() - startTime
@@ -600,7 +635,7 @@ export default function AnimationSystem({
           requestAnimationFrame(animateToStage7)
         } else {
           console.log('✅ Stage 6 to Stage 7 animation complete')
-          console.log('Final position should be:', stage7Config.model)
+          console.log('Final position should be:', getStageConfig(7).model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -619,7 +654,7 @@ export default function AnimationSystem({
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage6 = () => {
         const elapsed = Date.now() - startTime
@@ -650,14 +685,14 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 6 && current3DStage === 7 && !is3DAnimating) {
       // Start Stage 7 to Stage 8 animation when transitioning from Section 6 to Section 7
       console.log('🚀 Starting Stage 7 to Stage 8 animation')
-      console.log('From Stage 7:', stage7Config.model)
-      console.log('To Stage 8:', stage8Config.model)
+      console.log('From Stage 7:', getStageConfig(7).model)
+      console.log('To Stage 8:', getStageConfig(8).model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage8 = () => {
         const elapsed = Date.now() - startTime
@@ -674,7 +709,7 @@ export default function AnimationSystem({
           requestAnimationFrame(animateToStage8)
         } else {
           console.log('✅ Stage 7 to Stage 8 animation complete')
-          console.log('Final position should be:', stage8Config.model)
+          console.log('Final position should be:', getStageConfig(8).model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -702,7 +737,7 @@ export default function AnimationSystem({
           setStage3DAnimationProgress(0)
           
           const startTime = Date.now()
-          const duration = 2000 // 2 seconds
+          const duration = 1000 // 1 second
           
           const animateToStage7 = () => {
             const elapsed = Date.now() - startTime
@@ -737,7 +772,7 @@ export default function AnimationSystem({
         setStage3DAnimationProgress(0)
         
         const startTime = Date.now()
-        const duration = 2000 // 2 seconds
+        const duration = 1000 // 1 second
         
         const animateToStage7 = () => {
           const elapsed = Date.now() - startTime
@@ -769,8 +804,8 @@ export default function AnimationSystem({
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
       // Start Stage 8 to Stage 9 animation when transitioning from Section 7 to Section 8
       console.log('🚀 Starting Stage 8 to Stage 9 animation')
-      console.log('From Stage 8:', stage8Config.model)
-      console.log('To Stage 9:', stage9Config.model)
+      console.log('From Stage 8:', getStageConfig(8).model)
+      console.log('To Stage 9:', getStageConfig(9).model)
       
       // Trigger stage-8-close-animation before transitioning away from stage 8
       console.log('🎬 Triggering stage-8-close-animation before stage transition')
@@ -784,7 +819,7 @@ export default function AnimationSystem({
           setStage3DAnimationProgress(0)
           
           const startTime = Date.now()
-          const duration = 2000 // 2 seconds
+          const duration = 1000 // 1 second
           
           const animateToStage9 = () => {
             const elapsed = Date.now() - startTime
@@ -801,7 +836,7 @@ export default function AnimationSystem({
               requestAnimationFrame(animateToStage9)
             } else {
               console.log('✅ Stage 8 to Stage 9 animation complete')
-              console.log('Final position should be:', stage9Config.model)
+              console.log('Final position should be:', getStageConfig(9).model)
               
               // Set final progress to exactly 1.0
               setStage3DAnimationProgress(1.0)
@@ -820,7 +855,7 @@ export default function AnimationSystem({
         setStage3DAnimationProgress(0)
         
         const startTime = Date.now()
-        const duration = 2000 // 2 seconds
+        const duration = 1000 // 1 second
         
         const animateToStage9 = () => {
           const elapsed = Date.now() - startTime
@@ -837,7 +872,7 @@ export default function AnimationSystem({
             requestAnimationFrame(animateToStage9)
           } else {
             console.log('✅ Stage 8 to Stage 9 animation complete')
-            console.log('Final position should be:', stage9Config.model)
+            console.log('Final position should be:', getStageConfig(9).model)
             
             // Set final progress to exactly 1.0
             setStage3DAnimationProgress(1.0)
@@ -864,7 +899,7 @@ export default function AnimationSystem({
       setStage3DAnimationProgress(0)
       
       const startTime = Date.now()
-      const duration = 2000 // 2 seconds
+      const duration = 1000 // 1 second
       
       const animateToStage8 = () => {
         const elapsed = Date.now() - startTime
@@ -898,14 +933,7 @@ export default function AnimationSystem({
   // Sync Dev Controls with current stage when stage changes
   useEffect(() => {
     if (!is3DAnimating && !isAnimating) {
-      const currentStageConfig = current3DStage === 1 ? stage1Config : 
-                                current3DStage === 2 ? stage2Config : 
-                                current3DStage === 3 ? stage3Config :
-                                current3DStage === 4 ? stage4Config : 
-                                current3DStage === 5 ? stage5Config : 
-                                current3DStage === 6 ? stage6Config : 
-                                current3DStage === 7 ? stage7Config : 
-                                current3DStage === 8 ? stage8Config : stage9Config
+      const currentStageConfig = getStageConfig(current3DStage)
       setModelControls(currentStageConfig.model)
       setCameraControls(currentStageConfig.camera)
       setLightingControls(currentStageConfig.lighting)
@@ -920,8 +948,8 @@ export default function AnimationSystem({
     const timer = setTimeout(() => {
       setIsAnimating(true)
       
-      // Animation duration: 1.5 seconds
-      const duration = 1500
+      // Animation duration: 1 second
+      const duration = 1000
       const startTime = Date.now()
       
       const animate = () => {
@@ -934,6 +962,7 @@ export default function AnimationSystem({
           requestAnimationFrame(animate)
         } else {
           // Animation complete - update state to Stage 2 values
+          const stage2Config = getStageConfig(2)
           setModelControls({
             position: stage2Config.model.position,
             rotation: stage2Config.model.rotation,

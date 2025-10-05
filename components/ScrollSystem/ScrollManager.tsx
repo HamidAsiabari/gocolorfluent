@@ -32,6 +32,13 @@ export default function ScrollManager({
     
     let isScrollingToSection = false
     let wheelTimeout: NodeJS.Timeout | undefined
+    let touchStartY = 0
+    let touchEndY = 0
+    let touchStartTime = 0
+    let touchEndTime = 0
+    let isTouchScrolling = false
+    let touchMoveCount = 0
+    let lastTouchY = 0
     
     // Lock scroll position to current section
     const lockScrollPosition = () => {
@@ -39,6 +46,26 @@ export default function ScrollManager({
       const targetScrollY = (currentSection - 1) * windowHeight
       window.scrollTo(0, targetScrollY)
       setScrollPosition(targetScrollY)
+    }
+    
+    // Handle scroll events to maintain section locking
+    const handleScroll = (e: Event) => {
+      if (isScrollingToSection) return
+      
+      const windowHeight = window.innerHeight
+      const currentScrollY = window.scrollY
+      const expectedScrollY = (currentSection - 1) * windowHeight
+      
+      // Check if device is mobile
+      const isMobile = window.innerWidth <= 768
+      const tolerance = isMobile ? 0 : 10 // No tolerance on mobile, small tolerance on desktop
+      
+      // If scroll position deviates from expected, lock it back immediately
+      if (Math.abs(currentScrollY - expectedScrollY) > tolerance) {
+        lockScrollPosition()
+      }
+      
+      setScrollPosition(currentScrollY)
     }
     
     // Handle wheel events for section navigation
@@ -59,6 +86,72 @@ export default function ScrollManager({
       if (isScrollingDown || isScrollingUp) {
         navigateToSection(isScrollingDown ? 'down' : 'up')
       }
+    }
+    
+    // Handle touch events for mobile devices
+    const handleTouchStart = (e: TouchEvent) => {
+      if (isScrollingToSection) return
+      
+      touchStartY = e.touches[0].clientY
+      lastTouchY = touchStartY
+      touchStartTime = Date.now()
+      isTouchScrolling = true
+      touchMoveCount = 0
+    }
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isTouchScrolling || isScrollingToSection) return
+      
+      // Prevent default scrolling on mobile to avoid showing multiple sections
+      e.preventDefault()
+      
+      touchMoveCount++
+      const currentY = e.touches[0].clientY
+      lastTouchY = currentY
+      
+      // Track movement for swipe detection
+    }
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isTouchScrolling || isScrollingToSection) return
+      
+      touchEndY = e.changedTouches[0].clientY
+      touchEndTime = Date.now()
+      
+      const deltaY = touchStartY - touchEndY
+      const deltaTime = touchEndTime - touchStartTime
+      const velocity = deltaTime > 0 ? Math.abs(deltaY) / deltaTime : 0
+      
+      // Enhanced swipe detection with multiple criteria
+      const minSwipeDistance = 60 // Minimum distance for swipe
+      const minVelocity = 0.12 // Minimum velocity for swipe
+      const minMoveCount = 3 // Minimum number of touch moves
+      
+      // Only trigger navigation for clear, intentional swipe gestures
+      if (Math.abs(deltaY) > minSwipeDistance && 
+          velocity > minVelocity && 
+          touchMoveCount >= minMoveCount) {
+        
+        // Touch scroll direction logic (inverted for mobile)
+        // deltaY = touchStartY - touchEndY
+        // Mobile touch behavior: swipe up should go to next section, swipe down should go to previous section
+        const isScrollingUp = deltaY < 0    // Swipe down -> previous section
+        const isScrollingDown = deltaY > 0  // Swipe up -> next section
+        
+        if (isScrollingDown || isScrollingUp) {
+          // Use requestAnimationFrame for smoother transition
+          requestAnimationFrame(() => {
+            if (!isScrollingToSection) {
+              const direction = isScrollingDown ? 'down' : 'up'
+              navigateToSection(direction)
+            }
+          })
+        }
+      }
+      
+      // Reset touch state
+      isTouchScrolling = false
+      touchMoveCount = 0
     }
     
     // Handle keyboard navigation
@@ -97,21 +190,30 @@ export default function ScrollManager({
         setTransitionProgress(0)
         isScrollingToSection = true
         
-        // Animate transition progress
-        const duration = 2000 // 2 seconds
+        // Animate transition progress with improved timing
+        const duration = 1200 // 1.2 seconds for smoother feel
         const startTime = performance.now()
         
         const animateTransition = (currentTime: number) => {
           const elapsed = currentTime - startTime
           const progress = Math.min(elapsed / duration, 1)
           
-          // Easing function for smooth animation
-          const easeInOutCubic = (t: number) => {
-            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+          // Improved easing function for more natural animation
+          const easeOutCubic = (t: number) => {
+            return 1 - Math.pow(1 - t, 3)
           }
           
-          const easedProgress = easeInOutCubic(progress)
+          const easedProgress = easeOutCubic(progress)
           setTransitionProgress(easedProgress)
+          
+          // Smooth scroll to target position during animation
+          const windowHeight = window.innerHeight
+          const startScrollY = (currentSection - 1) * windowHeight
+          const targetScrollY = (targetSection - 1) * windowHeight
+          const currentScrollY = startScrollY + (targetScrollY - startScrollY) * easedProgress
+          
+          window.scrollTo(0, currentScrollY)
+          setScrollPosition(currentScrollY)
           
           if (progress < 1) {
             requestAnimationFrame(animateTransition)
@@ -124,10 +226,10 @@ export default function ScrollManager({
             isScrollingToSection = false
             setTransitionName(null)
             
-            // Update scroll position
-            const targetScrollY = (targetSection - 1) * window.innerHeight
-            setScrollPosition(targetScrollY)
-            window.scrollTo(0, targetScrollY)
+            // Ensure final scroll position is exact
+            const finalScrollY = (targetSection - 1) * window.innerHeight
+            setScrollPosition(finalScrollY)
+            window.scrollTo(0, finalScrollY)
           }
         }
         
@@ -143,7 +245,12 @@ export default function ScrollManager({
     // Add event listeners
     window.addEventListener('wheel', handleWheel, { passive: false })
     window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('scroll', updateScrollPosition)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    // Add touch event listeners for mobile
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
+    window.addEventListener('touchend', handleTouchEnd, { passive: false })
     
     // Lock initial scroll position
     lockScrollPosition()
@@ -154,13 +261,32 @@ export default function ScrollManager({
     }
     window.addEventListener('resize', handleResize)
     
+    // Add continuous scroll locking for mobile devices
+    const isMobile = window.innerWidth <= 768
+    let scrollLockInterval: NodeJS.Timeout | null = null
+    
+    if (isMobile) {
+      // Lock scroll position more frequently on mobile to prevent any scrolling
+      scrollLockInterval = setInterval(() => {
+        if (!isScrollingToSection) {
+          lockScrollPosition()
+        }
+      }, 16) // ~60fps
+    }
+    
     return () => {
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('scroll', updateScrollPosition)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
       window.removeEventListener('resize', handleResize)
       if (wheelTimeout) {
         clearTimeout(wheelTimeout)
+      }
+      if (scrollLockInterval) {
+        clearInterval(scrollLockInterval)
       }
     }
   }, [currentSection, setCurrentSection, setIsScrolling, setScrollDirection, setTransitionName, setIsTransitioning, setTransitionProgress, setScrollPosition, setIsClient])

@@ -41,7 +41,7 @@ export default function Section2({
 
   return (
     <section 
-      className="flex items-center justify-center h-screen px-6 absolute inset-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (2 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
       }}
@@ -53,7 +53,7 @@ export default function Section2({
         
         {/* Floating geometric shapes */}
         <div className="absolute top-20 right-20 w-32 h-32 border border-blue-400/20 rounded-lg rotate-45 animate-pulse" />
-        <div className="absolute bottom-32 left-16 w-24 h-24 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full blur-xl" />
+        <div className="absolute bottom-32 left-16 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full blur-xl" />
         <div className="absolute top-1/2 left-10 w-16 h-16 border-2 border-indigo-400/30 rounded-full animate-spin" style={{ animationDuration: '20s' }} />
         
         {/* Grid pattern overlay */}
@@ -62,23 +62,23 @@ export default function Section2({
 
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 max-w-6xl mx-auto" style={{ paddingTop: '10%' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
           
           {/* Left Side - Content */}
-          <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          <div className={`space-y-6 lg:space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             {/* Section Title */}
-            <div className="space-y-4">
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 leading-tight">
+            <div className="space-y-2 lg:space-y-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 leading-tight">
                 Advanced Detection
               </h2>
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 leading-tight">
                 Systems
               </h2>
             </div>
 
             {/* Description */}
-            <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-lg">
               State-of-the-art color sensor technology with precision detection capabilities for professional-grade color accuracy.
             </p>
 
@@ -99,14 +99,14 @@ export default function Section2({
             </div>
 
             {/* CTA Button */}
-            <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25">
+            <button className="group relative px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 text-sm sm:text-base">
               <span className="relative z-10">Learn More</span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
             </button>
           </div>
 
-          {/* Right Side - Visual Elements */}
-          <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          {/* Right Side - Visual Elements - Hidden on mobile */}
+          <div className={`hidden lg:block transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="relative">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>

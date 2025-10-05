@@ -41,7 +41,7 @@ export default function Section3({
 
   return (
     <section 
-      className="flex items-center justify-center h-screen px-6 absolute inset-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (3 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
       }}
@@ -66,11 +66,11 @@ export default function Section3({
 
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
-          {/* Left Side - Visual Elements */}
-          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          {/* Left Side - Visual Elements - Hidden on mobile */}
+          <div className={`hidden lg:block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             <div className="relative">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-emerald-900/30 to-cyan-900/30 rounded-2xl border border-emerald-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
@@ -113,19 +113,19 @@ export default function Section3({
           </div>
 
           {/* Right Side - Content */}
-          <div className={`space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div className={`space-y-6 lg:space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             {/* Section Title */}
-            <div className="space-y-4">
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 leading-tight">
+            <div className="space-y-2 lg:space-y-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 leading-tight">
                 Precision
               </h2>
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 leading-tight">
                 Mechanics
               </h2>
             </div>
 
             {/* Description */}
-            <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-lg">
               Micro-gear motor technology with precision coupling and support systems for accurate brush movement and control.
             </p>
 

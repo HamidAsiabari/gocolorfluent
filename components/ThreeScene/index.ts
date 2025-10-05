@@ -1,3 +1,3 @@
 export { default as ThreeSceneManager } from './ThreeSceneManager'
-export { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './StageConfig'
+export { stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config, stage1MobileConfig, stage2MobileConfig, stage3MobileConfig, stage4MobileConfig, stage5MobileConfig, stage6MobileConfig, stage7MobileConfig, stage8MobileConfig, stage9MobileConfig, stage1TabletConfig, stage2TabletConfig, stage3TabletConfig, stage4TabletConfig, stage5TabletConfig, stage6TabletConfig, stage7TabletConfig, stage8TabletConfig, stage9TabletConfig } from './StageConfig'
 export type { StageConfig, ModelConfig, CameraConfig, LightingConfig } from './StageConfig'

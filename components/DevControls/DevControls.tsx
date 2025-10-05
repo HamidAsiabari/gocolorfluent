@@ -109,7 +109,7 @@ export default function DevControls({
   if (!isDevMode) return null
 
   return (
-    <div className="fixed bottom-4 left-4 z-20 bg-black/90 backdrop-blur-sm border border-gray-600 rounded-lg p-2 text-white max-w-80 max-h-[70vh] overflow-y-auto">
+    <div className="fixed bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-auto z-20 bg-black/90 backdrop-blur-sm border border-gray-600 rounded-lg p-2 text-white max-w-80 sm:max-w-80 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-2 sticky top-0 bg-black/90">
         <h3 className="text-sm font-semibold text-green-400">🎮 Dev</h3>
         <button

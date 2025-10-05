@@ -41,7 +41,7 @@ export default function Section7({
 
   return (
     <section 
-      className="flex items-center justify-center h-screen px-6 absolute inset-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (7 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
       }}
@@ -54,7 +54,7 @@ export default function Section7({
         {/* Technical-inspired geometric shapes */}
         <div className="absolute top-16 right-16 w-40 h-40 border-2 border-slate-400/20 rounded-lg rotate-12 animate-pulse" />
         <div className="absolute bottom-24 left-16 w-32 h-32 border-2 border-gray-400/20 rounded-full animate-spin" style={{ animationDuration: '24s' }} />
-        <div className="absolute top-1/3 left-1/4 w-24 h-24 bg-gradient-to-r from-zinc-500/10 to-slate-500/10 rounded-full blur-xl" />
+        <div className="absolute top-1/3 left-1/4 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-r from-zinc-500/10 to-slate-500/10 rounded-full blur-xl" />
         
         {/* Technical patterns */}
         <div className="absolute top-1/2 right-1/4 w-20 h-20 border-2 border-slate-400/30 rounded-full animate-spin" style={{ animationDuration: '18s' }} />
@@ -66,11 +66,11 @@ export default function Section7({
 
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
-          {/* Left Side - Visual Elements */}
-          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          {/* Left Side - Visual Elements - Hidden on mobile */}
+          <div className={`hidden lg:block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             <div className="relative">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-slate-900/30 to-zinc-900/30 rounded-2xl border border-slate-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
@@ -133,19 +133,19 @@ export default function Section7({
           </div>
 
           {/* Right Side - Content */}
-          <div className={`space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div className={`space-y-6 lg:space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             {/* Section Title */}
-            <div className="space-y-4">
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-gray-400 leading-tight">
+            <div className="space-y-2 lg:space-y-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-gray-400 leading-tight">
                 Technical
               </h2>
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-zinc-400 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-zinc-400 leading-tight">
                 Specifications
               </h2>
             </div>
 
             {/* Description */}
-            <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-lg">
               Professional-grade components including micro-gear motors, precision sensors, and advanced electronic systems for reliable performance.
             </p>
 
@@ -190,12 +190,12 @@ export default function Section7({
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-slate-600 to-gray-600 hover:from-slate-700 hover:to-gray-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-slate-500/25">
+              <button className="group relative px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-slate-600 to-gray-600 hover:from-slate-700 hover:to-gray-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-slate-500/25 text-sm sm:text-base">
                 <span className="relative z-10">View Full Specs</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-600 to-gray-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
               </button>
               
-              <button className="group px-8 py-4 border-2 border-slate-400 hover:border-gray-400 text-slate-300 hover:text-gray-300 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-slate-500/5 hover:bg-gray-500/10">
+              <button className="group px-6 py-3 sm:px-8 sm:py-4 border-2 border-slate-400 hover:border-gray-400 text-slate-300 hover:text-gray-300 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-slate-500/5 hover:bg-gray-500/10 text-sm sm:text-base">
                 <span className="relative z-10">Download PDF</span>
               </button>
             </div>

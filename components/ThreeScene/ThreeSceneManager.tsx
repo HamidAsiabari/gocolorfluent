@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
-import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './StageConfig'
+import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config, stage1MobileConfig, stage2MobileConfig, stage3MobileConfig, stage4MobileConfig, stage5MobileConfig, stage6MobileConfig, stage7MobileConfig, stage8MobileConfig, stage9MobileConfig, stage1TabletConfig, stage2TabletConfig, stage3TabletConfig, stage4TabletConfig, stage5TabletConfig, stage6TabletConfig, stage7TabletConfig, stage8TabletConfig, stage9TabletConfig } from './StageConfig'
 import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
 
 interface ThreeSceneManagerProps {
@@ -53,6 +53,8 @@ interface ThreeSceneManagerProps {
   categoryVisibility: CategoryVisibility
   onComponentControlsChange?: (controls: ComponentControls) => void
   onAnimationFunctionsReady?: (functions: { stage8OpenAnimation: () => void; stage8CloseAnimation: () => void }) => void
+  onLoadingProgress?: (progress: number) => void
+  onLoadingComplete?: () => void
 }
 
 export default function ThreeSceneManager({
@@ -69,7 +71,9 @@ export default function ThreeSceneManager({
   componentControls,
   categoryVisibility,
   onComponentControlsChange,
-  onAnimationFunctionsReady
+  onAnimationFunctionsReady,
+  onLoadingProgress,
+  onLoadingComplete
 }: ThreeSceneManagerProps) {
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -152,7 +156,17 @@ export default function ThreeSceneManager({
     const loader = new GLTFLoader()
     let model: THREE.Group | null = null
 
-    loader.load('/product-3d/Color_Brush_assembly_V1_1.glb', (gltf) => {
+    // Track loading progress
+    let loadingProgress = 0
+    const updateProgress = (progress: number) => {
+      loadingProgress = progress
+      onLoadingProgress?.(progress)
+    }
+
+    loader.load(
+      '/product-3d/Color_Brush_assembly_V1_1.glb', 
+      (gltf) => {
+        updateProgress(30) // Model loaded
       model = gltf.scene
       modelRef.current = model
       
@@ -642,8 +656,10 @@ export default function ThreeSceneManager({
           }
           
           console.log('✅ OLED Display texture applied:', texturePath)
+          updateProgress(70) // Textures loaded
         }, undefined, (error) => {
           console.error('Error loading OLED texture:', error)
+          updateProgress(70) // Still count as progress even if texture fails
         })
       }
       
@@ -692,8 +708,14 @@ export default function ThreeSceneManager({
       ;(window as any).applyOLEDTexture = applyOLEDTexture
       ;(window as any).removeOLEDTexture = removeOLEDTexture
       
+      // Complete loading
+      updateProgress(100)
+      onLoadingComplete?.()
+      
     }, undefined, (error) => {
       console.error('Error loading GLB model:', error)
+      updateProgress(100) // Still complete loading even if there's an error
+      onLoadingComplete?.()
     })
 
     // Animation loop

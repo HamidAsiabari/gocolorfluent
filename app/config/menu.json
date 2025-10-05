@@ -1,0 +1,40 @@
+{
+  "menuItems": [
+    {
+      "id": "home",
+      "label": "Home",
+      "path": "/",
+      "isActive": false
+    },
+    {
+      "id": "catalog",
+      "label": "Catalog",
+      "path": "/catalog",
+      "isActive": false
+    },
+    {
+      "id": "about",
+      "label": "About Us",
+      "path": "/about",
+      "isActive": false
+    },
+    {
+      "id": "contact",
+      "label": "Contact Us",
+      "path": "/contact",
+      "isActive": false
+    },
+    {
+      "id": "blog",
+      "label": "Blog",
+      "path": "/blog",
+      "isActive": false
+    },
+    {
+      "id": "faq",
+      "label": "FAQ",
+      "path": "/faq",
+      "isActive": false
+    }
+  ]
+}

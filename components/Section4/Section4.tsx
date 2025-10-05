@@ -41,7 +41,7 @@ export default function Section4({
 
   return (
     <section 
-      className="flex items-center justify-center h-screen px-6 absolute inset-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (4 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
       }}
@@ -66,23 +66,23 @@ export default function Section4({
 
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Content */}
-          <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          <div className={`space-y-6 lg:space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             {/* Section Title */}
-            <div className="space-y-4">
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400 leading-tight">
+            <div className="space-y-2 lg:space-y-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400 leading-tight">
                 Smart
               </h2>
-              <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-400 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-400 leading-tight">
                 Electronics
               </h2>
             </div>
 
             {/* Description */}
-            <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-lg">
               Advanced PCB technology with OLED display, detector switches, and intelligent control systems for seamless operation.
             </p>
 
@@ -138,8 +138,8 @@ export default function Section4({
             </div>
           </div>
 
-          {/* Right Side - Visual Elements */}
-          <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          {/* Right Side - Visual Elements - Hidden on mobile */}
+          <div className={`hidden lg:block transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="relative">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-violet-900/30 to-fuchsia-900/30 rounded-2xl border border-violet-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>

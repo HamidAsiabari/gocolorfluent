@@ -27,7 +27,7 @@ export default function HeroSection({
 
   return (
     <section 
-      className="flex flex-col items-center justify-center h-screen px-6 absolute inset-0"
+      className="flex flex-col items-center md:items-center items-start justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-16 md:pt-20"
       style={{
         transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
       }}
@@ -35,53 +35,40 @@ export default function HeroSection({
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Gradient Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-500/20 to-orange-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 bg-gradient-to-r from-pink-500/20 to-orange-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
         
         {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 text-center text-white space-y-12 max-w-5xl mx-auto">
+      <div className="relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto">
         {/* Hero Title with enhanced typography */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 leading-[0.9] tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 leading-[0.9] tracking-tight">
             Color
           </h1>
-          <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 leading-[0.9] tracking-tight -mt-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 leading-[0.9] tracking-tight -mt-2 lg:-mt-4">
             Fluent
           </h1>
         </div>
         
         {/* Subtitle with improved styling */}
         <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <p className="text-2xl md:text-3xl lg:text-4xl font-light text-gray-200 max-w-4xl mx-auto leading-relaxed tracking-wide">
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light text-gray-200 max-w-4xl mx-auto leading-relaxed tracking-wide">
             Professional Color Solutions
           </p>
         </div>
         
         {/* Description with better readability */}
         <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
             Experience precision, innovation, and cutting-edge technology in our advanced color brush system. 
             Discover the future of digital artistry with our state-of-the-art assembly.
           </p>
         </div>
 
-        {/* Call to Action Buttons */}
-        <div className={`transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-            <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25">
-              <span className="relative z-10">Explore Products</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-            </button>
-            
-            <button className="group px-8 py-4 border-2 border-gray-400 hover:border-white text-gray-300 hover:text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-white/5 hover:bg-white/10">
-              <span className="relative z-10">Learn More</span>
-            </button>
-          </div>
-        </div>
 
       </div>
 
