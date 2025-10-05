@@ -93,8 +93,7 @@ export default function Product3DObject({
     
     // Copy to clipboard
     navigator.clipboard.writeText(configString).then(() => {
-      console.log('✅ All configs copied to clipboard!')
-      console.log('📋 Config data:', allConfigs)
+      // All configs copied to clipboard
       
       // Show a brief success message (you could add a toast notification here)
       alert('All configurations copied to clipboard!')

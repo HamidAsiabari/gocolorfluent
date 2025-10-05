@@ -18,6 +18,7 @@ interface AnimationSystemProps {
   scrollDirection: 'up' | 'down' | null
   currentSection: number
   isClient: boolean
+  isLoading: boolean
   setModelControls: (controls: any) => void
   setCameraControls: (controls: any) => void
   setLightingControls: (controls: any) => void
@@ -43,6 +44,7 @@ export default function AnimationSystem({
   scrollDirection,
   currentSection,
   isClient,
+  isLoading,
   setModelControls,
   setCameraControls,
   setLightingControls,
@@ -154,10 +156,7 @@ export default function AnimationSystem({
       
       // Debug: Log the interpolation values for Stage 4 animations
       if (current3DStage === 3 || current3DStage === 5) {
-        console.log(`Animation progress: ${progress.toFixed(3)}, eased: ${easedProgress.toFixed(3)}`)
-        console.log(`From: (${fromStage.model.position.x.toFixed(2)}, ${fromStage.model.position.y.toFixed(2)}, ${fromStage.model.position.z.toFixed(2)})`)
-        console.log(`To: (${toStage.model.position.x.toFixed(2)}, ${toStage.model.position.y.toFixed(2)}, ${toStage.model.position.z.toFixed(2)})`)
-        console.log(`Current device type in animation: ${typeof getStageConfig}`)
+        // Animation progress tracking
       }
       
       const animatedModel = {
@@ -325,7 +324,7 @@ export default function AnimationSystem({
   useEffect(() => {
     if (isTransitioning && scrollDirection === 'down' && currentSection === 1 && current3DStage === 2 && !is3DAnimating) {
       // Start Stage 2 to Stage 3 animation when transitioning to Section 2
-      console.log('Starting Stage 2 to Stage 3 animation')
+      // Starting Stage 2 to Stage 3 animation
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -336,13 +335,13 @@ export default function AnimationSystem({
         const elapsed = Date.now() - startTime
         const progress = Math.min(elapsed / duration, 1)
         
-        console.log('Animation progress:', progress)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateStage3)
         } else {
-          console.log('Stage 2 to Stage 3 animation complete')
+          // Stage 2 to Stage 3 animation complete
           setIs3DAnimating(false)
           setCurrent3DStage(3)
         }
@@ -351,13 +350,9 @@ export default function AnimationSystem({
       requestAnimationFrame(animateStage3)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
       // Start Stage 3 to Stage 4 animation when transitioning to Section 3
-      console.log('🚀 Starting Stage 3 to Stage 4 animation')
+      // Starting Stage 3 to Stage 4 animation
       const stage3Config = getStageConfig(3)
       const stage4Config = getStageConfig(4)
-      console.log('From Stage 3:', stage3Config.model)
-      console.log('To Stage 4:', stage4Config.model)
-      console.log('Device type should be mobile for correct positioning')
-      console.log('Stage 4 mobile config should be:', stage4Config.model.position)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
@@ -373,14 +368,13 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage4)
         } else {
-          console.log('✅ Stage 3 to Stage 4 animation complete')
-          console.log('Final position should be:', getStageConfig(4).model)
+          // Stage 3 to Stage 4 animation complete
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -400,7 +394,7 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage4)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 3 && current3DStage === 4 && !is3DAnimating) {
       // Start Stage 4 to Stage 3 animation when transitioning to Section 2
-      console.log('Starting Stage 4 to Stage 3 animation')
+      // Console log removed
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -411,13 +405,13 @@ export default function AnimationSystem({
         const elapsed = Date.now() - startTime
         const progress = Math.min(elapsed / duration, 1)
         
-        console.log('Animation progress:', progress)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateStage3)
         } else {
-          console.log('Stage 4 to Stage 3 animation complete')
+          // Console log removed
           
           // Explicitly set the final stage 3 configuration to prevent jumping
           const stage3Config = getStageConfig(3)
@@ -433,7 +427,7 @@ export default function AnimationSystem({
       requestAnimationFrame(animateStage3)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 2 && current3DStage === 3 && !is3DAnimating) {
       // Start Stage 3 to Stage 2 animation when transitioning to Section 1
-      console.log('Starting Stage 3 to Stage 2 animation')
+      // Console log removed
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -444,13 +438,13 @@ export default function AnimationSystem({
         const elapsed = Date.now() - startTime
         const progress = Math.min(elapsed / duration, 1)
         
-        console.log('Animation progress:', progress)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateStage2)
         } else {
-          console.log('Stage 3 to Stage 2 animation complete')
+          // Console log removed
           setIs3DAnimating(false)
           setCurrent3DStage(2)
         }
@@ -459,9 +453,9 @@ export default function AnimationSystem({
       requestAnimationFrame(animateStage2)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 3 && current3DStage === 4 && !is3DAnimating) {
       // Start Stage 4 to Stage 5 animation when transitioning to Section 4
-      console.log('🚀 Starting Stage 4 to Stage 5 animation')
-      console.log('From Stage 4:', getStageConfig(4).model)
-      console.log('To Stage 5:', getStageConfig(5).model)
+      // Console log removed
+      // Console log removed.model)
+      // Console log removed.model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
@@ -477,14 +471,14 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage5)
         } else {
-          console.log('✅ Stage 4 to Stage 5 animation complete')
-          console.log('Final position should be:', getStageConfig(5).model)
+          // Console log removed
+          // Console log removed.model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -498,12 +492,12 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage5)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 4 && current3DStage === 5 && !is3DAnimating) {
       // Start Stage 5 to Stage 4 animation when transitioning to Section 3
-      console.log('Starting Stage 5 to Stage 4 animation')
+      // Console log removed
       const stage5Config = getStageConfig(5)
       const stage4Config = getStageConfig(4)
-      console.log('From Stage 5:', stage5Config.model)
-      console.log('To Stage 4:', stage4Config.model)
-      console.log('Device type should be mobile for correct positioning')
+      // Console log removed
+      // Console log removed
+      // Console log removed
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -514,13 +508,13 @@ export default function AnimationSystem({
         const elapsed = Date.now() - startTime
         const progress = Math.min(elapsed / duration, 1)
         
-        console.log('Animation progress:', progress)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage4)
         } else {
-          console.log('Stage 5 to Stage 4 animation complete')
+          // Console log removed
           
           // Explicitly set the final stage 4 configuration to prevent jumping
           const stage4Config = getStageConfig(4)
@@ -536,9 +530,9 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage4)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 4 && current3DStage === 5 && !is3DAnimating) {
       // Start Stage 5 to Stage 6 animation when transitioning from Section 4 to Section 5
-      console.log('🚀 Starting Stage 5 to Stage 6 animation')
-      console.log('From Stage 5:', getStageConfig(5).model)
-      console.log('To Stage 6:', getStageConfig(6).model)
+      // Console log removed
+      // Console log removed.model)
+      // Console log removed.model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
@@ -554,14 +548,14 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage6)
         } else {
-          console.log('✅ Stage 5 to Stage 6 animation complete')
-          console.log('Final position should be:', getStageConfig(6).model)
+          // Console log removed
+          // Console log removed.model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -575,7 +569,7 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage6)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 5 && current3DStage === 6 && !is3DAnimating) {
       // Start Stage 6 to Stage 5 animation when transitioning from Section 5 to Section 4
-      console.log('Starting Stage 6 to Stage 5 animation')
+      // Console log removed
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -590,13 +584,13 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage5)
         } else {
-          console.log('Stage 6 to Stage 5 animation complete')
+          // Console log removed
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -610,9 +604,9 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage5)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 5 && current3DStage === 6 && !is3DAnimating) {
       // Start Stage 6 to Stage 7 animation when transitioning from Section 5 to Section 6
-      console.log('🚀 Starting Stage 6 to Stage 7 animation')
-      console.log('From Stage 6:', getStageConfig(6).model)
-      console.log('To Stage 7:', getStageConfig(7).model)
+      // Console log removed
+      // Console log removed.model)
+      // Console log removed.model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
@@ -628,14 +622,14 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage7)
         } else {
-          console.log('✅ Stage 6 to Stage 7 animation complete')
-          console.log('Final position should be:', getStageConfig(7).model)
+          // Console log removed
+          // Console log removed.model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -649,7 +643,7 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage7)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 6 && current3DStage === 7 && !is3DAnimating) {
       // Start Stage 7 to Stage 6 animation when transitioning from Section 6 to Section 5
-      console.log('Starting Stage 7 to Stage 6 animation')
+      // Console log removed
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -664,13 +658,13 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage6)
         } else {
-          console.log('Stage 7 to Stage 6 animation complete')
+          // Console log removed
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -684,9 +678,9 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage6)
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 6 && current3DStage === 7 && !is3DAnimating) {
       // Start Stage 7 to Stage 8 animation when transitioning from Section 6 to Section 7
-      console.log('🚀 Starting Stage 7 to Stage 8 animation')
-      console.log('From Stage 7:', getStageConfig(7).model)
-      console.log('To Stage 8:', getStageConfig(8).model)
+      // Console log removed
+      // Console log removed.model)
+      // Console log removed.model)
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
@@ -702,14 +696,14 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage8)
         } else {
-          console.log('✅ Stage 7 to Stage 8 animation complete')
-          console.log('Final position should be:', getStageConfig(8).model)
+          // Console log removed
+          // Console log removed.model)
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -723,16 +717,16 @@ export default function AnimationSystem({
       requestAnimationFrame(animateToStage8)
     } else if (isTransitioning && scrollDirection === 'up' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
       // Start Stage 8 to Stage 7 animation when transitioning from Section 7 to Section 6
-      console.log('Starting Stage 8 to Stage 7 animation')
+      // Console log removed
       
       // Trigger stage-8-close-animation before transitioning away from stage 8
-      console.log('🎬 Triggering stage-8-close-animation before stage transition')
+      // Console log removed
       if (stage8AnimationFunctions.stage8CloseAnimation) {
         stage8AnimationFunctions.stage8CloseAnimation()
         
         // Wait for close animation to complete (0.5 seconds) before starting stage transition
         setTimeout(() => {
-          console.log('🎬 Close animation complete, starting stage transition')
+          // Console log removed
           setIs3DAnimating(true)
           setStage3DAnimationProgress(0)
           
@@ -747,13 +741,13 @@ export default function AnimationSystem({
             // Apply easing
             const easedProgress = easeInOut(progress)
             
-            console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+            // Animation progress tracking
             setStage3DAnimationProgress(progress)
             
             if (progress < 1) {
               requestAnimationFrame(animateToStage7)
             } else {
-              console.log('Stage 8 to Stage 7 animation complete')
+              // Console log removed
               
               // Set final progress to exactly 1.0
               setStage3DAnimationProgress(1.0)
@@ -782,13 +776,13 @@ export default function AnimationSystem({
           // Apply easing
           const easedProgress = easeInOut(progress)
           
-          console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+          // Animation progress tracking
           setStage3DAnimationProgress(progress)
           
           if (progress < 1) {
             requestAnimationFrame(animateToStage7)
           } else {
-            console.log('Stage 8 to Stage 7 animation complete')
+            // Console log removed
             
             // Set final progress to exactly 1.0
             setStage3DAnimationProgress(1.0)
@@ -803,18 +797,18 @@ export default function AnimationSystem({
       }
     } else if (isTransitioning && scrollDirection === 'down' && currentSection === 7 && current3DStage === 8 && !is3DAnimating) {
       // Start Stage 8 to Stage 9 animation when transitioning from Section 7 to Section 8
-      console.log('🚀 Starting Stage 8 to Stage 9 animation')
-      console.log('From Stage 8:', getStageConfig(8).model)
-      console.log('To Stage 9:', getStageConfig(9).model)
+      // Console log removed
+      // Console log removed.model)
+      // Console log removed.model)
       
       // Trigger stage-8-close-animation before transitioning away from stage 8
-      console.log('🎬 Triggering stage-8-close-animation before stage transition')
+      // Console log removed
       if (stage8AnimationFunctions.stage8CloseAnimation) {
         stage8AnimationFunctions.stage8CloseAnimation()
         
         // Wait for close animation to complete (0.5 seconds) before starting stage transition
         setTimeout(() => {
-          console.log('🎬 Close animation complete, starting stage transition')
+          // Console log removed
           setIs3DAnimating(true)
           setStage3DAnimationProgress(0)
           
@@ -829,14 +823,14 @@ export default function AnimationSystem({
             // Apply easing
             const easedProgress = easeInOut(progress)
             
-            console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+            // Animation progress tracking
             setStage3DAnimationProgress(progress)
             
             if (progress < 1) {
               requestAnimationFrame(animateToStage9)
             } else {
-              console.log('✅ Stage 8 to Stage 9 animation complete')
-              console.log('Final position should be:', getStageConfig(9).model)
+              // Console log removed
+              // Console log removed.model)
               
               // Set final progress to exactly 1.0
               setStage3DAnimationProgress(1.0)
@@ -865,14 +859,14 @@ export default function AnimationSystem({
           // Apply easing
           const easedProgress = easeInOut(progress)
           
-          console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+          // Animation progress tracking
           setStage3DAnimationProgress(progress)
           
           if (progress < 1) {
             requestAnimationFrame(animateToStage9)
           } else {
-            console.log('✅ Stage 8 to Stage 9 animation complete')
-            console.log('Final position should be:', getStageConfig(9).model)
+            // Console log removed
+            // Console log removed.model)
             
             // Set final progress to exactly 1.0
             setStage3DAnimationProgress(1.0)
@@ -887,10 +881,10 @@ export default function AnimationSystem({
       }
   } else if (isTransitioning && scrollDirection === 'up' && currentSection === 8 && current3DStage === 9 && !is3DAnimating) {
       // Start Stage 9 to Stage 8 animation when transitioning from Section 8 to Section 7
-      console.log('Starting Stage 9 to Stage 8 animation')
+      // Console log removed
       
       // Trigger stage-8-close-animation before transitioning away from stage 8
-      console.log('🎬 Triggering stage-8-close-animation before stage transition')
+      // Console log removed
       if (stage8AnimationFunctions.stage8CloseAnimation) {
         stage8AnimationFunctions.stage8CloseAnimation()
       }
@@ -909,13 +903,13 @@ export default function AnimationSystem({
         // Apply easing
         const easedProgress = easeInOut(progress)
         
-        console.log(`Animation progress: ${(progress * 100).toFixed(1)}% (eased: ${(easedProgress * 100).toFixed(1)}%)`)
+        // Animation progress tracking
         setStage3DAnimationProgress(progress)
         
         if (progress < 1) {
           requestAnimationFrame(animateToStage8)
         } else {
-          console.log('Stage 9 to Stage 8 animation complete')
+          // Console log removed
           
           // Set final progress to exactly 1.0
           setStage3DAnimationProgress(1.0)
@@ -940,11 +934,11 @@ export default function AnimationSystem({
     }
   }, [current3DStage, is3DAnimating, isAnimating, setModelControls, setCameraControls, setLightingControls])
 
-  // Start Stage 1 to Stage 2 animation after component mounts
+  // Start Stage 0 to Stage 2 animation after loading is complete
   useEffect(() => {
-    if (!isClient) return
+    if (!isClient || isLoading) return
 
-    // Start animation after a short delay to ensure everything is loaded
+    // Start animation after loading is complete
     const timer = setTimeout(() => {
       setIsAnimating(true)
       
@@ -1000,10 +994,10 @@ export default function AnimationSystem({
       }
       
       requestAnimationFrame(animate)
-    }, 1000) // 1 second delay after page load
+    }, 500) // Short delay after loading completes
 
     return () => clearTimeout(timer)
-  }, [isClient, setIsAnimating, setAnimationProgress, setModelControls, setCameraControls, setLightingControls, setCurrent3DStage])
+  }, [isClient, isLoading, setIsAnimating, setAnimationProgress, setModelControls, setCameraControls, setLightingControls, setCurrent3DStage, getStageConfig])
 
   // This component doesn't render anything directly
   return null

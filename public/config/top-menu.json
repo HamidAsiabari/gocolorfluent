@@ -1,0 +1,45 @@
+{
+  "logo": {
+    "src": "/Color-fluent-Logo-2.png",
+    "alt": "Color Fluent Logo",
+    "href": "/"
+  },
+  "menuItems": [
+    {
+      "id": "home",
+      "label": "Home",
+      "href": "/",
+      "isActive": false
+    },
+    {
+      "id": "catalog",
+      "label": "Catalog",
+      "href": "/catalog",
+      "isActive": false
+    },
+    {
+      "id": "about",
+      "label": "About Us",
+      "href": "/about",
+      "isActive": false
+    },
+    {
+      "id": "contact",
+      "label": "Contact Us",
+      "href": "/contact",
+      "isActive": false
+    },
+    {
+      "id": "blog",
+      "label": "Blog",
+      "href": "/blog",
+      "isActive": false
+    },
+    {
+      "id": "faq",
+      "label": "FAQ",
+      "href": "/faq",
+      "isActive": false
+    }
+  ]
+}

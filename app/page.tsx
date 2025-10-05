@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import Menu from '../components/Menu'
+import TopMenu from '../components/TopMenu'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import DevControls from '../components/DevControls'
@@ -57,7 +57,7 @@ export default function Home() {
     shadowMapSize: 2048,
     shadowBias: -0.0001
   })
-  const [isDevMode, setIsDevMode] = useState(false)
+  const [isDevMode, setIsDevMode] = useState(true)
   const [scrollPosition, setScrollPosition] = useState(0)
   const [isClient, setIsClient] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -73,15 +73,9 @@ export default function Home() {
   const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
-  
-  // Handle menu item click
-  const handleMenuItemClick = () => {
-    setIsMenuOpen(false)
-  }
   
   // Stage 8 animation functions
   const [stage8AnimationFunctions, setStage8AnimationFunctions] = useState<{
@@ -132,7 +126,6 @@ export default function Home() {
   
   // Function to get stage configuration based on device type
   const getStageConfig = useCallback((stage: number) => {
-    console.log(`getStageConfig called for stage ${stage}, deviceType: ${deviceType}`)
     switch (deviceType) {
       case 'mobile':
         switch (stage) {
@@ -324,6 +317,14 @@ export default function Home() {
         // Going from Stage 9 to Stage 8
         fromStage = getStageConfig(9)
         toStage = getStageConfig(8)
+      } else if (current3DStage === 1) {
+        // Stage 1 - no animation, just return current stage values
+        fromStage = getStageConfig(1)
+        toStage = getStageConfig(1)
+      } else if (current3DStage === 2) {
+        // Stage 2 - no animation, just return current stage values
+        fromStage = getStageConfig(2)
+        toStage = getStageConfig(2)
       } else {
         fromStage = getStageConfig(2)
         toStage = getStageConfig(3)
@@ -400,7 +401,7 @@ export default function Home() {
       }
     }
 
-    // Handle initial Stage 1 to Stage 2 animation
+    // Handle initial Stage 0 to Stage 2 animation
     if (isAnimating) {
       const progress = easeInOutSine(animationProgress)
       
@@ -526,14 +527,14 @@ export default function Home() {
       // Safety check to prevent undefined errors
       if (stageConfig && stageConfig.model) {
         setModelControls(stageConfig.model)
-        console.log(`Set model controls to Stage ${current3DStage} (${deviceType}):`, stageConfig.model)
+        // Set model controls to current stage
       } else {
         console.error(`Invalid stage configuration for stage ${current3DStage} (${deviceType})`)
         // Fallback to stage 1 configuration
         const fallbackConfig = getStageConfig(1)
         if (fallbackConfig && fallbackConfig.model) {
           setModelControls(fallbackConfig.model)
-          console.log('Using fallback stage 1 configuration')
+          // Using fallback stage 1 configuration
         }
       }
     }
@@ -604,6 +605,7 @@ export default function Home() {
         scrollDirection={scrollDirection}
         currentSection={currentSection}
         isClient={isClient}
+        isLoading={isLoading}
         setModelControls={setModelControls}
         setCameraControls={setCameraControls}
         setLightingControls={setLightingControls}
@@ -770,42 +772,8 @@ export default function Home() {
         onCategoryVisibilityChange={setCategoryVisibility}
       />}
 
-      {/* Menu Button - Fixed top right */}
-      {!isLoading && <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-30 text-white text-xl sm:text-2xl font-bold hover:text-gray-300 transition-all duration-200 p-2 sm:p-1 hover:scale-105"
-        style={{ 
-          background: 'rgba(0,0,0,0.3)', 
-          border: 'none',
-          outline: 'none',
-          borderRadius: '8px',
-          minWidth: '44px',
-          minHeight: '44px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        ☰
-      </button>}
-
-      {/* Full Screen Menu */}
-      {!isLoading && isMenuOpen && (
-        <div 
-          className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center menu-fade-in"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          <div 
-            className="text-center space-y-6 sm:space-y-8 px-4 sm:px-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 sm:mb-12 menu-title-animate">
-              Menu
-            </h2>
-            <Menu variant="mobile" onItemClick={handleMenuItemClick} />
-          </div>
-        </div>
-      )}
+      {/* Top Menu */}
+      {!isLoading && <TopMenu />}
 
       {/* Show Dev Mode Button when hidden */}
       {!isLoading && !isDevMode && (

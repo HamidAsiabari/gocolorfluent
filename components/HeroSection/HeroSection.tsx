@@ -43,14 +43,12 @@ export default function HeroSection({
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto">
+      <div className="relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto mt-[120px]">
         {/* Hero Title with enhanced typography */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 leading-[0.9] tracking-tight">
-            Color
-          </h1>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 leading-[0.9] tracking-tight -mt-2 lg:-mt-4">
-            Fluent
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black leading-[0.9] tracking-tight">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">Color </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Fluent</span>
           </h1>
         </div>
         

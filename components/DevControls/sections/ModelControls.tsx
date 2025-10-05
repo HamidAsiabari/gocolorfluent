@@ -68,7 +68,7 @@ export default function ModelControls({
     const configString = JSON.stringify(config, null, 2)
     
     navigator.clipboard.writeText(configString).then(() => {
-      console.log('Model config copied to clipboard:', config)
+      // Model config copied to clipboard
       // You could add a toast notification here if you have one
     }).catch(err => {
       console.error('Failed to copy model config:', err)
