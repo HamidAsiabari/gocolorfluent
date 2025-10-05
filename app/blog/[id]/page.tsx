@@ -108,7 +108,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
             </div>
           </div>
         </header>
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ paddingTop: '190px' }}>
           <div className="text-center">
             <h2 className="text-2xl font-bold text-white mb-4">Post Not Found</h2>
             <p className="text-gray-300 mb-6">The requested blog post could not be found.</p>
@@ -130,7 +130,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
       <TopMenu />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ paddingTop: '190px' }}>
         {/* Back Button */}
         <div className="mb-8">
           <Link 

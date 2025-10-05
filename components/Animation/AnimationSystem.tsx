@@ -922,7 +922,7 @@ export default function AnimationSystem({
       
       requestAnimationFrame(animateToStage8)
     }
-  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating, setIs3DAnimating, setStage3DAnimationProgress, setCurrent3DStage])
+  }, [isTransitioning, scrollDirection, currentSection, current3DStage, is3DAnimating])
 
   // Sync Dev Controls with current stage when stage changes
   useEffect(() => {
@@ -932,7 +932,7 @@ export default function AnimationSystem({
       setCameraControls(currentStageConfig.camera)
       setLightingControls(currentStageConfig.lighting)
     }
-  }, [current3DStage, is3DAnimating, isAnimating, setModelControls, setCameraControls, setLightingControls])
+  }, [current3DStage, is3DAnimating, isAnimating])
 
   // Start Stage 0 to Stage 2 animation after loading is complete
   useEffect(() => {
@@ -997,7 +997,7 @@ export default function AnimationSystem({
     }, 500) // Short delay after loading completes
 
     return () => clearTimeout(timer)
-  }, [isClient, isLoading, setIsAnimating, setAnimationProgress, setModelControls, setCameraControls, setLightingControls, setCurrent3DStage, getStageConfig])
+  }, [isClient, isLoading])
 
   // This component doesn't render anything directly
   return null

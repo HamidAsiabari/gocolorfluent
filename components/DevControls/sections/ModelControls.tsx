@@ -69,9 +69,10 @@ export default function ModelControls({
     
     navigator.clipboard.writeText(configString).then(() => {
       // Model config copied to clipboard
-      // You could add a toast notification here if you have one
+      alert('Model configuration copied to clipboard!')
     }).catch(err => {
       console.error('Failed to copy model config:', err)
+      alert('Failed to copy model configuration to clipboard')
     })
   }
   return (

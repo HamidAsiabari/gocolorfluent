@@ -40,7 +40,10 @@ export default function TopMenu() {
         setMenuConfig(config)
       })
       .catch(error => {
-        console.error('Error loading menu config:', error)
+        // Only log error in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Menu config not found, using fallback:', error.message)
+        }
         // Fallback config in case of error
         setMenuConfig({
           logo: {
@@ -84,7 +87,7 @@ export default function TopMenu() {
         }
       })
     }
-  }, [pathname, menuConfig])
+  }, [pathname]) // Removed menuConfig from dependency array to prevent infinite loop
 
   const handleNavigation = (href: string) => {
     closeMenu()
@@ -154,7 +157,10 @@ export default function TopMenu() {
 
       {/* Full Screen Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm">
+        <div 
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm"
+          onClick={closeMenu}
+        >
           {/* Close Button */}
           <div className="absolute top-6 right-6">
             <button
@@ -180,7 +186,10 @@ export default function TopMenu() {
           </div>
 
           {/* Menu Content */}
-          <div className="flex flex-col items-center justify-center min-h-screen px-4">
+          <div 
+            className="flex flex-col items-center justify-center min-h-screen px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="text-center">
               {/* Logo in Menu */}
               <Link 

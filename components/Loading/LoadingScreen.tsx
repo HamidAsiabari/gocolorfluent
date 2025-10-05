@@ -33,7 +33,7 @@ export default function LoadingScreen({ isLoading, progress = 0 }: LoadingScreen
         setIsVisible(false)
       }, 1200) // Increased delay for better visual feedback
     }
-  }, [isLoading, progress, simulatedProgress])
+  }, [isLoading, progress]) // Removed simulatedProgress from dependency array to prevent infinite loop
 
   useEffect(() => {
     // Show content after a brief delay for smooth entrance

@@ -139,7 +139,7 @@ export default function Home() {
           case 8: return stage8MobileConfig
           case 9: return stage9MobileConfig
           default: 
-            console.warn(`Unknown stage ${stage} for mobile, falling back to stage 1`)
+            // console.warn(`Unknown stage ${stage} for mobile, falling back to stage 1`)
             return stage1MobileConfig
         }
       case 'tablet':
@@ -154,7 +154,7 @@ export default function Home() {
           case 8: return stage8TabletConfig
           case 9: return stage9TabletConfig
           default: 
-            console.warn(`Unknown stage ${stage} for tablet, falling back to stage 1`)
+            // console.warn(`Unknown stage ${stage} for tablet, falling back to stage 1`)
             return stage1TabletConfig
         }
       case 'desktop':
@@ -170,7 +170,7 @@ export default function Home() {
           case 8: return stage8Config
           case 9: return stage9Config
           default: 
-            console.warn(`Unknown stage ${stage} for desktop, falling back to stage 1`)
+            // console.warn(`Unknown stage ${stage} for desktop, falling back to stage 1`)
             return stage1Config
         }
     }
@@ -209,9 +209,7 @@ export default function Home() {
     completeLoading()
   }, [loadingStartTime])
 
-  // Animated values function that handles all animations
-  const getAnimatedValues = useCallback(() => {
-    // Import easing functions
+  // Helper functions that don't change
   const lerp = (start: number, end: number, progress: number) => {
     return start + (end - start) * progress
   }
@@ -239,268 +237,6 @@ export default function Home() {
     return -(Math.cos(Math.PI * t) - 1) / 2
   }
 
-    // Handle section-based 3D stage animations
-    if (is3DAnimating) {
-      const progress = easeInOutSine(stage3DAnimationProgress)
-      let fromStage, toStage
-      
-      if (current3DStage === 2) {
-        fromStage = getStageConfig(2)
-        toStage = getStageConfig(3)
-      } else if (current3DStage === 3) {
-        // Check scroll direction to determine correct target stage
-        if (scrollDirection === 'down') {
-          // Going from Stage 3 to Stage 4
-          fromStage = getStageConfig(3)
-          toStage = getStageConfig(4)
-        } else {
-          // Going from Stage 3 to Stage 2
-          fromStage = getStageConfig(3)
-          toStage = getStageConfig(2)
-        }
-      } else if (current3DStage === 4) {
-        // Check if we're animating to Stage 5 (down) or Stage 3 (up)
-        if (scrollDirection === 'down') {
-          // Going from Stage 4 to Stage 5
-          fromStage = getStageConfig(4)
-          toStage = getStageConfig(5)
-        } else {
-          // Going from Stage 4 to Stage 3
-          fromStage = getStageConfig(4)
-          toStage = getStageConfig(3)
-        }
-      } else if (current3DStage === 5) {
-        // Check if we're animating to Stage 6 (down) or Stage 4 (up)
-        if (scrollDirection === 'down') {
-          // Going from Stage 5 to Stage 6
-          fromStage = getStageConfig(5)
-          toStage = getStageConfig(6)
-        } else {
-          // Going from Stage 5 to Stage 4
-          fromStage = getStageConfig(5)
-          toStage = getStageConfig(4)
-        }
-      } else if (current3DStage === 6) {
-        // Check if we're animating to Stage 7 (down) or Stage 5 (up)
-        if (scrollDirection === 'down') {
-          // Going from Stage 6 to Stage 7
-          fromStage = getStageConfig(6)
-          toStage = getStageConfig(7)
-        } else {
-          // Going from Stage 6 to Stage 5
-          fromStage = getStageConfig(6)
-          toStage = getStageConfig(5)
-        }
-      } else if (current3DStage === 7) {
-        // Check if we're animating to Stage 8 (down) or Stage 6 (up)
-        if (scrollDirection === 'down') {
-          // Going from Stage 7 to Stage 8
-          fromStage = getStageConfig(7)
-          toStage = getStageConfig(8)
-        } else {
-          // Going from Stage 7 to Stage 6
-          fromStage = getStageConfig(7)
-          toStage = getStageConfig(6)
-        }
-      } else if (current3DStage === 8) {
-        // Check if we're animating to Stage 9 (down) or Stage 7 (up)
-        if (scrollDirection === 'down') {
-          // Going from Stage 8 to Stage 9
-          fromStage = getStageConfig(8)
-          toStage = getStageConfig(9)
-        } else {
-          // Going from Stage 8 to Stage 7
-          fromStage = getStageConfig(8)
-          toStage = getStageConfig(7)
-        }
-      } else if (current3DStage === 9) {
-        // Going from Stage 9 to Stage 8
-        fromStage = getStageConfig(9)
-        toStage = getStageConfig(8)
-      } else if (current3DStage === 1) {
-        // Stage 1 - no animation, just return current stage values
-        fromStage = getStageConfig(1)
-        toStage = getStageConfig(1)
-      } else if (current3DStage === 2) {
-        // Stage 2 - no animation, just return current stage values
-        fromStage = getStageConfig(2)
-        toStage = getStageConfig(2)
-      } else {
-        fromStage = getStageConfig(2)
-        toStage = getStageConfig(3)
-      }
-      
-      return {
-        model: {
-          position: {
-            x: lerp(fromStage.model.position.x, toStage.model.position.x, progress),
-            y: lerp(fromStage.model.position.y, toStage.model.position.y, progress),
-            z: lerp(fromStage.model.position.z, toStage.model.position.z, progress)
-          },
-          rotation: {
-            x: lerp(fromStage.model.rotation.x, toStage.model.rotation.x, progress),
-            y: lerp(fromStage.model.rotation.y, toStage.model.rotation.y, progress),
-            z: lerp(fromStage.model.rotation.z, toStage.model.rotation.z, progress)
-          },
-          scale: {
-            x: lerp(fromStage.model.scale.x, toStage.model.scale.x, progress),
-            y: lerp(fromStage.model.scale.y, toStage.model.scale.y, progress),
-            z: lerp(fromStage.model.scale.z, toStage.model.scale.z, progress)
-          }
-        },
-        camera: {
-          position: {
-            x: lerp(fromStage.camera.position.x, toStage.camera.position.x, progress),
-            y: lerp(fromStage.camera.position.y, toStage.camera.position.y, progress),
-            z: lerp(fromStage.camera.position.z, toStage.camera.position.z, progress)
-          },
-          fov: lerp(fromStage.camera.fov, toStage.camera.fov, progress)
-        },
-        lighting: {
-          ambientIntensity: lerp(fromStage.lighting.ambientIntensity, toStage.lighting.ambientIntensity, progress),
-          ambientColor: lerpColor(fromStage.lighting.ambientColor, toStage.lighting.ambientColor, progress),
-          directionalIntensity: lerp(fromStage.lighting.directionalIntensity, toStage.lighting.directionalIntensity, progress),
-          directionalColor: lerpColor(fromStage.lighting.directionalColor, toStage.lighting.directionalColor, progress),
-          directionalPosition: {
-            x: lerp(fromStage.lighting.directionalPosition.x, toStage.lighting.directionalPosition.x, progress),
-            y: lerp(fromStage.lighting.directionalPosition.y, toStage.lighting.directionalPosition.y, progress),
-            z: lerp(fromStage.lighting.directionalPosition.z, toStage.lighting.directionalPosition.z, progress)
-          },
-          directionalTarget: {
-            x: lerp(fromStage.lighting.directionalTarget.x, toStage.lighting.directionalTarget.x, progress),
-            y: lerp(fromStage.lighting.directionalTarget.y, toStage.lighting.directionalTarget.y, progress),
-            z: lerp(fromStage.lighting.directionalTarget.z, toStage.lighting.directionalTarget.z, progress)
-          },
-          pointLightIntensity: lerp(fromStage.lighting.pointLightIntensity, toStage.lighting.pointLightIntensity, progress),
-          pointLightColor: lerpColor(fromStage.lighting.pointLightColor, toStage.lighting.pointLightColor, progress),
-          pointLightPosition: {
-            x: lerp(fromStage.lighting.pointLightPosition.x, toStage.lighting.pointLightPosition.x, progress),
-            y: lerp(fromStage.lighting.pointLightPosition.y, toStage.lighting.pointLightPosition.y, progress),
-            z: lerp(fromStage.lighting.pointLightPosition.z, toStage.lighting.pointLightPosition.z, progress)
-          },
-          pointLightDistance: lerp(fromStage.lighting.pointLightDistance, toStage.lighting.pointLightDistance, progress),
-          spotLightIntensity: lerp(fromStage.lighting.spotLightIntensity, toStage.lighting.spotLightIntensity, progress),
-          spotLightColor: lerpColor(fromStage.lighting.spotLightColor, toStage.lighting.spotLightColor, progress),
-          spotLightPosition: {
-            x: lerp(fromStage.lighting.spotLightPosition.x, toStage.lighting.spotLightPosition.x, progress),
-            y: lerp(fromStage.lighting.spotLightPosition.y, toStage.lighting.spotLightPosition.y, progress),
-            z: lerp(fromStage.lighting.spotLightPosition.z, toStage.lighting.spotLightPosition.z, progress)
-          },
-          spotLightTarget: {
-            x: lerp(fromStage.lighting.spotLightTarget.x, toStage.lighting.spotLightTarget.x, progress),
-            y: lerp(fromStage.lighting.spotLightTarget.y, toStage.lighting.spotLightTarget.y, progress),
-            z: lerp(fromStage.lighting.spotLightTarget.z, toStage.lighting.spotLightTarget.z, progress)
-          },
-          spotLightDistance: lerp(fromStage.lighting.spotLightDistance, toStage.lighting.spotLightDistance, progress),
-          spotLightAngle: lerp(fromStage.lighting.spotLightAngle, toStage.lighting.spotLightAngle, progress),
-          spotLightPenumbra: lerp(fromStage.lighting.spotLightPenumbra, toStage.lighting.spotLightPenumbra, progress),
-          shadowsEnabled: fromStage.lighting.shadowsEnabled,
-          shadowMapSize: fromStage.lighting.shadowMapSize,
-          shadowBias: fromStage.lighting.shadowBias
-        }
-      }
-    }
-
-    // Handle initial Stage 0 to Stage 2 animation
-    if (isAnimating) {
-      const progress = easeInOutSine(animationProgress)
-      
-      return {
-        model: {
-          position: {
-            x: lerp(stage1Config.model.position.x, stage2Config.model.position.x, progress),
-            y: lerp(stage1Config.model.position.y, stage2Config.model.position.y, progress),
-            z: lerp(stage1Config.model.position.z, stage2Config.model.position.z, progress)
-          },
-          rotation: {
-            x: lerp(stage1Config.model.rotation.x, stage2Config.model.rotation.x, progress),
-            y: lerp(stage1Config.model.rotation.y, stage2Config.model.rotation.y, progress),
-            z: lerp(stage1Config.model.rotation.z, stage2Config.model.rotation.z, progress)
-          },
-          scale: {
-            x: lerp(stage1Config.model.scale.x, stage2Config.model.scale.x, progress),
-            y: lerp(stage1Config.model.scale.y, stage2Config.model.scale.y, progress),
-            z: lerp(stage1Config.model.scale.z, stage2Config.model.scale.z, progress)
-          }
-        },
-        camera: {
-          position: {
-            x: lerp(stage1Config.camera.position.x, stage2Config.camera.position.x, progress),
-            y: lerp(stage1Config.camera.position.y, stage2Config.camera.position.y, progress),
-            z: lerp(stage1Config.camera.position.z, stage2Config.camera.position.z, progress)
-          },
-          fov: lerp(stage1Config.camera.fov, stage2Config.camera.fov, progress)
-        },
-        lighting: {
-          ambientIntensity: lerp(stage1Config.lighting.ambientIntensity, stage2Config.lighting.ambientIntensity, progress),
-          ambientColor: lerpColor(stage1Config.lighting.ambientColor, stage2Config.lighting.ambientColor, progress),
-          directionalIntensity: lerp(stage1Config.lighting.directionalIntensity, stage2Config.lighting.directionalIntensity, progress),
-          directionalColor: lerpColor(stage1Config.lighting.directionalColor, stage2Config.lighting.directionalColor, progress),
-          directionalPosition: {
-            x: lerp(stage1Config.lighting.directionalPosition.x, stage2Config.lighting.directionalPosition.x, progress),
-            y: lerp(stage1Config.lighting.directionalPosition.y, stage2Config.lighting.directionalPosition.y, progress),
-            z: lerp(stage1Config.lighting.directionalPosition.z, stage2Config.lighting.directionalPosition.z, progress)
-          },
-          directionalTarget: {
-            x: lerp(stage1Config.lighting.directionalTarget.x, stage2Config.lighting.directionalTarget.x, progress),
-            y: lerp(stage1Config.lighting.directionalTarget.y, stage2Config.lighting.directionalTarget.y, progress),
-            z: lerp(stage1Config.lighting.directionalTarget.z, stage2Config.lighting.directionalTarget.z, progress)
-          },
-          pointLightIntensity: lerp(stage1Config.lighting.pointLightIntensity, stage2Config.lighting.pointLightIntensity, progress),
-          pointLightColor: lerpColor(stage1Config.lighting.pointLightColor, stage2Config.lighting.pointLightColor, progress),
-          pointLightPosition: {
-            x: lerp(stage1Config.lighting.pointLightPosition.x, stage2Config.lighting.pointLightPosition.x, progress),
-            y: lerp(stage1Config.lighting.pointLightPosition.y, stage2Config.lighting.pointLightPosition.y, progress),
-            z: lerp(stage1Config.lighting.pointLightPosition.z, stage2Config.lighting.pointLightPosition.z, progress)
-          },
-          pointLightDistance: lerp(stage1Config.lighting.pointLightDistance, stage2Config.lighting.pointLightDistance, progress),
-          spotLightIntensity: lerp(stage1Config.lighting.spotLightIntensity, stage2Config.lighting.spotLightIntensity, progress),
-          spotLightColor: lerpColor(stage1Config.lighting.spotLightColor, stage2Config.lighting.spotLightColor, progress),
-          spotLightPosition: {
-            x: lerp(stage1Config.lighting.spotLightPosition.x, stage2Config.lighting.spotLightPosition.x, progress),
-            y: lerp(stage1Config.lighting.spotLightPosition.y, stage2Config.lighting.spotLightPosition.y, progress),
-            z: lerp(stage1Config.lighting.spotLightPosition.z, stage2Config.lighting.spotLightPosition.z, progress)
-          },
-          spotLightTarget: {
-            x: lerp(stage1Config.lighting.spotLightTarget.x, stage2Config.lighting.spotLightTarget.x, progress),
-            y: lerp(stage1Config.lighting.spotLightTarget.y, stage2Config.lighting.spotLightTarget.y, progress),
-            z: lerp(stage1Config.lighting.spotLightTarget.z, stage2Config.lighting.spotLightTarget.z, progress)
-          },
-          spotLightDistance: lerp(stage1Config.lighting.spotLightDistance, stage2Config.lighting.spotLightDistance, progress),
-          spotLightAngle: lerp(stage1Config.lighting.spotLightAngle, stage2Config.lighting.spotLightAngle, progress),
-          spotLightPenumbra: lerp(stage1Config.lighting.spotLightPenumbra, stage2Config.lighting.spotLightPenumbra, progress),
-          shadowsEnabled: stage1Config.lighting.shadowsEnabled,
-          shadowMapSize: stage1Config.lighting.shadowMapSize,
-          shadowBias: stage1Config.lighting.shadowBias
-        }
-      }
-    }
-
-    // Return Stage 4 configuration when in Stage 4, but use model controls for dev controls
-    if (current3DStage === 4) {
-      return {
-        model: modelControls, // Use model controls so dev controls work
-        camera: stage4Config.camera,
-        lighting: stage4Config.lighting
-      }
-    }
-
-    // Return Stage 5 configuration when in Stage 5, but use model controls for dev controls
-    if (current3DStage === 5) {
-      return {
-        model: modelControls, // Use model controls so dev controls work
-        camera: stage5Config.camera,
-        lighting: stage5Config.lighting
-      }
-    }
-
-    // Return actual control values when not animating (so dev controls work)
-    return { 
-      model: modelControls, 
-      camera: cameraControls, 
-      lighting: lightingControls 
-    }
-  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage, scrollDirection, modelControls, cameraControls, lightingControls])
 
 
 
@@ -511,34 +247,139 @@ export default function Home() {
   // Update model controls to reflect current animated values
   useEffect(() => {
     if (is3DAnimating || isAnimating) {
-      const animatedValues = getAnimatedValues()
-      setModelControls(animatedValues.model)
-      // console.log('Animation progress - updating model controls:', animatedValues.model)
+      // Calculate animated values directly here to avoid dependency issues
+      let animatedValues
+      
+      if (is3DAnimating) {
+        const progress = easeInOutSine(stage3DAnimationProgress)
+        let fromStage, toStage
+        
+        if (current3DStage === 2) {
+          fromStage = getStageConfig(2)
+          toStage = getStageConfig(3)
+        } else if (current3DStage === 3) {
+          if (scrollDirection === 'down') {
+            fromStage = getStageConfig(3)
+            toStage = getStageConfig(4)
+          } else {
+            fromStage = getStageConfig(3)
+            toStage = getStageConfig(2)
+          }
+        } else if (current3DStage === 4) {
+          if (scrollDirection === 'down') {
+            fromStage = getStageConfig(4)
+            toStage = getStageConfig(5)
+          } else {
+            fromStage = getStageConfig(4)
+            toStage = getStageConfig(3)
+          }
+        } else if (current3DStage === 5) {
+          if (scrollDirection === 'down') {
+            fromStage = getStageConfig(5)
+            toStage = getStageConfig(6)
+          } else {
+            fromStage = getStageConfig(5)
+            toStage = getStageConfig(4)
+          }
+        } else if (current3DStage === 6) {
+          if (scrollDirection === 'down') {
+            fromStage = getStageConfig(6)
+            toStage = getStageConfig(7)
+          } else {
+            fromStage = getStageConfig(6)
+            toStage = getStageConfig(5)
+          }
+        } else if (current3DStage === 7) {
+          if (scrollDirection === 'down') {
+            fromStage = getStageConfig(7)
+            toStage = getStageConfig(8)
+          } else {
+            fromStage = getStageConfig(7)
+            toStage = getStageConfig(6)
+          }
+        } else if (current3DStage === 8) {
+          if (scrollDirection === 'down') {
+            fromStage = getStageConfig(8)
+            toStage = getStageConfig(9)
+          } else {
+            fromStage = getStageConfig(8)
+            toStage = getStageConfig(7)
+          }
+        } else if (current3DStage === 9) {
+          fromStage = getStageConfig(9)
+          toStage = getStageConfig(8)
+        } else {
+          fromStage = getStageConfig(2)
+          toStage = getStageConfig(3)
+        }
+        
+        animatedValues = {
+          model: {
+            position: {
+              x: lerp(fromStage.model.position.x, toStage.model.position.x, progress),
+              y: lerp(fromStage.model.position.y, toStage.model.position.y, progress),
+              z: lerp(fromStage.model.position.z, toStage.model.position.z, progress)
+            },
+            rotation: {
+              x: lerp(fromStage.model.rotation.x, toStage.model.rotation.x, progress),
+              y: lerp(fromStage.model.rotation.y, toStage.model.rotation.y, progress),
+              z: lerp(fromStage.model.rotation.z, toStage.model.rotation.z, progress)
+            },
+            scale: {
+              x: lerp(fromStage.model.scale.x, toStage.model.scale.x, progress),
+              y: lerp(fromStage.model.scale.y, toStage.model.scale.y, progress),
+              z: lerp(fromStage.model.scale.z, toStage.model.scale.z, progress)
+            }
+          }
+        }
+      } else if (isAnimating) {
+        const progress = easeInOutSine(animationProgress)
+        animatedValues = {
+          model: {
+            position: {
+              x: lerp(stage1Config.model.position.x, stage2Config.model.position.x, progress),
+              y: lerp(stage1Config.model.position.y, stage2Config.model.position.y, progress),
+              z: lerp(stage1Config.model.position.z, stage2Config.model.position.z, progress)
+            },
+            rotation: {
+              x: lerp(stage1Config.model.rotation.x, stage2Config.model.rotation.x, progress),
+              y: lerp(stage1Config.model.rotation.y, stage2Config.model.rotation.y, progress),
+              z: lerp(stage1Config.model.rotation.z, stage2Config.model.rotation.z, progress)
+            },
+            scale: {
+              x: lerp(stage1Config.model.scale.x, stage2Config.model.scale.x, progress),
+              y: lerp(stage1Config.model.scale.y, stage2Config.model.scale.y, progress),
+              z: lerp(stage1Config.model.scale.z, stage2Config.model.scale.z, progress)
+            }
+          }
+        }
+      }
+      
+      if (animatedValues) {
+        setModelControls(animatedValues.model)
+      }
     }
-  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage])
+  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage, scrollDirection, deviceType])
 
   // Update model controls when stage changes (not animating)
   useEffect(() => {
     if (!is3DAnimating && !isAnimating) {
-      // console.log('Stage changed - updating model controls for stage:', current3DStage)
       // Update model controls to match the current stage configuration
       const stageConfig = getStageConfig(current3DStage)
       
       // Safety check to prevent undefined errors
       if (stageConfig && stageConfig.model) {
         setModelControls(stageConfig.model)
-        // Set model controls to current stage
       } else {
         console.error(`Invalid stage configuration for stage ${current3DStage} (${deviceType})`)
         // Fallback to stage 1 configuration
         const fallbackConfig = getStageConfig(1)
         if (fallbackConfig && fallbackConfig.model) {
           setModelControls(fallbackConfig.model)
-          // Using fallback stage 1 configuration
         }
       }
     }
-  }, [current3DStage, is3DAnimating, isAnimating, getStageConfig, deviceType])
+  }, [current3DStage, is3DAnimating, isAnimating, deviceType])
 
 
 
@@ -566,7 +407,6 @@ export default function Home() {
         is3DAnimating={is3DAnimating}
         stage3DAnimationProgress={stage3DAnimationProgress}
         current3DStage={current3DStage}
-        getAnimatedValues={getAnimatedValues}
         componentControls={componentControls}
         categoryVisibility={categoryVisibility}
         onComponentControlsChange={setComponentControls}
@@ -669,7 +509,7 @@ export default function Home() {
         </div>
 
         {/* Content Sections - Positioned based on scroll */}
-        <div className="relative z-10">
+        <div className="section-content relative z-10" style={{ zIndex: 10 }}>
           {/* Section 1 - Hero */}
           <HeroSection
             isClient={isClient}

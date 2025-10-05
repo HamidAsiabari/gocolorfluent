@@ -29,7 +29,8 @@ export default function HeroSection({
     <section 
       className="flex flex-col items-center md:items-center items-start justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-16 md:pt-20"
       style={{
-        transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
+        transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`,
+        zIndex: 10
       }}
     >
       {/* Background Elements */}
@@ -43,7 +44,7 @@ export default function HeroSection({
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto mt-[120px]">
+      <div className="section-content relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto mt-[120px]">
         {/* Hero Title with enhanced typography */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black leading-[0.9] tracking-tight">

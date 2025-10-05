@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
       <TopMenu />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ paddingTop: '190px' }}>
         {/* Back Button */}
         <div className="mb-8">
           <Link 
@@ -143,7 +143,7 @@ export default function PrivacyPolicy() {
             <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-6 mt-4">
               <p className="text-gray-300 mb-2"><strong>Email:</strong> privacy@gocolorfluent.com</p>
               <p className="text-gray-300 mb-2"><strong>Phone:</strong> +1 (437) 882-2429</p>
-              <p className="text-gray-300"><strong>Address:</strong> Toronto, Canada</p>
+              <p className="text-gray-300"><strong>Address:</strong> 70 Misty Moor Dr, Richmond Hill, Ontario, Canada, L4C 6R1</p>
             </div>
           </section>
         </div>

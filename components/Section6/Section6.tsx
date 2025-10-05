@@ -43,11 +43,12 @@ export default function Section6({
     <section 
       className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
-        transform: `translateY(${isClient ? (6 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`
+        transform: `translateY(${isClient ? (6 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`,
+        zIndex: 10
       }}
     >
       {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="section-background absolute inset-0 overflow-hidden">
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-rose-900/20 via-pink-900/10 to-red-900/20" />
         
@@ -66,7 +67,7 @@ export default function Section6({
 
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Content */}

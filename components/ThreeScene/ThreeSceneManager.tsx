@@ -44,11 +44,6 @@ interface ThreeSceneManagerProps {
   is3DAnimating: boolean
   stage3DAnimationProgress: number
   current3DStage: number
-  getAnimatedValues: () => {
-    model: { position: { x: number; y: number; z: number }; rotation: { x: number; y: number; z: number }; scale: { x: number; y: number; z: number } }
-    camera: { position: { x: number; y: number; z: number }; fov: number }
-    lighting: any
-  }
   componentControls: ComponentControls
   categoryVisibility: CategoryVisibility
   onComponentControlsChange?: (controls: ComponentControls) => void
@@ -67,7 +62,6 @@ export default function ThreeSceneManager({
   is3DAnimating,
   stage3DAnimationProgress,
   current3DStage,
-  getAnimatedValues,
   componentControls,
   categoryVisibility,
   onComponentControlsChange,
@@ -90,6 +84,7 @@ export default function ThreeSceneManager({
   const stage8OpenAnimationRef = useRef<number | null>(null)
   const stage8CloseAnimationRef = useRef<number | null>(null)
   const oledTextureRef = useRef<THREE.Texture | null>(null)
+  const upperCoverTextureRef = useRef<THREE.Texture | null>(null)
 
   useEffect(() => {
     if (!mountRef.current) return
@@ -114,6 +109,9 @@ export default function ThreeSceneManager({
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
     renderer.domElement.style.display = 'block'
+    
+    // Apply z-index container class to the mount element
+    mountRef.current.className = 'three-scene-container'
     mountRef.current.appendChild(renderer.domElement)
 
     // Add lighting
@@ -444,7 +442,7 @@ export default function ThreeSceneManager({
       // // Console log removed
       
       if (unmappedControls.length > 0) {
-        console.warn('⚠️ These component controls have no 3D object mapping and will not work:', unmappedControls)
+        // console.warn('⚠️ These component controls have no 3D object mapping and will not work:', unmappedControls)
       }
       
       // Debug: Find unmapped components
@@ -491,7 +489,7 @@ export default function ThreeSceneManager({
           //   componentType: component.type
           // })
         } else {
-          console.warn(`❌ Component not found for storing original state: ${componentKey}`)
+          // console.warn(`❌ Component not found for storing original state: ${componentKey}`)
         }
       })
       
@@ -683,9 +681,96 @@ export default function ThreeSceneManager({
         // Console log removed
       }
       
+      // Function to apply texture to Upper Cover
+      const applyUpperCoverTexture = (texturePath: string) => {
+        if (!textureLoader.current) return
+        
+        textureLoader.current.load(texturePath, (texture) => {
+          // Store texture reference for cleanup
+          upperCoverTextureRef.current = texture
+          
+          // Configure texture for metal surface
+          texture.wrapS = THREE.RepeatWrapping
+          texture.wrapT = THREE.RepeatWrapping
+          texture.flipY = false
+          texture.minFilter = THREE.LinearFilter
+          texture.magFilter = THREE.LinearFilter
+          
+          // Find Upper Cover component and apply texture
+          const upperCoverComponent = componentRefs.current.get('upperCover')
+          if (upperCoverComponent) {
+            upperCoverComponent.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply texture to the material
+                      mat.map = texture
+                      // Set metallic properties for brushed steel appearance
+                      mat.metalness = 0.8
+                      mat.roughness = 0.3
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply texture to the material
+                  newMaterial.map = texture
+                  // Set metallic properties for brushed steel appearance
+                  newMaterial.metalness = 0.8
+                  newMaterial.roughness = 0.3
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          }
+        }, undefined, (error) => {
+          console.error('Error loading Upper Cover texture:', error)
+        })
+      }
+      
+      // Function to remove Upper Cover texture
+      const removeUpperCoverTexture = () => {
+        if (upperCoverTextureRef.current) {
+          upperCoverTextureRef.current.dispose()
+          upperCoverTextureRef.current = null
+        }
+        
+        // Reset Upper Cover materials to original
+        const upperCoverComponent = componentRefs.current.get('upperCover')
+        if (upperCoverComponent) {
+          upperCoverComponent.traverse((child) => {
+            if (child instanceof THREE.Mesh && child.material) {
+              const newMaterial = child.material.clone()
+              if (Array.isArray(newMaterial)) {
+                newMaterial.forEach(mat => {
+                  if (mat instanceof THREE.MeshStandardMaterial) {
+                    mat.map = null
+                    mat.metalness = 0
+                    mat.roughness = 0.5
+                    mat.needsUpdate = true
+                  }
+                })
+              } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                newMaterial.map = null
+                newMaterial.metalness = 0
+                newMaterial.roughness = 0.5
+                newMaterial.needsUpdate = true
+              }
+              
+              child.material = newMaterial
+            }
+          })
+        }
+      }
+      
       // Store functions for use in other effects
       ;(window as any).applyOLEDTexture = applyOLEDTexture
       ;(window as any).removeOLEDTexture = removeOLEDTexture
+      ;(window as any).applyUpperCoverTexture = applyUpperCoverTexture
+      ;(window as any).removeUpperCoverTexture = removeUpperCoverTexture
       
       // Complete loading
       updateProgress(100)
@@ -733,72 +818,72 @@ export default function ThreeSceneManager({
         oledTextureRef.current.dispose()
         oledTextureRef.current = null
       }
+      if (upperCoverTextureRef.current) {
+        upperCoverTextureRef.current.dispose()
+        upperCoverTextureRef.current = null
+      }
     }
   }, [])
 
   // Force updates when model controls change or during animation
   useEffect(() => {
     if (modelRef.current) {
-      const animated = getAnimatedValues()
-      modelRef.current.scale.set(animated.model.scale.x, animated.model.scale.y, animated.model.scale.z)
-      modelRef.current.position.set(animated.model.position.x, animated.model.position.y, animated.model.position.z)
-      modelRef.current.rotation.set(animated.model.rotation.x, animated.model.rotation.y, animated.model.rotation.z)
+      modelRef.current.scale.set(modelControls.scale.x, modelControls.scale.y, modelControls.scale.z)
+      modelRef.current.position.set(modelControls.position.x, modelControls.position.y, modelControls.position.z)
+      modelRef.current.rotation.set(modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z)
     }
-  }, [modelControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress, getAnimatedValues])
+  }, [modelControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress])
 
   // Force updates when camera controls change or during animation
   useEffect(() => {
     if (cameraRef.current) {
-      const animated = getAnimatedValues()
-      cameraRef.current.position.set(animated.camera.position.x, animated.camera.position.y, animated.camera.position.z)
-      cameraRef.current.fov = animated.camera.fov
+      cameraRef.current.position.set(cameraControls.position.x, cameraControls.position.y, cameraControls.position.z)
+      cameraRef.current.fov = cameraControls.fov
       cameraRef.current.updateProjectionMatrix()
     }
-  }, [cameraControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress, getAnimatedValues])
+  }, [cameraControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress])
 
   // Force updates when lighting controls change or during animation
   useEffect(() => {
-    const animated = getAnimatedValues()
-    
     // Ambient light
     if (ambientLightRef.current) {
-      ambientLightRef.current.intensity = animated.lighting.ambientIntensity
-      ambientLightRef.current.color.setHex(parseInt(animated.lighting.ambientColor.replace('#', ''), 16))
+      ambientLightRef.current.intensity = lightingControls.ambientIntensity
+      ambientLightRef.current.color.setHex(parseInt(lightingControls.ambientColor.replace('#', ''), 16))
     }
     
     // Directional light
     if (directionalLightRef.current) {
-      directionalLightRef.current.intensity = animated.lighting.directionalIntensity
-      directionalLightRef.current.color.setHex(parseInt(animated.lighting.directionalColor.replace('#', ''), 16))
-      directionalLightRef.current.position.set(animated.lighting.directionalPosition.x, animated.lighting.directionalPosition.y, animated.lighting.directionalPosition.z)
-      directionalLightRef.current.target.position.set(animated.lighting.directionalTarget.x, animated.lighting.directionalTarget.y, animated.lighting.directionalTarget.z)
-      directionalLightRef.current.castShadow = animated.lighting.shadowsEnabled
-      directionalLightRef.current.shadow.mapSize.width = animated.lighting.shadowMapSize
-      directionalLightRef.current.shadow.mapSize.height = animated.lighting.shadowMapSize
-      directionalLightRef.current.shadow.bias = animated.lighting.shadowBias
+      directionalLightRef.current.intensity = lightingControls.directionalIntensity
+      directionalLightRef.current.color.setHex(parseInt(lightingControls.directionalColor.replace('#', ''), 16))
+      directionalLightRef.current.position.set(lightingControls.directionalPosition.x, lightingControls.directionalPosition.y, lightingControls.directionalPosition.z)
+      directionalLightRef.current.target.position.set(lightingControls.directionalTarget.x, lightingControls.directionalTarget.y, lightingControls.directionalTarget.z)
+      directionalLightRef.current.castShadow = lightingControls.shadowsEnabled
+      directionalLightRef.current.shadow.mapSize.width = lightingControls.shadowMapSize
+      directionalLightRef.current.shadow.mapSize.height = lightingControls.shadowMapSize
+      directionalLightRef.current.shadow.bias = lightingControls.shadowBias
     }
     
     // Point light
     if (pointLightRef.current) {
-      pointLightRef.current.intensity = animated.lighting.pointLightIntensity
-      pointLightRef.current.color.setHex(parseInt(animated.lighting.pointLightColor.replace('#', ''), 16))
-      pointLightRef.current.position.set(animated.lighting.pointLightPosition.x, animated.lighting.pointLightPosition.y, animated.lighting.pointLightPosition.z)
-      pointLightRef.current.distance = animated.lighting.pointLightDistance
-      pointLightRef.current.castShadow = animated.lighting.shadowsEnabled
+      pointLightRef.current.intensity = lightingControls.pointLightIntensity
+      pointLightRef.current.color.setHex(parseInt(lightingControls.pointLightColor.replace('#', ''), 16))
+      pointLightRef.current.position.set(lightingControls.pointLightPosition.x, lightingControls.pointLightPosition.y, lightingControls.pointLightPosition.z)
+      pointLightRef.current.distance = lightingControls.pointLightDistance
+      pointLightRef.current.castShadow = lightingControls.shadowsEnabled
     }
     
     // Spot light
     if (spotLightRef.current) {
-      spotLightRef.current.intensity = animated.lighting.spotLightIntensity
-      spotLightRef.current.color.setHex(parseInt(animated.lighting.spotLightColor.replace('#', ''), 16))
-      spotLightRef.current.position.set(animated.lighting.spotLightPosition.x, animated.lighting.spotLightPosition.y, animated.lighting.spotLightPosition.z)
-      spotLightRef.current.target.position.set(animated.lighting.spotLightTarget.x, animated.lighting.spotLightTarget.y, animated.lighting.spotLightTarget.z)
-      spotLightRef.current.distance = animated.lighting.spotLightDistance
-      spotLightRef.current.angle = animated.lighting.spotLightAngle * Math.PI / 180
-      spotLightRef.current.penumbra = animated.lighting.spotLightPenumbra
-      spotLightRef.current.castShadow = animated.lighting.shadowsEnabled
+      spotLightRef.current.intensity = lightingControls.spotLightIntensity
+      spotLightRef.current.color.setHex(parseInt(lightingControls.spotLightColor.replace('#', ''), 16))
+      spotLightRef.current.position.set(lightingControls.spotLightPosition.x, lightingControls.spotLightPosition.y, lightingControls.spotLightPosition.z)
+      spotLightRef.current.target.position.set(lightingControls.spotLightTarget.x, lightingControls.spotLightTarget.y, lightingControls.spotLightTarget.z)
+      spotLightRef.current.distance = lightingControls.spotLightDistance
+      spotLightRef.current.angle = lightingControls.spotLightAngle * Math.PI / 180
+      spotLightRef.current.penumbra = lightingControls.spotLightPenumbra
+      spotLightRef.current.castShadow = lightingControls.shadowsEnabled
     }
-  }, [lightingControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress, getAnimatedValues])
+  }, [lightingControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress])
 
   // Apply component transformations (only when user changes controls)
   useEffect(() => {
@@ -829,7 +914,7 @@ export default function ThreeSceneManager({
         
         // Debug: Check if component is found in category mapping
         if (!categoryKey) {
-          console.warn(`⚠️ Component "${componentKey}" not found in any category! This component will always be visible.`)
+          // console.warn(`⚠️ Component "${componentKey}" not found in any category! This component will always be visible.`)
         }
         
         const isCategoryVisible = categoryKey ? categoryVisibility[categoryKey] : true
@@ -886,7 +971,7 @@ export default function ThreeSceneManager({
         //   actualVisible: component.visible
         // })
       } else {
-        console.warn(`❌ Component not found for update: ${componentKey}`)
+        // console.warn(`❌ Component not found for update: ${componentKey}`)
       }
     })
     
@@ -917,7 +1002,7 @@ export default function ThreeSceneManager({
         .map(([key, transform]) => key)
       
       if (stillVisibleComponents.length > 0) {
-        console.warn(`⚠️ These mapped components are still visible when all categories are hidden:`, stillVisibleComponents)
+        // console.warn(`⚠️ These mapped components are still visible when all categories are hidden:`, stillVisibleComponents)
       } else {
         // // Console log removed
       }
@@ -934,7 +1019,7 @@ export default function ThreeSceneManager({
         })
         
         if (allVisibleObjects.length > 0) {
-          console.warn(`⚠️ These 3D model objects are still visible when all categories are hidden:`, allVisibleObjects)
+          // console.warn(`⚠️ These 3D model objects are still visible when all categories are hidden:`, allVisibleObjects)
           
           // Hide all unmapped objects when all categories are hidden
           // // Console log removed
@@ -1021,7 +1106,7 @@ export default function ThreeSceneManager({
   // Stage 8 Upper Cover Animation Functions
   const stage8OpenAnimation = useCallback(() => {
     if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
-      console.warn('⚠️ Upper Cover not found for stage-8-open-animation')
+      // console.warn('⚠️ Upper Cover not found for stage-8-open-animation')
       return
     }
 
@@ -1061,7 +1146,7 @@ export default function ThreeSceneManager({
 
   const stage8CloseAnimation = useCallback(() => {
     if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
-      console.warn('⚠️ Upper Cover not found for stage-8-close-animation')
+      // console.warn('⚠️ Upper Cover not found for stage-8-close-animation')
       return
     }
 
@@ -1119,7 +1204,14 @@ export default function ThreeSceneManager({
         stage8CloseAnimation
       })
     }
-  }, [onAnimationFunctionsReady, stage8OpenAnimation, stage8CloseAnimation])
+  }, [onAnimationFunctionsReady])
+
+  // Apply Upper Cover texture when model is loaded
+  useEffect(() => {
+    if ((window as any).applyUpperCoverTexture) {
+      (window as any).applyUpperCoverTexture('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg')
+    }
+  }, [onLoadingComplete])
 
   // Apply OLED Display texture in Stage 5
   useEffect(() => {
