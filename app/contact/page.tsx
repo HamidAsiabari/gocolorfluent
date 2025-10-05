@@ -48,6 +48,18 @@ export default function Contact() {
       title: 'Phone',
       details: ['+1 (437) 882-2429'],
       description: 'Call us during business hours (9 AM - 6 PM EST)'
+    },
+    {
+      icon: '📍',
+      title: 'Address',
+      details: ['70 Misty Moor Dr', 'Richmond Hill, Ontario, Canada', 'L4C 6R1'],
+      description: 'Visit our location or find us on Google Maps'
+    },
+    {
+      icon: '💬',
+      title: 'WhatsApp',
+      details: ['+1 (437) 882-2429'],
+      description: 'Message us on WhatsApp for quick support'
     }
   ]
 
