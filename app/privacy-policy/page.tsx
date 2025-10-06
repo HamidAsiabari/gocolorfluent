@@ -4,7 +4,7 @@ import Footer from '../../components/Footer'
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
         <div className="mb-8">
           <Link 
             href="/" 
-            className="text-blue-400 hover:text-blue-300 flex items-center space-x-2"
+            className="text-logo-bg hover:text-blue-300 flex items-center space-x-2"
           >
             <span>←</span>
             <span>Back to Home</span>

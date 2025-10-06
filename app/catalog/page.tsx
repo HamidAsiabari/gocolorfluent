@@ -17,7 +17,7 @@ export default function Catalog() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -29,7 +29,7 @@ export default function Catalog() {
             Color Fluent – The Smart Way to Color Your Hair
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            Experience the future of hair coloring with <strong className="text-blue-400">Color Fluent</strong>, the intelligent device that makes at-home coloring effortless, precise, and beautifully even.
+            Experience the future of hair coloring with <strong className="text-logo-bg">Color Fluent</strong>, the intelligent device that makes at-home coloring effortless, precise, and beautifully even.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function Catalog() {
           </p>
           
           <p className="text-base sm:text-lg text-gray-300 leading-relaxed mb-6">
-            Paired with the <strong className="text-blue-400">Color Fluent App</strong>, you're guided through every step — from choosing your perfect shade to following real-time instructions. The app saves your custom settings and color history, so repeating your favorite look is as easy as one tap.
+            Paired with the <strong className="text-logo-bg">Color Fluent App</strong>, you're guided through every step — from choosing your perfect shade to following real-time instructions. The app saves your custom settings and color history, so repeating your favorite look is as easy as one tap.
           </p>
 
           <p className="text-base sm:text-lg text-gray-300 leading-relaxed">
@@ -55,9 +55,9 @@ export default function Catalog() {
             {features.map((feature, index) => (
               <div key={index} className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-4 sm:p-6">
                 <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-logo-bg rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
-                    <strong className="text-blue-400">Advanced image and RGB color processing</strong> for precise shade matching
+                    <strong className="text-logo-bg">Advanced image and RGB color processing</strong> for precise shade matching
                   </p>
                 </div>
               </div>
@@ -70,11 +70,11 @@ export default function Catalog() {
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">Technical Specifications</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-2">12V DC 2A</div>
+              <div className="text-2xl sm:text-3xl font-bold text-logo-bg mb-2">12V DC 2A</div>
               <div className="text-gray-300">Power Input</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-2">Lightweight</div>
+              <div className="text-2xl sm:text-3xl font-bold text-logo-bg mb-2">Lightweight</div>
               <div className="text-gray-300">Plastic Body</div>
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function Catalog() {
         {/* Final Description */}
         <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-6 sm:p-8 mb-8">
           <p className="text-base sm:text-lg text-gray-300 leading-relaxed text-center">
-            With a <strong className="text-blue-400">12V DC 2A</strong> power input, <strong className="text-blue-400">lightweight plastic body</strong>, and smart ergonomic design, Color Fluent turns home hair coloring into a professional, personalized experience — every single time.
+            With a <strong className="text-logo-bg">12V DC 2A</strong> power input, <strong className="text-logo-bg">lightweight plastic body</strong>, and smart ergonomic design, Color Fluent turns home hair coloring into a professional, personalized experience — every single time.
           </p>
         </div>
 
@@ -91,19 +91,19 @@ export default function Catalog() {
         <div className="text-center">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 sm:p-8">
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">Ready to Experience Smart Hair Coloring?</h3>
-            <p className="text-blue-100 mb-6">
+            <p className="text-logo-bg/90 mb-6">
               Join thousands of users who have transformed their hair coloring routine with Color Fluent.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/contact" 
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                className="bg-white text-logo-bg px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 Get Started Today
               </Link>
               <Link 
                 href="/about" 
-                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-logo-bg transition-colors"
               >
                 Learn More
               </Link>

@@ -71,7 +71,6 @@ export default function ModelControls({
       // Model config copied to clipboard
       alert('Model configuration copied to clipboard!')
     }).catch(err => {
-      console.error('Failed to copy model config:', err)
       alert('Failed to copy model configuration to clipboard')
     })
   }

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { VideoProvider } from '../components/VideoPlayer/VideoContext'
+import { SectionVisitProvider } from '../components/Animation'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -28,7 +30,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <VideoProvider>
+          <SectionVisitProvider>
+            {children}
+          </SectionVisitProvider>
+        </VideoProvider>
+      </body>
     </html>
   )
 }

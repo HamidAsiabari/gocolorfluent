@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
@@ -21,11 +21,12 @@ interface MenuConfig {
   menuItems: MenuItem[]
 }
 
-export default function TopMenu() {
+const TopMenu = memo(function TopMenu() {
   const router = useRouter()
   const pathname = usePathname()
   const [menuConfig, setMenuConfig] = useState<MenuConfig | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
 
   useEffect(() => {
     // Load menu configuration
@@ -42,7 +43,6 @@ export default function TopMenu() {
       .catch(error => {
         // Only log error in development mode
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Menu config not found, using fallback:', error.message)
         }
         // Fallback config in case of error
         setMenuConfig({
@@ -53,6 +53,8 @@ export default function TopMenu() {
           },
           menuItems: [
             { id: "home", label: "Home", href: "/", isActive: false },
+            { id: "application", label: "Application", href: "/application", isActive: false },
+            { id: "history", label: "History", href: "/history", isActive: false },
             { id: "catalog", label: "Catalog", href: "/catalog", isActive: false },
             { id: "about", label: "About Us", href: "/about", isActive: false },
             { id: "contact", label: "Contact Us", href: "/contact", isActive: false },
@@ -89,9 +91,26 @@ export default function TopMenu() {
     }
   }, [pathname]) // Removed menuConfig from dependency array to prevent infinite loop
 
-  const handleNavigation = (href: string) => {
-    closeMenu()
-    router.push(href)
+  const handleNavigation = async (href: string, itemId: string) => {
+    // Prevent multiple clicks
+    if (loadingItemId) return
+    
+    // Set loading state for the clicked item
+    setLoadingItemId(itemId)
+    
+    try {
+      // Small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Navigate to the page
+      router.push(href)
+      
+      // Close menu after navigation
+      closeMenu()
+    } finally {
+      // Clear loading state
+      setLoadingItemId(null)
+    }
   }
 
   const getItemClasses = (item: MenuItem, baseClasses: string) => {
@@ -120,14 +139,20 @@ export default function TopMenu() {
           <div className="flex justify-between items-center py-6">
             {/* Logo */}
             <Link href={menuConfig.logo.href} className="flex-shrink-0 pl-[5%]">
-              <Image
-                src={menuConfig.logo.src}
-                alt={menuConfig.logo.alt}
-                width={120}
-                height={120}
-                className="h-[120px] w-auto"
-                priority
-              />
+              <div className="relative">
+                <Image
+                  src={menuConfig.logo.src}
+                  alt={menuConfig.logo.alt}
+                  width={120}
+                  height={120}
+                  className="h-[120px] w-auto relative z-10"
+                  style={{ width: 'auto', height: '120px' }}
+                  priority
+                />
+                {/* White glowing shadow */}
+                <div className="absolute inset-0 bg-white/6 blur-lg rounded-lg -z-10 scale-110"></div>
+                <div className="absolute inset-0 bg-white/3 blur-md rounded-lg -z-10 scale-105"></div>
+              </div>
             </Link>
 
             {/* Menu Button */}
@@ -195,30 +220,47 @@ export default function TopMenu() {
               <Link 
                 href={menuConfig.logo.href} 
                 onClick={closeMenu}
-                className="block mb-12"
+                className="block mb-6"
               >
-                <Image
-                  src={menuConfig.logo.src}
-                  alt={menuConfig.logo.alt}
-                  width={676}
-                  height={203}
-                  className="h-[216px] w-auto mx-auto"
-                  priority
-                />
+                <div className="relative inline-block">
+                  <Image
+                    src={menuConfig.logo.src}
+                    alt={menuConfig.logo.alt}
+                    width={676}
+                    height={203}
+                    className="h-[216px] w-auto mx-auto relative z-10"
+                    style={{ width: 'auto', height: '216px' }}
+                    priority
+                  />
+                  {/* White glowing shadow */}
+                  <div className="absolute inset-0 bg-white/6 blur-lg rounded-lg -z-10 scale-110"></div>
+                  <div className="absolute inset-0 bg-white/3 blur-md rounded-lg -z-10 scale-105"></div>
+                </div>
               </Link>
 
               {/* Menu Items */}
-              <nav className="space-y-4 sm:space-y-6">
-                {menuConfig.menuItems.map((item, index) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavigation(item.href)}
-                    className={`block text-xl sm:text-2xl cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-${index + 1} py-3 px-6 rounded-lg hover:bg-white/10 w-full text-center font-medium select-none ${getItemClasses(item, '')}`}
-                    style={{ pointerEvents: 'auto' }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              <nav className="space-y-2 sm:space-y-3">
+                {menuConfig.menuItems.map((item, index) => {
+                  const isLoading = loadingItemId === item.id
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavigation(item.href, item.id)}
+                      disabled={isLoading}
+                      className={`block text-xl sm:text-2xl cursor-pointer transition-all duration-300 hover:scale-105 menu-item-animate menu-item-${index + 1} py-2 px-6 rounded-lg hover:bg-white/10 w-full text-center font-medium select-none ${getItemClasses(item, '')} ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      style={{ pointerEvents: 'auto' }}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Loading...</span>
+                        </div>
+                      ) : (
+                        item.label
+                      )}
+                    </button>
+                  )
+                })}
               </nav>
             </div>
           </div>
@@ -226,4 +268,6 @@ export default function TopMenu() {
       )}
     </>
   )
-}
+})
+
+export default TopMenu

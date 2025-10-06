@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
+import VideoPlayer from '../VideoPlayer'
+import { TypingAnimation, useSectionVisit } from '../Animation'
 
 interface Section4Props {
   isClient: boolean
@@ -10,7 +12,7 @@ interface Section4Props {
   transitionProgress: number
 }
 
-export default function Section4({
+const Section4 = memo(function Section4({
   isClient,
   currentSection,
   isTransitioning,
@@ -19,17 +21,21 @@ export default function Section4({
 }: Section4Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
+  const { markSectionVisited } = useSectionVisit()
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
     if (currentSection === 4) {
-      const timer = setTimeout(() => setIsVisible(true), 200)
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+        markSectionVisited(4) // Mark section as visited only when it becomes visible
+      }, 200)
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection])
+  }, [currentSection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
@@ -38,6 +44,7 @@ export default function Section4({
       return () => clearTimeout(blurTimer)
     }
   }, [isVisible, currentSection])
+
 
   return (
     <section 
@@ -67,7 +74,7 @@ export default function Section4({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '5%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Content */}
@@ -94,15 +101,42 @@ export default function Section4({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">Advanced PCB technology</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Advanced PCB technology" 
+                        speed={60} 
+                        delay={0}
+                        sectionNumber={4}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">High-resolution OLED display</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="High-resolution OLED display" 
+                        speed={60} 
+                        delay={1000}
+                        sectionNumber={4}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-fuchsia-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Precision detector switches</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Precision detector switches" 
+                        speed={60} 
+                        delay={2000}
+                        sectionNumber={4}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -112,85 +146,63 @@ export default function Section4({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">Intelligent control systems</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Intelligent control systems" 
+                        speed={60} 
+                        delay={3000}
+                        sectionNumber={4}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">Real-time data processing</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Real-time data processing" 
+                        speed={60} 
+                        delay={4000}
+                        sectionNumber={4}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-fuchsia-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Seamless user interface</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Seamless user interface" 
+                        speed={60} 
+                        delay={5000}
+                        sectionNumber={4}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-violet-500/25">
-                <span className="relative z-10">Explore Technology</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-              </button>
-              
-              <button className="group px-8 py-4 border-2 border-violet-400 hover:border-purple-400 text-violet-300 hover:text-purple-300 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-violet-500/5 hover:bg-purple-500/10">
-                <span className="relative z-10">View Specs</span>
-              </button>
-            </div>
           </div>
 
           {/* Right Side - Visual Elements - Hidden on mobile */}
           <div className={`hidden lg:block transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <div className="relative">
+            <div className="relative w-fit">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-violet-900/30 to-fuchsia-900/30 rounded-2xl border border-violet-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
-                {/* Electronic components visualization */}
-                <div className="absolute inset-6 space-y-6">
-                  {/* PCB representation */}
-                  <div className="flex justify-center">
-                    <div className="w-32 h-20 bg-gradient-to-r from-violet-600/20 to-purple-600/20 rounded-lg border border-violet-400/30 relative">
-                      {/* Circuit lines */}
-                      <div className="absolute inset-2 space-y-1">
-                        <div className="h-0.5 bg-violet-400/60 rounded-full" />
-                        <div className="h-0.5 bg-purple-400/60 rounded-full" />
-                        <div className="h-0.5 bg-fuchsia-400/60 rounded-full" />
-                      </div>
-                      {/* Components */}
-                      <div className="absolute top-1 left-2 w-2 h-2 bg-violet-400 rounded-full" />
-                      <div className="absolute top-1 right-2 w-2 h-2 bg-purple-400 rounded-full" />
-                      <div className="absolute bottom-1 left-1/2 w-2 h-2 bg-fuchsia-400 rounded-full transform -translate-x-1/2" />
-                    </div>
-                  </div>
-                  
-                  {/* OLED Display representation */}
-                  <div className="flex justify-center">
-                    <div className="w-24 h-16 bg-black border border-violet-400/40 rounded-lg relative overflow-hidden">
-                      <div className="absolute inset-1 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded animate-pulse" />
-                      <div className="absolute top-1 left-1 right-1 h-0.5 bg-violet-400/60 rounded-full" />
-                      <div className="absolute bottom-1 left-1 right-1 h-0.5 bg-purple-400/60 rounded-full" />
-                    </div>
-                  </div>
-                  
-                  {/* Data flow visualization */}
-                  <div className="space-y-2">
-                    <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full animate-pulse" />
-                    <div className="h-1 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full animate-pulse delay-200" />
-                    <div className="h-1 bg-gradient-to-r from-fuchsia-500 to-violet-500 rounded-full animate-pulse delay-400" />
-                  </div>
-                  
-                  {/* Control indicators */}
-                  <div className="flex justify-center space-x-4">
-                    <div className="w-3 h-3 bg-violet-400/60 rounded-full animate-ping" />
-                    <div className="w-3 h-3 bg-purple-400/60 rounded-full animate-ping delay-300" />
-                    <div className="w-3 h-3 bg-fuchsia-400/60 rounded-full animate-ping delay-600" />
-                  </div>
-                </div>
-
-                {/* Floating electronic elements */}
-                <div className="absolute top-4 right-4 w-2 h-2 bg-violet-400/60 rounded-full animate-bounce" />
-                <div className="absolute bottom-4 left-4 w-1.5 h-1.5 bg-purple-400/60 rounded-full animate-bounce delay-500" />
-                <div className="absolute top-1/2 right-4 w-2 h-2 bg-fuchsia-400/60 rounded-full animate-bounce delay-1000" />
+                {/* Video Player */}
+                <VideoPlayer
+                  src="/video/WhatsApp Video 2025-09-12 at 18.50.23.mp4"
+                  videoId="section4-video"
+                  className="w-full h-full"
+                  currentSection={currentSection}
+                  sectionNumber={4}
+                />
               </div>
 
               {/* Decorative electronic elements */}
@@ -203,4 +215,6 @@ export default function Section4({
 
     </section>
   )
-}
+})
+
+export default Section4

@@ -286,18 +286,27 @@ section {
   html, body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: none; /* Prevent bounce scrolling on iOS */
-    touch-action: none; /* Prevent all touch actions to avoid scrolling */
+    touch-action: pan-y; /* Allow vertical scrolling only */
   }
   
   .smooth-scroll {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    touch-action: none; /* Prevent all touch actions to avoid scrolling */
+    touch-action: pan-y; /* Allow vertical scrolling only */
   }
   
   body {
     overflow-x: hidden;
-    touch-action: none; /* Prevent all touch actions to avoid scrolling */
+    touch-action: pan-y; /* Allow vertical scrolling only */
+  }
+  
+  /* Special handling for home page with scroll management */
+  .home-page {
+    touch-action: none; /* Prevent scrolling on home page */
+  }
+  
+  .home-page .smooth-scroll {
+    touch-action: none; /* Prevent scrolling on home page */
   }
   
   /* Mobile section constraints removed to fix legal pages spacing */
@@ -333,5 +342,17 @@ section {
   body {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+  }
+  
+  /* Ensure internal pages can scroll properly */
+  .internal-page {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+  
+  .internal-page main {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }

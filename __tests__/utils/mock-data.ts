@@ -1,8 +1,8 @@
 // Mock data for testing components
 
 export const mockModelControls = {
-  position: { x: 2, y: -0.3, z: 0 },
-  rotation: { x: -0.03, y: 0.1, z: 0.27 },
+  position: { x: 0.9, y: -0.2, z: 0.3 },
+  rotation: { x: -0.09, y: -0.78, z: 0.9 },
   scale: { x: 10, y: 10, z: 10 }
 }
 
@@ -36,8 +36,8 @@ export const mockLightingControls = {
 
 export const mockStage1Config = {
   model: {
-    position: { x: 2, y: -0.3, z: 0 },
-    rotation: { x: -0.03, y: 0.1, z: 0.27 },
+    position: { x: 0.9, y: -0.2, z: 0.3 },
+    rotation: { x: -0.09, y: -0.78, z: 0.9 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -70,7 +70,7 @@ export const mockStage1Config = {
 
 export const mockStage2Config = {
   model: {
-    position: { x: 2, y: -0.3, z: 0 },
+    position: { x: 0.9, y: -0.2, z: 0.3 },
     rotation: { x: -0.9, y: -0.15, z: -0.29 },
     scale: { x: 10, y: 10, z: 10 }
   },

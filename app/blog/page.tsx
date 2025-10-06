@@ -36,13 +36,12 @@ export default function Blog() {
         setLoading(false)
       })
       .catch(error => {
-        console.error('Error loading blog posts:', error)
         setLoading(false)
       })
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -67,7 +66,7 @@ export default function Blog() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogPosts.map((post) => (
-              <article key={post.id} className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 overflow-hidden hover:border-blue-500 transition-all duration-300">
+              <article key={post.id} className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 overflow-hidden hover:border-logo-bg transition-all duration-300">
                 {/* Post Image */}
                 <div className="h-48 relative overflow-hidden">
                   {post['main-photo'] ? (
@@ -104,7 +103,7 @@ export default function Blog() {
                   {/* Read More Button */}
                   <Link 
                     href={`/blog/${post.id}`} 
-                    className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 w-full text-center"
+                    className="inline-block bg-logo-bg hover:bg-logo-bg/80 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 w-full text-center"
                   >
                     Read More
                   </Link>

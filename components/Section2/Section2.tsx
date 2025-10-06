@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
+import { TypingAnimation, useSectionVisit } from '../Animation'
 
 interface Section2Props {
   isClient: boolean
@@ -10,7 +11,7 @@ interface Section2Props {
   transitionProgress: number
 }
 
-export default function Section2({
+const Section2 = memo(function Section2({
   isClient,
   currentSection,
   isTransitioning,
@@ -19,17 +20,21 @@ export default function Section2({
 }: Section2Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
+  const { markSectionVisited } = useSectionVisit()
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
     if (currentSection === 2) {
-      const timer = setTimeout(() => setIsVisible(true), 200)
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+        markSectionVisited(2) // Mark section as visited only when it becomes visible
+      }, 200)
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection])
+  }, [currentSection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
@@ -52,10 +57,10 @@ export default function Section2({
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-indigo-900/20" />
         
-        {/* Floating geometric shapes */}
-        <div className="absolute top-20 right-20 w-32 h-32 border border-blue-400/20 rounded-lg rotate-45 animate-pulse" />
+        {/* Floating geometric shapes - reduced animations for performance */}
+        <div className="absolute top-20 right-20 w-32 h-32 border border-blue-400/20 rounded-lg rotate-45" />
         <div className="absolute bottom-32 left-16 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full blur-xl" />
-        <div className="absolute top-1/2 left-10 w-16 h-16 border-2 border-indigo-400/30 rounded-full animate-spin" style={{ animationDuration: '20s' }} />
+        <div className="absolute top-1/2 left-10 w-16 h-16 border-2 border-indigo-400/30 rounded-full animate-spin" style={{ animationDuration: '30s' }} />
         
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
@@ -63,7 +68,7 @@ export default function Section2({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-6xl mx-auto" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-6xl mx-auto" style={{ paddingTop: 'calc(5% - 2px)' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
           
           {/* Left Side - Content */}
@@ -87,23 +92,53 @@ export default function Section2({
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                <span className="text-gray-300">High-precision color sensors</span>
+                <span className="text-gray-300">
+                  <TypingAnimation 
+                    text="High-precision color sensors" 
+                    speed={60} 
+                    delay={0}
+                    sectionNumber={2}
+                    currentSection={currentSection}
+                    isVisible={isVisible}
+                  />
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200" />
-                <span className="text-gray-300">Real-time color analysis</span>
+                <span className="text-gray-300">
+                  <TypingAnimation 
+                    text="Real-time color analysis" 
+                    speed={60} 
+                    delay={1000}
+                    sectionNumber={2}
+                    currentSection={currentSection}
+                    isVisible={isVisible}
+                  />
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse delay-400" />
-                <span className="text-gray-300">Professional-grade accuracy</span>
+                <span className="text-gray-300">
+                  <TypingAnimation 
+                    text="Professional-grade accuracy" 
+                    speed={60} 
+                    delay={2000}
+                    sectionNumber={2}
+                    currentSection={currentSection}
+                    isVisible={isVisible}
+                  />
+                </span>
               </div>
             </div>
 
             {/* CTA Button */}
-            <button className="group relative px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 text-sm sm:text-base">
+            <a 
+              href="/catalog" 
+              className="group relative inline-block px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 text-sm sm:text-base"
+            >
               <span className="relative z-10">Learn More</span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-            </button>
+            </a>
           </div>
 
           {/* Right Side - Visual Elements - Hidden on mobile */}
@@ -112,33 +147,17 @@ export default function Section2({
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
-                {/* Animated elements inside */}
-                <div className="absolute inset-4 space-y-6">
-                  {/* Sensor representation */}
-                  <div className="flex justify-center">
-                    <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center animate-pulse">
-                      <div className="w-8 h-8 bg-white/80 rounded-full" />
-                    </div>
-                  </div>
-                  
-                  {/* Detection waves */}
-                  <div className="flex justify-center space-x-2">
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className="w-2 h-2 bg-blue-400 rounded-full animate-ping"
-                        style={{ animationDelay: `${i * 200}ms` }}
-                      />
-                    ))}
-                  </div>
-                  
-                  {/* Data visualization */}
-                  <div className="space-y-2">
-                    <div className="h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" />
-                    <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse delay-100" />
-                    <div className="h-2 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full animate-pulse delay-200" />
-                  </div>
+                {/* Home Image */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img 
+                    src="/img/home-img1.png" 
+                    alt="Advanced Detection Systems" 
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
                 </div>
+
+                {/* Overlay gradient for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent rounded-2xl" />
 
                 {/* Floating particles */}
                 <div className="absolute top-4 right-4 w-2 h-2 bg-blue-400/60 rounded-full animate-bounce" />
@@ -156,4 +175,6 @@ export default function Section2({
 
     </section>
   )
-}
+})
+
+export default Section2

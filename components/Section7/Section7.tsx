@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
+import { TypingAnimation, useSectionVisit } from '../Animation'
 
 interface Section7Props {
   isClient: boolean
@@ -10,7 +11,7 @@ interface Section7Props {
   transitionProgress: number
 }
 
-export default function Section7({
+const Section7 = memo(function Section7({
   isClient,
   currentSection,
   isTransitioning,
@@ -19,17 +20,21 @@ export default function Section7({
 }: Section7Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
+  const { markSectionVisited } = useSectionVisit()
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
     if (currentSection === 7) {
-      const timer = setTimeout(() => setIsVisible(true), 200)
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+        markSectionVisited(7) // Mark section as visited only when it becomes visible
+      }, 200)
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection])
+  }, [currentSection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
@@ -52,14 +57,13 @@ export default function Section7({
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/20 via-gray-900/10 to-zinc-900/20" />
         
-        {/* Technical-inspired geometric shapes */}
-        <div className="absolute top-16 right-16 w-40 h-40 border-2 border-slate-400/20 rounded-lg rotate-12 animate-pulse" />
-        <div className="absolute bottom-24 left-16 w-32 h-32 border-2 border-gray-400/20 rounded-full animate-spin" style={{ animationDuration: '24s' }} />
+        {/* Technical-inspired geometric shapes - reduced animations for performance */}
+        <div className="absolute top-16 right-16 w-40 h-40 border-2 border-slate-400/20 rounded-lg rotate-12" />
+        <div className="absolute bottom-24 left-16 w-32 h-32 border-2 border-gray-400/20 rounded-full animate-spin" style={{ animationDuration: '30s' }} />
         <div className="absolute top-1/3 left-1/4 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-r from-zinc-500/10 to-slate-500/10 rounded-full blur-xl" />
         
-        {/* Technical patterns */}
-        <div className="absolute top-1/2 right-1/4 w-20 h-20 border-2 border-slate-400/30 rounded-full animate-spin" style={{ animationDuration: '18s' }} />
-        <div className="absolute bottom-1/3 right-1/3 w-16 h-16 border-2 border-gray-400/30 rounded-full animate-spin" style={{ animationDuration: '20s' }} />
+        {/* Technical patterns - reduced to single animation */}
+        <div className="absolute top-1/2 right-1/4 w-20 h-20 border-2 border-slate-400/30 rounded-full animate-spin" style={{ animationDuration: '25s' }} />
         
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -67,7 +71,7 @@ export default function Section7({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '5%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Visual Elements - Hidden on mobile */}
@@ -96,17 +100,11 @@ export default function Section7({
                   
                   {/* Technical data visualization */}
                   <div className="space-y-3">
-                    <div className="h-1 bg-gradient-to-r from-slate-500 to-gray-500 rounded-full animate-pulse" />
-                    <div className="h-1 bg-gradient-to-r from-gray-500 to-zinc-500 rounded-full animate-pulse delay-200" />
-                    <div className="h-1 bg-gradient-to-r from-zinc-500 to-slate-500 rounded-full animate-pulse delay-400" />
+                    <div className="h-1 bg-gradient-to-r from-slate-500 to-gray-500 rounded-full" />
+                    <div className="h-1 bg-gradient-to-r from-gray-500 to-zinc-500 rounded-full" />
+                    <div className="h-1 bg-gradient-to-r from-zinc-500 to-slate-500 rounded-full" />
                   </div>
                   
-                  {/* Component indicators */}
-                  <div className="flex justify-center space-x-4">
-                    <div className="w-6 h-6 bg-slate-400/60 rounded-full animate-ping" />
-                    <div className="w-4 h-4 bg-gray-400/60 rounded-full animate-ping delay-300" />
-                    <div className="w-5 h-5 bg-zinc-400/60 rounded-full animate-ping delay-600" />
-                  </div>
                   
                   {/* Performance metrics */}
                   <div className="grid grid-cols-2 gap-4">
@@ -157,15 +155,42 @@ export default function Section7({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">Micro-gear motor technology</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Micro-gear motor technology" 
+                        speed={60} 
+                        delay={0}
+                        sectionNumber={7}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">Precision sensor arrays</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Precision sensor arrays" 
+                        speed={60} 
+                        delay={1000}
+                        sectionNumber={7}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-zinc-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Advanced electronic systems</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Advanced electronic systems" 
+                        speed={60} 
+                        delay={2000}
+                        sectionNumber={7}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -175,35 +200,53 @@ export default function Section7({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">98.5% operational efficiency</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="98.5% operational efficiency" 
+                        speed={60} 
+                        delay={3000}
+                        sectionNumber={7}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">±0.01mm precision accuracy</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="±0.01mm precision accuracy" 
+                        speed={60} 
+                        delay={4000}
+                        sectionNumber={7}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-zinc-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Professional-grade reliability</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Professional-grade reliability" 
+                        speed={60} 
+                        delay={5000}
+                        sectionNumber={7}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group relative px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-slate-600 to-gray-600 hover:from-slate-700 hover:to-gray-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-slate-500/25 text-sm sm:text-base">
-                <span className="relative z-10">View Full Specs</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-600 to-gray-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-              </button>
-              
-              <button className="group px-6 py-3 sm:px-8 sm:py-4 border-2 border-slate-400 hover:border-gray-400 text-slate-300 hover:text-gray-300 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-slate-500/5 hover:bg-gray-500/10 text-sm sm:text-base">
-                <span className="relative z-10">Download PDF</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
     </section>
   )
-}
+})
+
+export default Section7

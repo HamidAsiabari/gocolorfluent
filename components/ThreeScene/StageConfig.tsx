@@ -55,11 +55,11 @@ export const getDeviceType = (width: number): DeviceType => {
   return 'desktop'
 }
 
-// Stage 1 configuration (initial state)
+// Stage 1 configuration (initial state) - Dramatic dark entrance for luxury launch
 export const stage1Config: StageConfig = {
   model: {
-    position: { x: 2, y: -0.3, z: 0 },
-    rotation: { x: -0.03, y: 0.1, z: 0.27 },
+    position: { x: 1.4, y: -0.5, z: 1 },
+    rotation: { x: -0.14, y: -1.14, z: 2.66 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -67,34 +67,34 @@ export const stage1Config: StageConfig = {
     fov: 75
   },
   lighting: {
-    ambientIntensity: 0,
-    ambientColor: '#404040',
+    ambientIntensity: 0.05,
+    ambientColor: '#0a0a0a',
     directionalIntensity: 0,
     directionalColor: '#ffffff',
     directionalPosition: { x: 5, y: 5, z: 5 },
     directionalTarget: { x: 0, y: 0, z: 0 },
-    pointLightIntensity: 0.5,
+    pointLightIntensity: 0,
     pointLightColor: '#ffffff',
     pointLightPosition: { x: -5, y: 5, z: 5 },
     pointLightDistance: 10,
-    spotLightIntensity: 2,
-    spotLightColor: '#e89191',
-    spotLightPosition: { x: 0, y: 10, z: 0 },
-    spotLightTarget: { x: 3.4, y: 0, z: 0 },
-    spotLightDistance: 23,
-    spotLightAngle: 23,
-    spotLightPenumbra: 0,
+    spotLightIntensity: 4,
+    spotLightColor: '#1a1a2e',
+    spotLightPosition: { x: -10, y: 2, z: 1 },
+    spotLightTarget: { x: 0, y: -0.5, z: 1 },
+    spotLightDistance: 20,
+    spotLightAngle: 12,
+    spotLightPenumbra: 0.1,
     shadowsEnabled: true,
     shadowMapSize: 2048,
     shadowBias: -0.0001
   }
 }
 
-// Stage 2 configuration
+// Stage 2 configuration - Full luxury lighting reveal with cinematic setup
 export const stage2Config: StageConfig = {
   model: {
-    position: { x: 2.7, y: -1.2, z: -0.1 },
-    rotation: { x: -0.84, y: 0.04, z: -0.06 },
+    position: { x: 1.4, y: -0.5, z: 1 },
+    rotation: { x: -0.14, y: -1.14, z: 2.66 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -102,23 +102,23 @@ export const stage2Config: StageConfig = {
     fov: 75
   },
   lighting: {
-    ambientIntensity: 2,
-    ambientColor: '#d9d9d9',
-    directionalIntensity: 1.3,
+    ambientIntensity: 1.8,
+    ambientColor: '#fafafa',
+    directionalIntensity: 2.2,
     directionalColor: '#ffffff',
-    directionalPosition: { x: 5, y: 5, z: 5 },
-    directionalTarget: { x: 0, y: 0, z: 0 },
-    pointLightIntensity: 0.5,
+    directionalPosition: { x: 2, y: 5, z: 2 },
+    directionalTarget: { x: 1.4, y: -0.5, z: 1 },
+    pointLightIntensity: 1.2,
     pointLightColor: '#ffffff',
-    pointLightPosition: { x: -5, y: 5, z: 5 },
-    pointLightDistance: 10,
-    spotLightIntensity: 2,
-    spotLightColor: '#e89191',
-    spotLightPosition: { x: 0, y: 10, z: 0 },
-    spotLightTarget: { x: 3.4, y: 0, z: 0 },
-    spotLightDistance: 23,
-    spotLightAngle: 23,
-    spotLightPenumbra: 0,
+    pointLightPosition: { x: -2, y: 2, z: 2 },
+    pointLightDistance: 15,
+    spotLightIntensity: 3.5,
+    spotLightColor: '#ffd294',
+    spotLightPosition: { x: 5.2, y: -4, z: 1.4 },
+    spotLightTarget: { x: 2.3, y: 0.2, z: -0.1 },
+    spotLightDistance: 8,
+    spotLightAngle: 73,
+    spotLightPenumbra: 0.34,
     shadowsEnabled: true,
     shadowMapSize: 2048,
     shadowBias: -0.0001
@@ -374,8 +374,8 @@ export const stage9Config: StageConfig = {
 // Stage 1 mobile configuration
 export const stage1MobileConfig: StageConfig = {
   model: {
-    position: { x: 2, y: -0.3, z: 0 },
-    rotation: { x: -0.03, y: 0.1, z: 0.27 },
+    position: { x: 1.4, y: -0.5, z: 1 },
+    rotation: { x: -0.14, y: -1.14, z: 2.66 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -409,8 +409,8 @@ export const stage1MobileConfig: StageConfig = {
 // Stage 2 mobile configuration
 export const stage2MobileConfig: StageConfig = {
   model: {
-    position: { x: 0, y: -1.9, z: 0 },
-    rotation: { x: -1, y: 0, z: -0.9 },
+    position: { x: 1.4, y: -0.5, z: 1 },
+    rotation: { x: -0.14, y: -1.14, z: 2.66 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -690,8 +690,8 @@ export const stage9MobileConfig: StageConfig = {
 // Stage 1 tablet configuration
 export const stage1TabletConfig: StageConfig = {
   model: {
-    position: { x: 2, y: -0.3, z: 0 },
-    rotation: { x: -0.03, y: 0.1, z: 0.27 },
+    position: { x: 1.4, y: -0.5, z: 1 },
+    rotation: { x: -0.14, y: -1.14, z: 2.66 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {
@@ -725,8 +725,8 @@ export const stage1TabletConfig: StageConfig = {
 // Stage 2 tablet configuration
 export const stage2TabletConfig: StageConfig = {
   model: {
-    position: { x: 2.2, y: -1.4, z: 0.2 },
-    rotation: { x: -0.84, y: 0.04, z: -0.06 },
+    position: { x: 1.4, y: -0.5, z: 1 },
+    rotation: { x: -0.14, y: -1.14, z: 2.66 },
     scale: { x: 10, y: 10, z: 10 }
   },
   camera: {

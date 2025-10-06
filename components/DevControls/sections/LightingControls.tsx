@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 
 interface LightingControls {
@@ -35,6 +35,18 @@ export default function LightingControls({
   lightingControls,
   onLightingControlsChange
 }: LightingControlsProps) {
+  const [copySuccess, setCopySuccess] = useState(false)
+
+  const copyLightingValues = async () => {
+    try {
+      const lightingJson = JSON.stringify(lightingControls, null, 2)
+      await navigator.clipboard.writeText(lightingJson)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (err) {
+    }
+  }
+
   return (
     <CollapsibleSection
       title="Lighting"
@@ -42,6 +54,20 @@ export default function LightingControls({
       color="text-yellow-300"
     >
       <div className="space-y-2">
+        {/* Copy Button */}
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={copyLightingValues}
+            className={`px-2 py-1 text-xs rounded transition-colors ${
+              copySuccess 
+                ? 'bg-green-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+            }`}
+            title="Copy all lighting values as JSON"
+          >
+            {copySuccess ? '✓ Copied!' : '📋 Copy'}
+          </button>
+        </div>
         {/* Ambient Light */}
         <div className="border-b border-gray-600 pb-1">
           <h5 className="text-xs text-gray-400 mb-1">Ambient</h5>

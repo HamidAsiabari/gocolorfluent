@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, memo } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config, stage1MobileConfig, stage2MobileConfig, stage3MobileConfig, stage4MobileConfig, stage5MobileConfig, stage6MobileConfig, stage7MobileConfig, stage8MobileConfig, stage9MobileConfig, stage1TabletConfig, stage2TabletConfig, stage3TabletConfig, stage4TabletConfig, stage5TabletConfig, stage6TabletConfig, stage7TabletConfig, stage8TabletConfig, stage9TabletConfig } from './StageConfig'
@@ -52,7 +52,7 @@ interface ThreeSceneManagerProps {
   onLoadingComplete?: () => void
 }
 
-export default function ThreeSceneManager({
+const ThreeSceneManager = memo(function ThreeSceneManager({
   mountRef,
   modelControls,
   cameraControls,
@@ -85,6 +85,112 @@ export default function ThreeSceneManager({
   const stage8CloseAnimationRef = useRef<number | null>(null)
   const oledTextureRef = useRef<THREE.Texture | null>(null)
   const upperCoverTextureRef = useRef<THREE.Texture | null>(null)
+  const lowerSideMainTextureRef = useRef<THREE.Texture | null>(null)
+  const productComponentsTextureRef = useRef<THREE.Texture | null>(null)
+  const knobsTextureRef = useRef<THREE.Texture | null>(null)
+  const loadingMaterialCoverTextureRef = useRef<THREE.Texture | null>(null)
+  const upperSideMainHolderTextureRef = useRef<THREE.Texture | null>(null)
+  
+  // Animation state tracking for conditional rendering
+  const animationFrameRef = useRef<number | null>(null)
+  const isRenderingRef = useRef<boolean>(false)
+  const needsRenderRef = useRef<boolean>(false)
+  const backgroundAnimationsRef = useRef<{
+    grid: THREE.Object3D | null
+    particles: THREE.Object3D | null
+    gridAnimationId: number | null
+    particlesAnimationId: number | null
+  }>({
+    grid: null,
+    particles: null,
+    gridAnimationId: null,
+    particlesAnimationId: null
+  })
+
+  // Helper functions for conditional rendering with debouncing
+  const requestRender = useCallback(() => {
+    needsRenderRef.current = true
+    if (!isRenderingRef.current) {
+      isRenderingRef.current = true
+      animationFrameRef.current = requestAnimationFrame(() => {
+        if (rendererRef.current && sceneRef.current && cameraRef.current && needsRenderRef.current) {
+          rendererRef.current.render(sceneRef.current, cameraRef.current)
+        }
+        isRenderingRef.current = false
+        needsRenderRef.current = false
+      })
+    }
+  }, [])
+
+  const stopRendering = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+    isRenderingRef.current = false
+    needsRenderRef.current = false
+  }, [])
+
+  const startBackgroundAnimations = useCallback(() => {
+    const { grid, particles } = backgroundAnimationsRef.current
+    
+    // Start grid animation with reduced frequency
+    if (grid && !backgroundAnimationsRef.current.gridAnimationId) {
+      let lastTime = 0
+      const animateGrid = (currentTime: number) => {
+        // Throttle to 30fps instead of 60fps for better performance
+        if (currentTime - lastTime >= 33) {
+          const time = currentTime * 0.0003 // Reduced animation speed
+          grid.rotation.z = Math.sin(time) * 0.05 // Reduced rotation amplitude
+          lastTime = currentTime
+        }
+        backgroundAnimationsRef.current.gridAnimationId = requestAnimationFrame(animateGrid)
+      }
+      animateGrid(0)
+    }
+    
+    // Start particles animation with reduced frequency and complexity
+    if (particles && !backgroundAnimationsRef.current.particlesAnimationId) {
+      let lastTime = 0
+      const animateParticles = (currentTime: number) => {
+        // Throttle to 30fps instead of 60fps for better performance
+        if (currentTime - lastTime >= 33) {
+          const time = currentTime * 0.0005 // Reduced animation speed
+          if (particles instanceof THREE.Points) {
+            const positions = particles.geometry.attributes.position.array as Float32Array
+            const particleCount = positions.length / 3
+            
+            // Process particles in batches to reduce frame time
+            const batchSize = 10
+            const startIndex = Math.floor((time * 1000) % particleCount)
+            
+            for (let i = 0; i < batchSize && startIndex + i < particleCount; i++) {
+              const particleIndex = (startIndex + i) % particleCount
+              const i3 = particleIndex * 3
+              positions[i3 + 1] += Math.sin(time + particleIndex * 0.1) * 0.005 // Reduced movement
+              positions[i3] += Math.cos(time + particleIndex * 0.05) * 0.002 // Reduced movement
+            }
+            
+            particles.geometry.attributes.position.needsUpdate = true
+            lastTime = currentTime
+          }
+        }
+        backgroundAnimationsRef.current.particlesAnimationId = requestAnimationFrame(animateParticles)
+      }
+      animateParticles(0)
+    }
+  }, [])
+
+  const stopBackgroundAnimations = useCallback(() => {
+    if (backgroundAnimationsRef.current.gridAnimationId) {
+      cancelAnimationFrame(backgroundAnimationsRef.current.gridAnimationId)
+      backgroundAnimationsRef.current.gridAnimationId = null
+    }
+    if (backgroundAnimationsRef.current.particlesAnimationId) {
+      cancelAnimationFrame(backgroundAnimationsRef.current.particlesAnimationId)
+      backgroundAnimationsRef.current.particlesAnimationId = null
+    }
+  }, [])
 
   useEffect(() => {
     if (!mountRef.current) return
@@ -109,6 +215,99 @@ export default function ThreeSceneManager({
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
     renderer.domElement.style.display = 'block'
+
+    // Add background elements similar to loading component
+    const addBackgroundElements = () => {
+
+      // Create grid pattern with better visual appeal
+      const createGridPattern = () => {
+        const gridSize = 120
+        const gridDivisions = 60
+        const gridGeometry = new THREE.PlaneGeometry(gridSize, gridSize, gridDivisions, gridDivisions)
+        
+        // Create grid material with subtle glow
+        const gridMaterial = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.02,
+          wireframe: true,
+          side: THREE.DoubleSide
+        })
+        
+        const grid = new THREE.Mesh(gridGeometry, gridMaterial)
+        grid.rotation.x = -Math.PI / 2
+        grid.position.set(0, -25, -60)
+        
+        // Store grid reference for conditional animation
+        backgroundAnimationsRef.current.grid = grid
+        
+        return grid
+      }
+
+      const grid = createGridPattern()
+      scene.add(grid)
+
+      // Add floating particles for more conceptual feel
+      const createParticleField = () => {
+        const particleCount = 50 // Reduced from 150 to 50 for better performance
+        const particles = new THREE.BufferGeometry()
+        const positions = new Float32Array(particleCount * 3)
+        const colors = new Float32Array(particleCount * 3)
+        
+        for (let i = 0; i < particleCount; i++) {
+          const i3 = i * 3
+          
+          // Random positions in a large sphere, positioned in the background but visible
+          positions[i3] = (Math.random() - 0.5) * 200
+          positions[i3 + 1] = (Math.random() - 0.5) * 200
+          positions[i3 + 2] = (Math.random() - 0.5) * 150 - 60
+          
+          // Random colors with blue/purple theme
+          const colorChoice = Math.random()
+          if (colorChoice < 0.3) {
+            colors[i3] = 0.2     // R
+            colors[i3 + 1] = 0.4 // G
+            colors[i3 + 2] = 0.8 // B
+          } else if (colorChoice < 0.6) {
+            colors[i3] = 0.5     // R
+            colors[i3 + 1] = 0.2 // G
+            colors[i3 + 2] = 0.8 // B
+          } else {
+            colors[i3] = 0.8     // R
+            colors[i3 + 1] = 0.3 // G
+            colors[i3 + 2] = 0.6 // B
+          }
+        }
+        
+        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+        particles.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+        
+        const particleMaterial = new THREE.PointsMaterial({
+          size: 0.5,
+          transparent: true,
+          opacity: 0.6,
+          vertexColors: true,
+          blending: THREE.AdditiveBlending
+        })
+        
+        const particleSystem = new THREE.Points(particles, particleMaterial)
+        
+        // Store particles reference for conditional animation
+        backgroundAnimationsRef.current.particles = particleSystem
+        
+        return particleSystem
+      }
+
+      const particles = createParticleField()
+      scene.add(particles)
+
+
+      // Add enhanced fog for depth and atmosphere
+      scene.fog = new THREE.Fog(0x1a1a1a, 15, 80)
+    }
+
+    // Add background elements
+    addBackgroundElements()
     
     // Apply z-index container class to the mount element
     mountRef.current.className = 'three-scene-container'
@@ -442,7 +641,6 @@ export default function ThreeSceneManager({
       // // Console log removed
       
       if (unmappedControls.length > 0) {
-        // console.warn('⚠️ These component controls have no 3D object mapping and will not work:', unmappedControls)
       }
       
       // Debug: Find unmapped components
@@ -534,10 +732,11 @@ export default function ThreeSceneManager({
       
       // Function to apply texture to OLED Display
       const applyOLEDTexture = (texturePath: string) => {
-        if (!textureLoader.current) return
+        if (!textureLoader.current) {
+          return
+        }
         
         textureLoader.current.load(texturePath, (texture) => {
-          // Console log removed
           
           // Store texture reference for cleanup
           oledTextureRef.current = texture
@@ -549,93 +748,122 @@ export default function ThreeSceneManager({
           texture.minFilter = THREE.LinearFilter
           texture.magFilter = THREE.LinearFilter
           
-          // Texture configured successfully
           
-          // Find OLED Display components and apply texture
-          const oledComponents = componentMapping.oledDisplay
-          // Console log removed
-          
-          // Also search for any object with "OLED" or "Display" in the name as fallback
+          // Find ALL objects in the model that might be OLED displays
           const allOLEDObjects: THREE.Object3D[] = []
           if (modelRef.current) {
             modelRef.current.traverse((child) => {
-              if (child.name && (child.name.toLowerCase().includes('oled') || child.name.toLowerCase().includes('display'))) {
+              if (child.name && (
+                child.name.toLowerCase().includes('oled') || 
+                child.name.toLowerCase().includes('display') ||
+                child.name.toLowerCase().includes('screen')
+              )) {
                 allOLEDObjects.push(child)
-                // Console log removed
+              }
+            })
+            
+            // Also try to find by exact component names from mapping
+            const oledComponents = componentMapping.oledDisplay
+            oledComponents.forEach(componentName => {
+              if (modelRef.current) {
+                modelRef.current.traverse((child) => {
+                  if (child.name === componentName) {
+                    allOLEDObjects.push(child)
+                  }
+                })
               }
             })
           }
           
-          oledComponents.forEach(componentName => {
-            const component = componentRefs.current.get(componentName)
-            // Console log removed
+          // Apply texture to all found OLED objects
+          let totalMeshes = 0
+          allOLEDObjects.forEach(obj => {
+            let meshCount = 0
             
-            if (component) {
-              let meshCount = 0
-              component.traverse((child) => {
-                if (child instanceof THREE.Mesh && child.material) {
-                  meshCount++
-                  // Found mesh in OLED
-                  
-                  // Create a new material with the texture
-                  const newMaterial = child.material.clone()
-                  
-                  if (Array.isArray(newMaterial)) {
-                    newMaterial.forEach((mat, index) => {
-                      if (mat instanceof THREE.MeshStandardMaterial) {
-                        // Apply texture to the material
-                        mat.map = texture
-                        mat.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
-                        mat.emissiveMap = texture
-                        mat.emissiveIntensity = 0.3
-                        mat.needsUpdate = true
-                        // Console log removed
-                      }
-                    })
-                  } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
-                    // Apply texture to the material
-                    newMaterial.map = texture
-                    newMaterial.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
-                    newMaterial.emissiveMap = texture
-                    newMaterial.emissiveIntensity = 0.3
-                    newMaterial.needsUpdate = true
-                    // Console log removed
-                  }
-                  
-                  child.material = newMaterial
+            obj.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
+                totalMeshes++
+                
+                // Create a new material with the texture
+                const newMaterial = child.material.clone()
+                
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply texture to the material with stronger visibility
+                      mat.map = texture
+                      mat.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
+                      mat.emissiveMap = texture
+                      mat.emissiveIntensity = 0.8 // Increased intensity for better visibility
+                      mat.roughness = 0.1 // Make it more reflective
+                      mat.metalness = 0.0 // Non-metallic
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply texture to the material with stronger visibility
+                  newMaterial.map = texture
+                  newMaterial.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
+                  newMaterial.emissiveMap = texture
+                  newMaterial.emissiveIntensity = 0.8 // Increased intensity for better visibility
+                  newMaterial.roughness = 0.1 // Make it more reflective
+                  newMaterial.metalness = 0.0 // Non-metallic
+                  newMaterial.needsUpdate = true
                 }
-              })
-              // Console log removed
-            }
+                
+                child.material = newMaterial
+              }
+            })
           })
           
-          // If no meshes found in mapped components, try the fallback search
-          if (allOLEDObjects.length > 0) {
-            // Console log removed
-            allOLEDObjects.forEach(obj => {
-              obj.traverse((child) => {
-                if (child instanceof THREE.Mesh && child.material) {
-                  // Console log removed
-                  
-                  const newMaterial = child.material.clone()
-                  if (newMaterial instanceof THREE.MeshStandardMaterial) {
-                    newMaterial.map = texture
-                    newMaterial.emissive = new THREE.Color(0x000000)
-                    newMaterial.emissiveMap = texture
-                    newMaterial.emissiveIntensity = 0.3
-                    newMaterial.needsUpdate = true
-                    child.material = newMaterial
-                    // Console log removed
+          
+          if (totalMeshes === 0) {
+            
+            // Last resort: try to find any small rectangular surface that might be the OLED display
+            if (modelRef.current) {
+              modelRef.current.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.geometry) {
+                  const geometry = child.geometry
+                  if (geometry.boundingBox) {
+                    const size = geometry.boundingBox.getSize(new THREE.Vector3())
+                    // Look for small rectangular surfaces (typical OLED size)
+                    if (size.x > 0.01 && size.x < 0.1 && size.y > 0.005 && size.y < 0.05 && size.z < 0.01) {
+                      
+                      const newMaterial = child.material.clone()
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat, index) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = texture
+                            mat.emissive = new THREE.Color(0x000000)
+                            mat.emissiveMap = texture
+                            mat.emissiveIntensity = 0.8
+                            mat.roughness = 0.1
+                            mat.metalness = 0.0
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = texture
+                        newMaterial.emissive = new THREE.Color(0x000000)
+                        newMaterial.emissiveMap = texture
+                        newMaterial.emissiveIntensity = 0.8
+                        newMaterial.roughness = 0.1
+                        newMaterial.metalness = 0.0
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      child.material = newMaterial
+                    }
                   }
                 }
               })
-            })
+            }
           }
           
           // Console log removed
           updateProgress(70) // Textures loaded
         }, undefined, (error) => {
-          console.error('Error loading OLED texture:', error)
           updateProgress(70) // Still count as progress even if texture fails
         })
       }
@@ -685,6 +913,7 @@ export default function ThreeSceneManager({
       const applyUpperCoverTexture = (texturePath: string) => {
         if (!textureLoader.current) return
         
+        
         textureLoader.current.load(texturePath, (texture) => {
           // Store texture reference for cleanup
           upperCoverTextureRef.current = texture
@@ -698,9 +927,12 @@ export default function ThreeSceneManager({
           
           // Find Upper Cover component and apply texture
           const upperCoverComponent = componentRefs.current.get('upperCover')
+          
           if (upperCoverComponent) {
+            let meshCount = 0
             upperCoverComponent.traverse((child) => {
               if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
                 const newMaterial = child.material.clone()
                 if (Array.isArray(newMaterial)) {
                   newMaterial.forEach((mat, index) => {
@@ -725,9 +957,9 @@ export default function ThreeSceneManager({
                 child.material = newMaterial
               }
             })
+          } else {
           }
         }, undefined, (error) => {
-          console.error('Error loading Upper Cover texture:', error)
         })
       }
       
@@ -766,32 +998,1006 @@ export default function ThreeSceneManager({
         }
       }
       
+      // Function to apply texture to Lower Side Main
+      const applyLowerSideMainTexture = (texturePath: string) => {
+        if (!textureLoader.current) return
+        
+        
+        textureLoader.current.load(texturePath, (texture) => {
+          // Store texture reference for cleanup
+          lowerSideMainTextureRef.current = texture
+          
+          // Configure texture for metal surface
+          texture.wrapS = THREE.RepeatWrapping
+          texture.wrapT = THREE.RepeatWrapping
+          texture.flipY = false
+          texture.minFilter = THREE.LinearFilter
+          texture.magFilter = THREE.LinearFilter
+          
+          // Find Lower Side Main component and apply texture
+          const lowerSideMainComponent = componentRefs.current.get('lowerSideMain')
+          
+          if (lowerSideMainComponent) {
+            let meshCount = 0
+            lowerSideMainComponent.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply texture to the material
+                      mat.map = texture
+                      // Set metallic properties for brushed steel appearance
+                      mat.metalness = 0.8
+                      mat.roughness = 0.3
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply texture to the material
+                  newMaterial.map = texture
+                  // Set metallic properties for brushed steel appearance
+                  newMaterial.metalness = 0.8
+                  newMaterial.roughness = 0.3
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          } else {
+          }
+        }, undefined, (error) => {
+        })
+      }
+      
+      // Function to remove Lower Side Main texture
+      const removeLowerSideMainTexture = () => {
+        if (lowerSideMainTextureRef.current) {
+          lowerSideMainTextureRef.current.dispose()
+          lowerSideMainTextureRef.current = null
+        }
+        
+        // Reset Lower Side Main materials to original
+        const lowerSideMainComponent = componentRefs.current.get('lowerSideMain')
+        if (lowerSideMainComponent) {
+          lowerSideMainComponent.traverse((child) => {
+            if (child instanceof THREE.Mesh && child.material) {
+              const newMaterial = child.material.clone()
+              if (Array.isArray(newMaterial)) {
+                newMaterial.forEach(mat => {
+                  if (mat instanceof THREE.MeshStandardMaterial) {
+                    mat.map = null
+                    mat.metalness = 0
+                    mat.roughness = 0.5
+                    mat.needsUpdate = true
+                  }
+                })
+              } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                newMaterial.map = null
+                newMaterial.metalness = 0
+                newMaterial.roughness = 0.5
+                newMaterial.needsUpdate = true
+              }
+              
+              child.material = newMaterial
+            }
+          })
+        }
+      }
+      
+      // Function to apply black texture to Product Components
+      const applyProductComponentsTexture = () => {
+        
+        // Create a simple black texture programmatically
+        const canvas = document.createElement('canvas')
+        canvas.width = 512
+        canvas.height = 512
+        const ctx = canvas.getContext('2d')
+        
+        if (ctx) {
+          // Create a solid black texture
+          ctx.fillStyle = '#000000'
+          ctx.fillRect(0, 0, 512, 512)
+          
+          // Add subtle texture variation for realism
+          ctx.fillStyle = '#111111'
+          for (let i = 0; i < 100; i++) {
+            const x = Math.random() * 512
+            const y = Math.random() * 512
+            const size = Math.random() * 3 + 1
+            ctx.fillRect(x, y, size, size)
+          }
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        texture.wrapS = THREE.RepeatWrapping
+        texture.wrapT = THREE.RepeatWrapping
+        texture.flipY = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        
+        // Store texture reference for cleanup
+        productComponentsTextureRef.current = texture
+        
+        // Find Product Components and apply texture
+        const productComponents = componentMapping.productComponents
+        
+        let totalMeshes = 0
+        productComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          
+          if (component) {
+            let meshCount = 0
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
+                totalMeshes++
+                const newMaterial = child.material.clone()
+                
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply black texture to the material
+                      mat.map = texture
+                      mat.color.setHex(0x000000) // Ensure black color
+                      mat.metalness = 0.1
+                      mat.roughness = 0.8
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply black texture to the material
+                  newMaterial.map = texture
+                  newMaterial.color.setHex(0x000000) // Ensure black color
+                  newMaterial.metalness = 0.1
+                  newMaterial.roughness = 0.8
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          } else {
+            // Try to find it by searching the model
+            if (modelRef.current) {
+              let found = false
+              modelRef.current.traverse((child) => {
+                if (child.name === componentName) {
+                  found = true
+                  let meshCount = 0
+                  child.traverse((meshChild) => {
+                    if (meshChild instanceof THREE.Mesh && meshChild.material) {
+                      meshCount++
+                      totalMeshes++
+                      const newMaterial = meshChild.material.clone()
+                      
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat, index) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = texture
+                            mat.color.setHex(0x000000)
+                            mat.metalness = 0.1
+                            mat.roughness = 0.8
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = texture
+                        newMaterial.color.setHex(0x000000)
+                        newMaterial.metalness = 0.1
+                        newMaterial.roughness = 0.8
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      meshChild.material = newMaterial
+                    }
+                  })
+                }
+              })
+              if (!found) {
+              }
+            }
+          }
+        })
+        
+      }
+      
+      // Function to remove Product Components texture
+      const removeProductComponentsTexture = () => {
+        if (productComponentsTextureRef.current) {
+          productComponentsTextureRef.current.dispose()
+          productComponentsTextureRef.current = null
+        }
+        
+        // Reset Product Components materials to original
+        const productComponents = componentMapping.productComponents
+        productComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          if (component) {
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach(mat => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      mat.map = null
+                      mat.color.setHex(0xffffff) // Reset to white
+                      mat.metalness = 0
+                      mat.roughness = 0.5
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  newMaterial.map = null
+                  newMaterial.color.setHex(0xffffff) // Reset to white
+                  newMaterial.metalness = 0
+                  newMaterial.roughness = 0.5
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          }
+        })
+      }
+      
+      // Function to apply black texture to Knobs
+      const applyKnobsTexture = () => {
+        
+        // Create a simple black texture programmatically
+        const canvas = document.createElement('canvas')
+        canvas.width = 512
+        canvas.height = 512
+        const ctx = canvas.getContext('2d')
+        
+        if (ctx) {
+          // Create a solid black texture
+          ctx.fillStyle = '#000000'
+          ctx.fillRect(0, 0, 512, 512)
+          
+          // Add subtle texture variation for realism
+          ctx.fillStyle = '#111111'
+          for (let i = 0; i < 100; i++) {
+            const x = Math.random() * 512
+            const y = Math.random() * 512
+            const size = Math.random() * 3 + 1
+            ctx.fillRect(x, y, size, size)
+          }
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        texture.wrapS = THREE.RepeatWrapping
+        texture.wrapT = THREE.RepeatWrapping
+        texture.flipY = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        
+        // Store texture reference for cleanup
+        knobsTextureRef.current = texture
+        
+        // Find Knobs and apply texture
+        const knobsComponents = componentMapping.knobs
+        
+        let totalMeshes = 0
+        knobsComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          
+          if (component) {
+            let meshCount = 0
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
+                totalMeshes++
+                const newMaterial = child.material.clone()
+                
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply black texture to the material
+                      mat.map = texture
+                      mat.color.setHex(0x000000) // Ensure black color
+                      mat.metalness = 0.1
+                      mat.roughness = 0.8
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply black texture to the material
+                  newMaterial.map = texture
+                  newMaterial.color.setHex(0x000000) // Ensure black color
+                  newMaterial.metalness = 0.1
+                  newMaterial.roughness = 0.8
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          } else {
+            // Try to find it by searching the model
+            if (modelRef.current) {
+              let found = false
+              modelRef.current.traverse((child) => {
+                if (child.name === componentName) {
+                  found = true
+                  let meshCount = 0
+                  child.traverse((meshChild) => {
+                    if (meshChild instanceof THREE.Mesh && meshChild.material) {
+                      meshCount++
+                      totalMeshes++
+                      const newMaterial = meshChild.material.clone()
+                      
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat, index) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = texture
+                            mat.color.setHex(0x000000)
+                            mat.metalness = 0.1
+                            mat.roughness = 0.8
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = texture
+                        newMaterial.color.setHex(0x000000)
+                        newMaterial.metalness = 0.1
+                        newMaterial.roughness = 0.8
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      meshChild.material = newMaterial
+                    }
+                  })
+                }
+              })
+              if (!found) {
+              }
+            }
+          }
+        })
+        
+      }
+      
+      // Function to remove Knobs texture
+      const removeKnobsTexture = () => {
+        if (knobsTextureRef.current) {
+          knobsTextureRef.current.dispose()
+          knobsTextureRef.current = null
+        }
+        
+        // Reset Knobs materials to original
+        const knobsComponents = componentMapping.knobs
+        knobsComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          if (component) {
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach(mat => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      mat.map = null
+                      mat.color.setHex(0xffffff) // Reset to white
+                      mat.metalness = 0
+                      mat.roughness = 0.5
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  newMaterial.map = null
+                  newMaterial.color.setHex(0xffffff) // Reset to white
+                  newMaterial.metalness = 0
+                  newMaterial.roughness = 0.5
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          }
+        })
+      }
+      
+      // Function to apply black texture to Loading Material Cover
+      const applyLoadingMaterialCoverTexture = () => {
+        
+        // Create a simple black texture programmatically
+        const canvas = document.createElement('canvas')
+        canvas.width = 512
+        canvas.height = 512
+        const ctx = canvas.getContext('2d')
+        
+        if (ctx) {
+          // Create a solid black texture
+          ctx.fillStyle = '#000000'
+          ctx.fillRect(0, 0, 512, 512)
+          
+          // Add subtle texture variation for realism
+          ctx.fillStyle = '#111111'
+          for (let i = 0; i < 100; i++) {
+            const x = Math.random() * 512
+            const y = Math.random() * 512
+            const size = Math.random() * 3 + 1
+            ctx.fillRect(x, y, size, size)
+          }
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        texture.wrapS = THREE.RepeatWrapping
+        texture.wrapT = THREE.RepeatWrapping
+        texture.flipY = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        
+        // Store texture reference for cleanup
+        loadingMaterialCoverTextureRef.current = texture
+        
+        // Find Loading Material Cover and apply texture
+        const loadingMaterialCoverComponents = componentMapping.loadingMaterialCover
+        
+        let totalMeshes = 0
+        loadingMaterialCoverComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          
+          if (component) {
+            let meshCount = 0
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
+                totalMeshes++
+                const newMaterial = child.material.clone()
+                
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply black texture to the material
+                      mat.map = texture
+                      mat.color.setHex(0x000000) // Ensure black color
+                      mat.metalness = 0.1
+                      mat.roughness = 0.8
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply black texture to the material
+                  newMaterial.map = texture
+                  newMaterial.color.setHex(0x000000) // Ensure black color
+                  newMaterial.metalness = 0.1
+                  newMaterial.roughness = 0.8
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          } else {
+            // Try to find it by searching the model
+            if (modelRef.current) {
+              let found = false
+              modelRef.current.traverse((child) => {
+                if (child.name === componentName) {
+                  found = true
+                  let meshCount = 0
+                  child.traverse((meshChild) => {
+                    if (meshChild instanceof THREE.Mesh && meshChild.material) {
+                      meshCount++
+                      totalMeshes++
+                      const newMaterial = meshChild.material.clone()
+                      
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat, index) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = texture
+                            mat.color.setHex(0x000000)
+                            mat.metalness = 0.1
+                            mat.roughness = 0.8
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = texture
+                        newMaterial.color.setHex(0x000000)
+                        newMaterial.metalness = 0.1
+                        newMaterial.roughness = 0.8
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      meshChild.material = newMaterial
+                    }
+                  })
+                }
+              })
+              if (!found) {
+              }
+            }
+          }
+        })
+        
+      }
+      
+      // Function to remove Loading Material Cover texture
+      const removeLoadingMaterialCoverTexture = () => {
+        if (loadingMaterialCoverTextureRef.current) {
+          loadingMaterialCoverTextureRef.current.dispose()
+          loadingMaterialCoverTextureRef.current = null
+        }
+        
+        // Reset Loading Material Cover materials to original
+        const loadingMaterialCoverComponents = componentMapping.loadingMaterialCover
+        loadingMaterialCoverComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          if (component) {
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach(mat => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      mat.map = null
+                      mat.color.setHex(0xffffff) // Reset to white
+                      mat.metalness = 0
+                      mat.roughness = 0.5
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  newMaterial.map = null
+                  newMaterial.color.setHex(0xffffff) // Reset to white
+                  newMaterial.metalness = 0
+                  newMaterial.roughness = 0.5
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          }
+        })
+      }
+      
+      // Function to apply black texture to Upper Side Main Holder
+      const applyUpperSideMainHolderTexture = () => {
+        
+        // Create a simple black texture programmatically
+        const canvas = document.createElement('canvas')
+        canvas.width = 512
+        canvas.height = 512
+        const ctx = canvas.getContext('2d')
+        
+        if (ctx) {
+          // Create a solid black texture
+          ctx.fillStyle = '#000000'
+          ctx.fillRect(0, 0, 512, 512)
+          
+          // Add subtle texture variation for realism
+          ctx.fillStyle = '#111111'
+          for (let i = 0; i < 100; i++) {
+            const x = Math.random() * 512
+            const y = Math.random() * 512
+            const size = Math.random() * 3 + 1
+            ctx.fillRect(x, y, size, size)
+          }
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        texture.wrapS = THREE.RepeatWrapping
+        texture.wrapT = THREE.RepeatWrapping
+        texture.flipY = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        
+        // Store texture reference for cleanup
+        upperSideMainHolderTextureRef.current = texture
+        
+        // Find Upper Side Main Holder and apply texture
+        const upperSideMainHolderComponents = componentMapping.upperSideMainHolder
+        
+        let totalMeshes = 0
+        upperSideMainHolderComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          
+          if (component) {
+            let meshCount = 0
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                meshCount++
+                totalMeshes++
+                const newMaterial = child.material.clone()
+                
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach((mat, index) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      // Apply black texture to the material
+                      mat.map = texture
+                      mat.color.setHex(0x000000) // Ensure black color
+                      mat.metalness = 0.1
+                      mat.roughness = 0.8
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  // Apply black texture to the material
+                  newMaterial.map = texture
+                  newMaterial.color.setHex(0x000000) // Ensure black color
+                  newMaterial.metalness = 0.1
+                  newMaterial.roughness = 0.8
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          } else {
+            // Try to find it by searching the model
+            if (modelRef.current) {
+              let found = false
+              modelRef.current.traverse((child) => {
+                if (child.name === componentName) {
+                  found = true
+                  let meshCount = 0
+                  child.traverse((meshChild) => {
+                    if (meshChild instanceof THREE.Mesh && meshChild.material) {
+                      meshCount++
+                      totalMeshes++
+                      const newMaterial = meshChild.material.clone()
+                      
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat, index) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = texture
+                            mat.color.setHex(0x000000)
+                            mat.metalness = 0.1
+                            mat.roughness = 0.8
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = texture
+                        newMaterial.color.setHex(0x000000)
+                        newMaterial.metalness = 0.1
+                        newMaterial.roughness = 0.8
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      meshChild.material = newMaterial
+                    }
+                  })
+                }
+              })
+              if (!found) {
+              }
+            }
+          }
+        })
+        
+      }
+      
+      // Function to remove Upper Side Main Holder texture
+      const removeUpperSideMainHolderTexture = () => {
+        if (upperSideMainHolderTextureRef.current) {
+          upperSideMainHolderTextureRef.current.dispose()
+          upperSideMainHolderTextureRef.current = null
+        }
+        
+        // Reset Upper Side Main Holder materials to original
+        const upperSideMainHolderComponents = componentMapping.upperSideMainHolder
+        upperSideMainHolderComponents.forEach(componentName => {
+          const component = componentRefs.current.get(componentName)
+          if (component) {
+            component.traverse((child) => {
+              if (child instanceof THREE.Mesh && child.material) {
+                const newMaterial = child.material.clone()
+                if (Array.isArray(newMaterial)) {
+                  newMaterial.forEach(mat => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      mat.map = null
+                      mat.color.setHex(0xffffff) // Reset to white
+                      mat.metalness = 0
+                      mat.roughness = 0.5
+                      mat.needsUpdate = true
+                    }
+                  })
+                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                  newMaterial.map = null
+                  newMaterial.color.setHex(0xffffff) // Reset to white
+                  newMaterial.metalness = 0
+                  newMaterial.roughness = 0.5
+                  newMaterial.needsUpdate = true
+                }
+                
+                child.material = newMaterial
+              }
+            })
+          }
+        })
+      }
+      
       // Store functions for use in other effects
       ;(window as any).applyOLEDTexture = applyOLEDTexture
       ;(window as any).removeOLEDTexture = removeOLEDTexture
       ;(window as any).applyUpperCoverTexture = applyUpperCoverTexture
       ;(window as any).removeUpperCoverTexture = removeUpperCoverTexture
+      ;(window as any).applyLowerSideMainTexture = applyLowerSideMainTexture
+      ;(window as any).removeLowerSideMainTexture = removeLowerSideMainTexture
+      ;(window as any).applyProductComponentsTexture = applyProductComponentsTexture
+      ;(window as any).removeProductComponentsTexture = removeProductComponentsTexture
+      ;(window as any).applyKnobsTexture = applyKnobsTexture
+      ;(window as any).removeKnobsTexture = removeKnobsTexture
+      ;(window as any).applyLoadingMaterialCoverTexture = applyLoadingMaterialCoverTexture
+      ;(window as any).removeLoadingMaterialCoverTexture = removeLoadingMaterialCoverTexture
+      ;(window as any).applyUpperSideMainHolderTexture = applyUpperSideMainHolderTexture
+      ;(window as any).removeUpperSideMainHolderTexture = removeUpperSideMainHolderTexture
+      
+      // Add manual trigger for testing OLED texture
+      ;(window as any).testOLEDTexture = () => {
+        applyOLEDTexture('/oled-screen.png')
+      }
+      
+      // Add function to force apply OLED texture to any small surface
+      ;(window as any).forceApplyOLEDTexture = () => {
+        if (modelRef.current) {
+          let appliedCount = 0
+          modelRef.current.traverse((child) => {
+            if (child instanceof THREE.Mesh && child.geometry && child.material) {
+              const geometry = child.geometry
+              if (geometry.boundingBox) {
+                const size = geometry.boundingBox.getSize(new THREE.Vector3())
+                // Look for small rectangular surfaces (typical OLED size)
+                if (size.x > 0.005 && size.x < 0.05 && size.y > 0.002 && size.y < 0.03 && size.z < 0.005) {
+                  
+                  // Load texture and apply it
+                  if (textureLoader.current) {
+                    textureLoader.current.load('/oled-screen.png', (texture) => {
+                      texture.wrapS = THREE.ClampToEdgeWrapping
+                      texture.wrapT = THREE.ClampToEdgeWrapping
+                      texture.flipY = false
+                      texture.minFilter = THREE.LinearFilter
+                      texture.magFilter = THREE.LinearFilter
+                      
+                      const newMaterial = child.material.clone()
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat, index) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = texture
+                            mat.emissive = new THREE.Color(0x000000)
+                            mat.emissiveMap = texture
+                            mat.emissiveIntensity = 0.8
+                            mat.roughness = 0.1
+                            mat.metalness = 0.0
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = texture
+                        newMaterial.emissive = new THREE.Color(0x000000)
+                        newMaterial.emissiveMap = texture
+                        newMaterial.emissiveIntensity = 0.8
+                        newMaterial.roughness = 0.1
+                        newMaterial.metalness = 0.0
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      child.material = newMaterial
+                      appliedCount++
+                    })
+                  }
+                }
+              }
+            }
+          })
+        }
+      }
+      
+      // Add manual triggers for testing black textures
+      ;(window as any).testBlackTextures = () => {
+        applyProductComponentsTexture()
+        applyKnobsTexture()
+        applyLoadingMaterialCoverTexture()
+        applyUpperSideMainHolderTexture()
+      }
+      
+      ;(window as any).testProductComponentsTexture = () => {
+        applyProductComponentsTexture()
+      }
+      
+      ;(window as any).testKnobsTexture = () => {
+        applyKnobsTexture()
+      }
+      
+      ;(window as any).testLoadingMaterialCoverTexture = () => {
+        applyLoadingMaterialCoverTexture()
+      }
+      
+      ;(window as any).testUpperSideMainHolderTexture = () => {
+        applyUpperSideMainHolderTexture()
+      }
+      
+      // Add function to list all objects in the model
+      ;(window as any).listAllObjects = () => {
+        if (modelRef.current) {
+          modelRef.current.traverse((child) => {
+            if (child.name) {
+              if (child instanceof THREE.Mesh) {
+                if (child.geometry && child.geometry.boundingBox) {
+                  const size = child.geometry.boundingBox.getSize(new THREE.Vector3())
+                }
+              }
+            }
+          })
+        }
+      }
+      
+      // Apply Upper Cover texture after component mapping is complete
+      const applyUpperCoverTextureWhenReady = () => {
+        const upperCoverComponent = componentRefs.current.get('upperCover')
+        
+        if (upperCoverComponent && (window as any).applyUpperCoverTexture) {
+          ;(window as any).applyUpperCoverTexture('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg')
+        } else {
+          // Retry after a short delay if component not found yet
+          setTimeout(applyUpperCoverTextureWhenReady, 50)
+        }
+      }
+      
+      // Apply Lower Side Main texture after component mapping is complete
+      const applyLowerSideMainTextureWhenReady = () => {
+        const lowerSideMainComponent = componentRefs.current.get('lowerSideMain')
+        
+        if (lowerSideMainComponent && (window as any).applyLowerSideMainTexture) {
+          ;(window as any).applyLowerSideMainTexture('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg')
+        } else {
+          // Retry after a short delay if component not found yet
+          setTimeout(applyLowerSideMainTextureWhenReady, 50)
+        }
+      }
+      
+      // Apply Product Components black texture after component mapping is complete
+      const applyProductComponentsTextureWhenReady = () => {
+        const productComponents = componentMapping.productComponents
+        const hasProductComponents = productComponents.some(name => componentRefs.current.has(name))
+        
+        if (hasProductComponents && (window as any).applyProductComponentsTexture) {
+          ;(window as any).applyProductComponentsTexture()
+        } else {
+          // Also try to apply texture directly to any objects with "Product" in the name
+          if (modelRef.current) {
+            let foundAny = false
+            modelRef.current.traverse((child) => {
+              if (child.name && child.name.toLowerCase().includes('product')) {
+                foundAny = true
+                // Apply black texture directly
+                if ((window as any).applyProductComponentsTexture) {
+                  ;(window as any).applyProductComponentsTexture()
+                }
+              }
+            })
+            if (foundAny) {
+            }
+          }
+          // Retry after a short delay if components not found yet
+          setTimeout(applyProductComponentsTextureWhenReady, 50)
+        }
+      }
+      
+      // Apply Knobs black texture after component mapping is complete
+      const applyKnobsTextureWhenReady = () => {
+        const knobsComponents = componentMapping.knobs
+        const hasKnobsComponents = knobsComponents.some(name => componentRefs.current.has(name))
+        
+        if (hasKnobsComponents && (window as any).applyKnobsTexture) {
+          ;(window as any).applyKnobsTexture()
+        } else {
+          // Also try to apply texture directly to any objects with "knob" in the name
+          if (modelRef.current) {
+            let foundAny = false
+            modelRef.current.traverse((child) => {
+              if (child.name && child.name.toLowerCase().includes('knob')) {
+                foundAny = true
+                // Apply black texture directly
+                if ((window as any).applyKnobsTexture) {
+                  ;(window as any).applyKnobsTexture()
+                }
+              }
+            })
+          }
+          // Retry after a short delay if components not found yet
+          setTimeout(applyKnobsTextureWhenReady, 50)
+        }
+      }
+      
+      // Apply Loading Material Cover black texture after component mapping is complete
+      const applyLoadingMaterialCoverTextureWhenReady = () => {
+        const loadingMaterialCoverComponents = componentMapping.loadingMaterialCover
+        const hasLoadingMaterialCoverComponents = loadingMaterialCoverComponents.some(name => componentRefs.current.has(name))
+        
+        if (hasLoadingMaterialCoverComponents && (window as any).applyLoadingMaterialCoverTexture) {
+          ;(window as any).applyLoadingMaterialCoverTexture()
+        } else {
+          // Also try to apply texture directly to any objects with "loading" in the name
+          if (modelRef.current) {
+            let foundAny = false
+            modelRef.current.traverse((child) => {
+              if (child.name && child.name.toLowerCase().includes('loading')) {
+                foundAny = true
+                // Apply black texture directly
+                if ((window as any).applyLoadingMaterialCoverTexture) {
+                  ;(window as any).applyLoadingMaterialCoverTexture()
+                }
+              }
+            })
+          }
+          // Retry after a short delay if components not found yet
+          setTimeout(applyLoadingMaterialCoverTextureWhenReady, 50)
+        }
+      }
+      
+      // Apply Upper Side Main Holder black texture after component mapping is complete
+      const applyUpperSideMainHolderTextureWhenReady = () => {
+        const upperSideMainHolderComponents = componentMapping.upperSideMainHolder
+        const hasUpperSideMainHolderComponents = upperSideMainHolderComponents.some(name => componentRefs.current.has(name))
+        
+        if (hasUpperSideMainHolderComponents && (window as any).applyUpperSideMainHolderTexture) {
+          ;(window as any).applyUpperSideMainHolderTexture()
+        } else {
+          // Also try to apply texture directly to any objects with "upper" in the name
+          if (modelRef.current) {
+            let foundAny = false
+            modelRef.current.traverse((child) => {
+              if (child.name && child.name.toLowerCase().includes('upper') && child.name.toLowerCase().includes('holder')) {
+                foundAny = true
+                // Apply black texture directly
+                if ((window as any).applyUpperSideMainHolderTexture) {
+                  ;(window as any).applyUpperSideMainHolderTexture()
+                }
+              }
+            })
+          }
+          // Retry after a short delay if components not found yet
+          setTimeout(applyUpperSideMainHolderTextureWhenReady, 50)
+        }
+      }
+      
+      // Apply OLED Display texture after component mapping is complete
+      const applyOLEDTextureWhenReady = () => {
+        
+        // Try to apply texture immediately
+        if ((window as any).applyOLEDTexture) {
+          ;(window as any).applyOLEDTexture('/oled-screen.png')
+        } else {
+          setTimeout(applyOLEDTextureWhenReady, 100)
+        }
+      }
+      
+      // Start trying to apply textures after a short delay
+      setTimeout(applyUpperCoverTextureWhenReady, 100)
+      setTimeout(applyLowerSideMainTextureWhenReady, 150)
+      setTimeout(applyProductComponentsTextureWhenReady, 200)
+      setTimeout(applyKnobsTextureWhenReady, 250)
+      setTimeout(applyLoadingMaterialCoverTextureWhenReady, 300)
+      setTimeout(applyUpperSideMainHolderTextureWhenReady, 350)
+      setTimeout(applyOLEDTextureWhenReady, 400)
+      
+      // Also try to apply OLED texture with a more aggressive approach
+      setTimeout(() => {
+        if ((window as any).forceApplyOLEDTexture) {
+          ;(window as any).forceApplyOLEDTexture()
+        }
+      }, 500)
       
       // Complete loading
       updateProgress(100)
       onLoadingComplete?.()
       
     }, undefined, (error) => {
-      console.error('Error loading GLB model:', error)
       updateProgress(100) // Still complete loading even if there's an error
       onLoadingComplete?.()
     })
 
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate)
-      
-      // Render the scene
-      if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current)
-      }
-    }
-    animate()
+    // Initial render
+    requestRender()
 
     // Handle window resize
     const handleResize = () => {
@@ -807,6 +2013,19 @@ export default function ThreeSceneManager({
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize)
+      
+      // Stop all animations
+      stopRendering()
+      stopBackgroundAnimations()
+      
+      // Cancel any pending animation frames
+      if (stage8OpenAnimationRef.current) {
+        cancelAnimationFrame(stage8OpenAnimationRef.current)
+      }
+      if (stage8CloseAnimationRef.current) {
+        cancelAnimationFrame(stage8CloseAnimationRef.current)
+      }
+      
       if (mountRef.current && rendererRef.current && mountRef.current.contains(rendererRef.current.domElement)) {
         mountRef.current.removeChild(rendererRef.current.domElement)
       }
@@ -822,26 +2041,75 @@ export default function ThreeSceneManager({
         upperCoverTextureRef.current.dispose()
         upperCoverTextureRef.current = null
       }
+      if (lowerSideMainTextureRef.current) {
+        lowerSideMainTextureRef.current.dispose()
+        lowerSideMainTextureRef.current = null
+      }
+      if (productComponentsTextureRef.current) {
+        productComponentsTextureRef.current.dispose()
+        productComponentsTextureRef.current = null
+      }
+      if (knobsTextureRef.current) {
+        knobsTextureRef.current.dispose()
+        knobsTextureRef.current = null
+      }
+      if (loadingMaterialCoverTextureRef.current) {
+        loadingMaterialCoverTextureRef.current.dispose()
+        loadingMaterialCoverTextureRef.current = null
+      }
+      if (upperSideMainHolderTextureRef.current) {
+        upperSideMainHolderTextureRef.current.dispose()
+        upperSideMainHolderTextureRef.current = null
+      }
     }
   }, [])
 
   // Force updates when model controls change or during animation
   useEffect(() => {
     if (modelRef.current) {
-      modelRef.current.scale.set(modelControls.scale.x, modelControls.scale.y, modelControls.scale.z)
-      modelRef.current.position.set(modelControls.position.x, modelControls.position.y, modelControls.position.z)
-      modelRef.current.rotation.set(modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z)
+      const model = modelRef.current
+      const { scale, position, rotation } = modelControls
+      
+      // Only update if values have actually changed
+      if (model.scale.x !== scale.x || model.scale.y !== scale.y || model.scale.z !== scale.z) {
+        model.scale.set(scale.x, scale.y, scale.z)
+      }
+      if (model.position.x !== position.x || model.position.y !== position.y || model.position.z !== position.z) {
+        model.position.set(position.x, position.y, position.z)
+      }
+      if (model.rotation.x !== rotation.x || model.rotation.y !== rotation.y || model.rotation.z !== rotation.z) {
+        model.rotation.set(rotation.x, rotation.y, rotation.z)
+      }
+      requestRender()
     }
-  }, [modelControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress])
+  }, [modelControls.scale.x, modelControls.scale.y, modelControls.scale.z, modelControls.position.x, modelControls.position.y, modelControls.position.z, modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z, requestRender])
+
+  // Conditional background animations - only run when 3D scene is active
+  useEffect(() => {
+    if (current3DStage >= 1 && current3DStage <= 8) {
+      startBackgroundAnimations()
+    } else {
+      stopBackgroundAnimations()
+    }
+  }, [current3DStage, startBackgroundAnimations, stopBackgroundAnimations])
 
   // Force updates when camera controls change or during animation
   useEffect(() => {
     if (cameraRef.current) {
-      cameraRef.current.position.set(cameraControls.position.x, cameraControls.position.y, cameraControls.position.z)
-      cameraRef.current.fov = cameraControls.fov
-      cameraRef.current.updateProjectionMatrix()
+      const camera = cameraRef.current
+      const { position, fov } = cameraControls
+      
+      // Only update if values have actually changed
+      if (camera.position.x !== position.x || camera.position.y !== position.y || camera.position.z !== position.z) {
+        camera.position.set(position.x, position.y, position.z)
+      }
+      if (camera.fov !== fov) {
+        camera.fov = fov
+        camera.updateProjectionMatrix()
+      }
+      requestRender()
     }
-  }, [cameraControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress])
+  }, [cameraControls.position.x, cameraControls.position.y, cameraControls.position.z, cameraControls.fov, requestRender])
 
   // Force updates when lighting controls change or during animation
   useEffect(() => {
@@ -883,7 +2151,8 @@ export default function ThreeSceneManager({
       spotLightRef.current.penumbra = lightingControls.spotLightPenumbra
       spotLightRef.current.castShadow = lightingControls.shadowsEnabled
     }
-  }, [lightingControls, isAnimating, animationProgress, is3DAnimating, stage3DAnimationProgress])
+    requestRender()
+  }, [lightingControls.ambientIntensity, lightingControls.ambientColor, lightingControls.directionalIntensity, lightingControls.directionalColor, lightingControls.directionalPosition.x, lightingControls.directionalPosition.y, lightingControls.directionalPosition.z, lightingControls.directionalTarget.x, lightingControls.directionalTarget.y, lightingControls.directionalTarget.z, lightingControls.pointLightIntensity, lightingControls.pointLightColor, lightingControls.pointLightPosition.x, lightingControls.pointLightPosition.y, lightingControls.pointLightPosition.z, lightingControls.pointLightDistance, lightingControls.spotLightIntensity, lightingControls.spotLightColor, lightingControls.spotLightPosition.x, lightingControls.spotLightPosition.y, lightingControls.spotLightPosition.z, lightingControls.spotLightTarget.x, lightingControls.spotLightTarget.y, lightingControls.spotLightTarget.z, lightingControls.spotLightDistance, lightingControls.spotLightAngle, lightingControls.spotLightPenumbra, lightingControls.shadowsEnabled, lightingControls.shadowMapSize, lightingControls.shadowBias, requestRender])
 
   // Apply component transformations (only when user changes controls)
   useEffect(() => {
@@ -975,6 +2244,9 @@ export default function ThreeSceneManager({
       }
     })
     
+    // Request render after component updates
+    requestRender()
+    
     // Debug: Summary of visible components when all categories are hidden
     const allCategoriesHidden = Object.values(categoryVisibility).every(visible => !visible)
     
@@ -1039,9 +2311,16 @@ export default function ThreeSceneManager({
         }
       }
     }
-  }, [componentControls, categoryVisibility])
+  }, [componentControls, categoryVisibility, requestRender])
 
-
+  // Control background animations based on animation state
+  useEffect(() => {
+    if (isAnimating || is3DAnimating) {
+      startBackgroundAnimations()
+    } else {
+      stopBackgroundAnimations()
+    }
+  }, [isAnimating, is3DAnimating, startBackgroundAnimations, stopBackgroundAnimations])
 
   // Apply visibility changes in Stage 4 (separate from position animation)
   useEffect(() => {
@@ -1132,6 +2411,7 @@ export default function ThreeSceneManager({
       upperCoverRef.current!.position.z = currentZ
       upperCoverRef.current!.updateMatrix()
       upperCoverRef.current!.updateMatrixWorld(true)
+      requestRender()
       
       if (progress < 1) {
         stage8OpenAnimationRef.current = requestAnimationFrame(animate)
@@ -1142,7 +2422,7 @@ export default function ThreeSceneManager({
     }
     
     stage8OpenAnimationRef.current = requestAnimationFrame(animate)
-  }, [])
+  }, [requestRender])
 
   const stage8CloseAnimation = useCallback(() => {
     if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
@@ -1172,6 +2452,7 @@ export default function ThreeSceneManager({
       upperCoverRef.current!.position.z = currentZ
       upperCoverRef.current!.updateMatrix()
       upperCoverRef.current!.updateMatrixWorld(true)
+      requestRender()
       
       if (progress < 1) {
         stage8CloseAnimationRef.current = requestAnimationFrame(animate)
@@ -1182,7 +2463,7 @@ export default function ThreeSceneManager({
     }
     
     stage8CloseAnimationRef.current = requestAnimationFrame(animate)
-  }, [])
+  }, [requestRender])
 
   // Store animation functions in a ref for external access
   const animationFunctionsRef = useRef({
@@ -1206,29 +2487,9 @@ export default function ThreeSceneManager({
     }
   }, [onAnimationFunctionsReady])
 
-  // Apply Upper Cover texture when model is loaded
-  useEffect(() => {
-    if ((window as any).applyUpperCoverTexture) {
-      (window as any).applyUpperCoverTexture('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg')
-    }
-  }, [onLoadingComplete])
 
-  // Apply OLED Display texture in Stage 5
-  useEffect(() => {
-    if (current3DStage === 5) {
-      // // Console log removed
-      // Try PNG first, then fallback to GIF
-      if ((window as any).applyOLEDTexture) {
-        (window as any).applyOLEDTexture('/screen.png')
-      }
-    } else if (current3DStage !== 5 && oledTextureRef.current) {
-      // // Console log removed
-      // Remove the texture when leaving Stage 5
-      if ((window as any).removeOLEDTexture) {
-        (window as any).removeOLEDTexture()
-      }
-    }
-  }, [current3DStage])
+  // OLED Display texture is now applied immediately when model loads
+  // No need for stage-based application
 
   // Stage 8 Upper Cover Animations
   useEffect(() => {
@@ -1254,4 +2515,6 @@ export default function ThreeSceneManager({
   }, [current3DStage])
 
   return null // This component doesn't render anything directly
-}
+})
+
+export default ThreeSceneManager

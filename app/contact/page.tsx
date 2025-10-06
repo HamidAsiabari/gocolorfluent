@@ -65,7 +65,7 @@ export default function Contact() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -103,7 +103,7 @@ export default function Contact() {
                       inquiryType: 'general'
                     })
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                  className="bg-logo-bg hover:bg-logo-bg/80 text-white px-6 py-2 rounded-lg transition-colors"
                 >
                   Send Another Message
                 </button>
@@ -119,7 +119,7 @@ export default function Contact() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-logo-bg focus:outline-none"
                       placeholder="Your full name"
                     />
                   </div>
@@ -131,7 +131,7 @@ export default function Contact() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-logo-bg focus:outline-none"
                       placeholder="your.email@example.com"
                     />
                   </div>
@@ -145,7 +145,7 @@ export default function Contact() {
                       name="company"
                       value={formData.company}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-logo-bg focus:outline-none"
                       placeholder="Your company name"
                     />
                   </div>
@@ -155,7 +155,7 @@ export default function Contact() {
                       name="inquiryType"
                       value={formData.inquiryType}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-logo-bg focus:outline-none"
                     >
                       <option value="general">General Inquiry</option>
                       <option value="sales">Sales Question</option>
@@ -187,7 +187,7 @@ export default function Contact() {
                     onChange={handleChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-logo-bg focus:outline-none resize-none"
                     placeholder="Please provide details about your inquiry..."
                   />
                 </div>
@@ -198,7 +198,7 @@ export default function Contact() {
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors duration-200 ${
                     isSubmitting
                       ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-logo-bg hover:bg-logo-bg/80 text-white'
                   }`}
                 >
                   {isSubmitting ? 'Sending...' : 'Send Message'}
@@ -257,7 +257,7 @@ export default function Contact() {
                 href="https://maps.app.goo.gl/yM9cHwaEH9dTMoTeA?g_st=ipc" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
+                className="inline-flex items-center space-x-2 text-logo-bg hover:text-logo-bg/80 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

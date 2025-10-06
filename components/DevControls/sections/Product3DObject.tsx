@@ -98,7 +98,6 @@ export default function Product3DObject({
       // Show a brief success message (you could add a toast notification here)
       alert('All configurations copied to clipboard!')
     }).catch(err => {
-      console.error('❌ Failed to copy configs:', err)
       alert('Failed to copy configurations to clipboard')
     })
   }

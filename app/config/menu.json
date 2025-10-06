@@ -7,6 +7,18 @@
       "isActive": false
     },
     {
+      "id": "application",
+      "label": "Application",
+      "path": "/application",
+      "isActive": false
+    },
+    {
+      "id": "history",
+      "label": "History",
+      "path": "/history",
+      "isActive": false
+    },
+    {
       "id": "catalog",
       "label": "Catalog",
       "path": "/catalog",

@@ -86,8 +86,8 @@ export default function Presets({
 
   const handleResetAll = () => {
     onModelControlsChange({
-      position: { x: 2, y: -0.3, z: 0 },
-      rotation: { x: -0.03, y: 0.1, z: 0.27 },
+      position: { x: 0.9, y: -0.2, z: 0.3 },
+      rotation: { x: -0.09, y: -0.78, z: 0.9 },
       scale: { x: 10, y: 10, z: 10 }
     })
     onCameraControlsChange({
@@ -156,8 +156,8 @@ export default function Presets({
       <div className="grid grid-cols-2 gap-1 mb-2">
         <button
           onClick={() => onModelControlsChange({
-            position: { x: 2, y: -0.3, z: 0 },
-            rotation: { x: -0.03, y: 0.1, z: 0.27 },
+            position: { x: 0.9, y: -0.2, z: 0.3 },
+            rotation: { x: -0.09, y: -0.78, z: 0.9 },
             scale: { x: 10, y: 10, z: 10 }
           })}
           className="px-1 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"

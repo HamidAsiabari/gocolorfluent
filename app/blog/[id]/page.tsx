@@ -33,7 +33,6 @@ export async function generateStaticParams() {
       id: post.id.toString(),
     }))
   } catch (error) {
-    console.error('Error generating static params:', error)
     return []
   }
 }
@@ -46,7 +45,6 @@ async function getBlogPost(id: string): Promise<BlogPost | null> {
     const postId = parseInt(id)
     return postsData.posts.find((post: BlogPost) => post.id === postId) || null
   } catch (error) {
-    console.error('Error loading blog post:', error)
     return null
   }
 }
@@ -83,7 +81,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
           <div className="my-4">
             <Link 
               href={contentItem.url || '#'} 
-              className="text-blue-400 hover:text-blue-300 underline font-semibold"
+              className="text-logo-bg hover:text-logo-bg/80 underline font-semibold"
             >
               {contentItem.value}
             </Link>
@@ -96,25 +94,17 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <header className="bg-black/50 backdrop-blur-sm border-b border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <h1 className="text-3xl font-bold text-white">Color Fluent</h1>
-              <div className="flex items-center space-x-4">
-                <Menu variant="header" />
-                <MobileMenu />
-              </div>
-            </div>
-          </div>
-        </header>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
+        {/* Top Menu */}
+        <TopMenu />
+        
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ paddingTop: '190px' }}>
           <div className="text-center">
             <h2 className="text-2xl font-bold text-white mb-4">Post Not Found</h2>
             <p className="text-gray-300 mb-6">The requested blog post could not be found.</p>
             <Link 
               href="/blog" 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="bg-logo-bg hover:bg-logo-bg/80 text-white px-6 py-3 rounded-lg transition-colors"
             >
               Back to Blog
             </Link>
@@ -125,7 +115,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -135,7 +125,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
         <div className="mb-8">
           <Link 
             href="/blog" 
-            className="text-blue-400 hover:text-blue-300 flex items-center space-x-2"
+            className="text-logo-bg hover:text-logo-bg/80 flex items-center space-x-2"
           >
             <span>←</span>
             <span>Back to Blog</span>
@@ -187,7 +177,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
             </div>
             <Link 
               href="/blog" 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="bg-logo-bg hover:bg-logo-bg/80 text-white px-6 py-3 rounded-lg transition-colors"
             >
               Back to Blog
             </Link>

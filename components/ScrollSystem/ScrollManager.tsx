@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo, useCallback } from 'react'
 
 interface ScrollManagerProps {
   currentSection: number
@@ -15,7 +15,7 @@ interface ScrollManagerProps {
   setIsClient: (client: boolean) => void
 }
 
-export default function ScrollManager({
+const ScrollManager = memo(function ScrollManager({
   currentSection,
   setCurrentSection,
   setIsScrolling,
@@ -331,4 +331,6 @@ export default function ScrollManager({
   }
 
   return null // This component doesn't render anything directly
-}
+})
+
+export default ScrollManager

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 
 interface Section8Props {
   isClient: boolean
@@ -10,7 +10,7 @@ interface Section8Props {
   transitionProgress: number
 }
 
-export default function Section8({
+const Section8 = memo(function Section8({
   isClient,
   currentSection,
   isTransitioning,
@@ -57,7 +57,7 @@ export default function Section8({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-5xl mx-auto text-center" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-5xl mx-auto text-center" style={{ paddingTop: '5%' }}>
         <div className="space-y-8">
           
           {/* Section Title */}
@@ -117,7 +117,7 @@ export default function Section8({
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Schedule Demo</h3>
                 <p className="text-gray-400 mb-3 text-sm">See it in action</p>
-                <a href="#demo" className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-sm">
+                <a href="/contact" className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-sm">
                   Book a Demo
                 </a>
               </div>
@@ -150,4 +150,6 @@ export default function Section8({
 
     </section>
   )
-}
+})
+
+export default Section8

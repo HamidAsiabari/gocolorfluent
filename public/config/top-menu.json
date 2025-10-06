@@ -12,6 +12,18 @@
       "isActive": false
     },
     {
+      "id": "application",
+      "label": "Application",
+      "href": "/application",
+      "isActive": false
+    },
+    {
+      "id": "history",
+      "label": "History",
+      "href": "/history",
+      "isActive": false
+    },
+    {
       "id": "catalog",
       "label": "Catalog",
       "href": "/catalog",

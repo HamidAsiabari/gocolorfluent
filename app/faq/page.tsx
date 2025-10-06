@@ -219,7 +219,7 @@ export default function FAQ() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -238,15 +238,15 @@ export default function FAQ() {
           <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-600 p-4 sm:p-6 mb-8">
             <p className="text-gray-300 mb-4">If you still have questions, our support team is happy to help:</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm sm:text-base">
-              <a href="mailto:info@gocolorfluent.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+              <a href="mailto:info@gocolorfluent.com" className="text-logo-bg hover:text-logo-bg/80 transition-colors">
                 📧 info@gocolorfluent.com
               </a>
               <span className="hidden sm:block text-gray-500">|</span>
-              <a href="mailto:support@gocolorfluent.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+              <a href="mailto:support@gocolorfluent.com" className="text-logo-bg hover:text-logo-bg/80 transition-colors">
                 support@gocolorfluent.com
               </a>
               <span className="hidden sm:block text-gray-500">|</span>
-              <a href="tel:+14378822429" className="text-blue-400 hover:text-blue-300 transition-colors">
+              <a href="tel:+14378822429" className="text-logo-bg hover:text-logo-bg/80 transition-colors">
                 📞 +1 (437) 882-2429
               </a>
             </div>
@@ -261,7 +261,7 @@ export default function FAQ() {
               placeholder="Search FAQs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-10 bg-black/30 backdrop-blur-sm border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 pl-10 bg-black/30 backdrop-blur-sm border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-logo-bg focus:border-transparent"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +346,7 @@ export default function FAQ() {
             <div className="text-gray-400 text-lg mb-4">No results found for "{searchTerm}"</div>
             <button
               onClick={() => setSearchTerm('')}
-              className="text-blue-400 hover:text-blue-300 transition-colors"
+              className="text-logo-bg hover:text-logo-bg/80 transition-colors"
             >
               Clear search
             </button>
@@ -356,19 +356,19 @@ export default function FAQ() {
         {/* Help Section */}
         <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 sm:p-8 text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">Still have questions?</h3>
-          <p className="text-blue-100 mb-6">
+          <p className="text-logo-bg/90 mb-6">
             Our expert color team is here to guide you every step of the way!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="mailto:info@gocolorfluent.com"
-              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              className="bg-white text-logo-bg px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               Email Us
             </a>
             <a
               href="tel:+14378822429"
-              className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+              className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-logo-bg transition-colors"
             >
               Call Us
             </a>

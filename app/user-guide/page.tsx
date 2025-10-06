@@ -4,7 +4,7 @@ import Footer from '../../components/Footer'
 
 export default function UserGuide() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -14,7 +14,7 @@ export default function UserGuide() {
         <div className="mb-8">
           <Link 
             href="/" 
-            className="text-blue-400 hover:text-blue-300 flex items-center space-x-2"
+            className="text-logo-bg hover:text-logo-bg/80 flex items-center space-x-2"
           >
             <span>←</span>
             <span>Back to Home</span>
@@ -119,13 +119,13 @@ export default function UserGuide() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
                   href="/technical-support" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center transition-colors"
+                  className="bg-logo-bg hover:bg-logo-bg/80 text-white px-6 py-3 rounded-lg text-center transition-colors"
                 >
                   Contact Support
                 </Link>
                 <Link 
                   href="/faq" 
-                  className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg text-center hover:bg-white hover:text-blue-600 transition-colors"
+                  className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg text-center hover:bg-white hover:text-logo-bg transition-colors"
                 >
                   View FAQ
                 </Link>

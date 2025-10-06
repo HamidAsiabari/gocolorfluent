@@ -4,7 +4,7 @@ import Footer from '../../components/Footer'
 
 export default function Returns() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 internal-page">
       {/* Top Menu */}
       <TopMenu />
 
@@ -14,7 +14,7 @@ export default function Returns() {
         <div className="mb-8">
           <Link 
             href="/" 
-            className="text-blue-400 hover:text-blue-300 flex items-center space-x-2"
+            className="text-logo-bg hover:text-blue-300 flex items-center space-x-2"
           >
             <span>←</span>
             <span>Back to Home</span>
@@ -134,7 +134,7 @@ export default function Returns() {
                   <h3 className="text-lg font-semibold text-white mb-2">Phone</h3>
                   <a 
                     href="tel:+14378822429" 
-                    className="text-blue-400 hover:text-blue-300 text-lg font-semibold"
+                    className="text-logo-bg hover:text-blue-300 text-lg font-semibold"
                   >
                     +1 (437) 882-2429
                   </a>
@@ -144,7 +144,7 @@ export default function Returns() {
                   <h3 className="text-lg font-semibold text-white mb-2">Email</h3>
                   <a 
                     href="mailto:returns@gocolorfluent.com" 
-                    className="text-blue-400 hover:text-blue-300 text-lg font-semibold"
+                    className="text-logo-bg hover:text-blue-300 text-lg font-semibold"
                   >
                     returns@gocolorfluent.com
                   </a>
@@ -159,13 +159,13 @@ export default function Returns() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
                 href="/warranty" 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center transition-colors"
+                className="bg-logo-bg hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center transition-colors"
               >
                 Warranty Information
               </Link>
               <Link 
                 href="/technical-support" 
-                className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg text-center hover:bg-white hover:text-blue-600 transition-colors"
+                className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg text-center hover:bg-white hover:text-logo-bg transition-colors"
               >
                 Technical Support
               </Link>

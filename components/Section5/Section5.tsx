@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
+import VideoPlayer from '../VideoPlayer'
+import { TypingAnimation, useSectionVisit } from '../Animation'
 
 interface Section5Props {
   isClient: boolean
@@ -10,7 +12,7 @@ interface Section5Props {
   transitionProgress: number
 }
 
-export default function Section5({
+const Section5 = memo(function Section5({
   isClient,
   currentSection,
   isTransitioning,
@@ -19,17 +21,21 @@ export default function Section5({
 }: Section5Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
+  const { markSectionVisited } = useSectionVisit()
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
     if (currentSection === 5) {
-      const timer = setTimeout(() => setIsVisible(true), 200)
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+        markSectionVisited(5) // Mark section as visited only when it becomes visible
+      }, 200)
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection])
+  }, [currentSection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
@@ -38,6 +44,7 @@ export default function Section5({
       return () => clearTimeout(blurTimer)
     }
   }, [isVisible, currentSection])
+
 
   return (
     <section 
@@ -67,52 +74,23 @@ export default function Section5({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '5%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Visual Elements - Hidden on mobile */}
           <div className={`hidden lg:block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            <div className="relative">
+            <div className="relative w-fit">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-amber-900/30 to-yellow-900/30 rounded-2xl border border-amber-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
-                {/* LED lighting system visualization */}
-                <div className="absolute inset-6 space-y-8">
-                  {/* LED array representation */}
-                  <div className="flex justify-center items-center space-x-3">
-                    <div className="w-4 h-4 bg-amber-400 rounded-full animate-pulse" />
-                    <div className="w-4 h-4 bg-orange-400 rounded-full animate-pulse delay-100" />
-                    <div className="w-4 h-4 bg-yellow-400 rounded-full animate-pulse delay-200" />
-                    <div className="w-4 h-4 bg-amber-400 rounded-full animate-pulse delay-300" />
-                    <div className="w-4 h-4 bg-orange-400 rounded-full animate-pulse delay-400" />
-                  </div>
-                  
-                  {/* Light beam effects */}
-                  <div className="space-y-4">
-                    <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full animate-pulse" />
-                    <div className="h-1 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full animate-pulse delay-200" />
-                    <div className="h-1 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-full animate-pulse delay-400" />
-                  </div>
-                  
-                  {/* Sensor guide lights */}
-                  <div className="flex justify-center space-x-6">
-                    <div className="w-6 h-6 bg-amber-400/60 rounded-full animate-ping" />
-                    <div className="w-4 h-4 bg-orange-400/60 rounded-full animate-ping delay-300" />
-                    <div className="w-5 h-5 bg-yellow-400/60 rounded-full animate-ping delay-600" />
-                  </div>
-                  
-                  {/* Color accuracy indicators */}
-                  <div className="flex justify-center space-x-2">
-                    <div className="w-3 h-3 bg-red-400/60 rounded-full animate-pulse" />
-                    <div className="w-3 h-3 bg-green-400/60 rounded-full animate-pulse delay-200" />
-                    <div className="w-3 h-3 bg-blue-400/60 rounded-full animate-pulse delay-400" />
-                  </div>
-                </div>
-
-                {/* Floating light elements */}
-                <div className="absolute top-4 right-4 w-2 h-2 bg-amber-400/60 rounded-full animate-bounce" />
-                <div className="absolute bottom-4 left-4 w-1.5 h-1.5 bg-orange-400/60 rounded-full animate-bounce delay-500" />
-                <div className="absolute top-1/2 right-4 w-2 h-2 bg-yellow-400/60 rounded-full animate-bounce delay-1000" />
+                {/* Video Player */}
+                <VideoPlayer
+                  src="/video/WhatsApp Video 2025-09-12 at 18.52.05.mp4"
+                  videoId="section5-video"
+                  className="w-full h-full"
+                  currentSection={currentSection}
+                  sectionNumber={5}
+                />
               </div>
 
               {/* Decorative light elements */}
@@ -145,15 +123,42 @@ export default function Section5({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">High-quality LED system</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="High-quality LED system" 
+                        speed={60} 
+                        delay={0}
+                        sectionNumber={5}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">Sensor guide lights</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Sensor guide lights" 
+                        speed={60} 
+                        delay={1000}
+                        sectionNumber={5}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Optimized color accuracy</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Optimized color accuracy" 
+                        speed={60} 
+                        delay={2000}
+                        sectionNumber={5}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -163,35 +168,53 @@ export default function Section5({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">Consistent illumination</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Consistent illumination" 
+                        speed={60} 
+                        delay={3000}
+                        sectionNumber={5}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">True color representation</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="True color representation" 
+                        speed={60} 
+                        delay={4000}
+                        sectionNumber={5}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Professional-grade results</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Professional-grade results" 
+                        speed={60} 
+                        delay={5000}
+                        sectionNumber={5}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/25">
-                <span className="relative z-10">View Lighting Specs</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-              </button>
-              
-              <button className="group px-8 py-4 border-2 border-amber-400 hover:border-orange-400 text-amber-300 hover:text-orange-300 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-amber-500/5 hover:bg-orange-500/10">
-                <span className="relative z-10">Learn More</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
     </section>
   )
-}
+})
+
+export default Section5

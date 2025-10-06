@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useCallback, memo } from 'react'
 import { StageConfig } from '../ThreeScene'
+import { LuxuryLightingAnimation } from './LuxuryLightingAnimation'
 
 interface AnimationSystemProps {
   isAnimating: boolean
@@ -29,7 +30,7 @@ interface AnimationSystemProps {
   getStageConfig: (stage: number) => StageConfig
 }
 
-export default function AnimationSystem({
+const AnimationSystem = memo(function AnimationSystem({
   isAnimating,
   setIsAnimating,
   animationProgress,
@@ -942,8 +943,17 @@ export default function AnimationSystem({
     const timer = setTimeout(() => {
       setIsAnimating(true)
       
-      // Animation duration: 1 second
-      const duration = 1000
+      // Create luxury lighting animation
+      const stage1Config = getStageConfig(1)
+      const stage2Config = getStageConfig(2)
+      const luxuryLightingAnimation = new LuxuryLightingAnimation({
+        stage1: stage1Config.lighting,
+        stage2: stage2Config.lighting,
+        duration: 3000 // 3 seconds for luxury product launch
+      })
+      
+      // Animation duration: 3 seconds for luxury product launch
+      const duration = 3000
       const startTime = Date.now()
       
       const animate = () => {
@@ -952,42 +962,50 @@ export default function AnimationSystem({
         
         setAnimationProgress(progress)
         
+        // Get luxury lighting at current progress
+        const luxuryLighting = luxuryLightingAnimation.getLightingAtProgress(progress)
+        
+        // Update model and camera with simple interpolation
+        const stage1Config = getStageConfig(1)
+        const stage2Config = getStageConfig(2)
+        
+        setModelControls({
+          position: {
+            x: stage1Config.model.position.x + (stage2Config.model.position.x - stage1Config.model.position.x) * progress,
+            y: stage1Config.model.position.y + (stage2Config.model.position.y - stage1Config.model.position.y) * progress,
+            z: stage1Config.model.position.z + (stage2Config.model.position.z - stage1Config.model.position.z) * progress
+          },
+          rotation: {
+            x: stage1Config.model.rotation.x + (stage2Config.model.rotation.x - stage1Config.model.rotation.x) * progress,
+            y: stage1Config.model.rotation.y + (stage2Config.model.rotation.y - stage1Config.model.rotation.y) * progress,
+            z: stage1Config.model.rotation.z + (stage2Config.model.rotation.z - stage1Config.model.rotation.z) * progress
+          },
+          scale: {
+            x: stage1Config.model.scale.x + (stage2Config.model.scale.x - stage1Config.model.scale.x) * progress,
+            y: stage1Config.model.scale.y + (stage2Config.model.scale.y - stage1Config.model.scale.y) * progress,
+            z: stage1Config.model.scale.z + (stage2Config.model.scale.z - stage1Config.model.scale.z) * progress
+          }
+        })
+        
+        setCameraControls({
+          position: {
+            x: stage1Config.camera.position.x + (stage2Config.camera.position.x - stage1Config.camera.position.x) * progress,
+            y: stage1Config.camera.position.y + (stage2Config.camera.position.y - stage1Config.camera.position.y) * progress,
+            z: stage1Config.camera.position.z + (stage2Config.camera.position.z - stage1Config.camera.position.z) * progress
+          },
+          fov: stage1Config.camera.fov + (stage2Config.camera.fov - stage1Config.camera.fov) * progress
+        })
+        
+        // Apply luxury lighting
+        setLightingControls(luxuryLighting)
+        
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
           // Animation complete - update state to Stage 2 values
-          const stage2Config = getStageConfig(2)
-          setModelControls({
-            position: stage2Config.model.position,
-            rotation: stage2Config.model.rotation,
-            scale: stage2Config.model.scale
-          })
-          setCameraControls({
-            position: stage2Config.camera.position,
-            fov: stage2Config.camera.fov
-          })
-          setLightingControls({
-            ambientIntensity: stage2Config.lighting.ambientIntensity,
-            ambientColor: stage2Config.lighting.ambientColor,
-            directionalIntensity: stage2Config.lighting.directionalIntensity,
-            directionalColor: stage2Config.lighting.directionalColor,
-            directionalPosition: stage2Config.lighting.directionalPosition,
-            directionalTarget: stage2Config.lighting.directionalTarget,
-            pointLightIntensity: stage2Config.lighting.pointLightIntensity,
-            pointLightColor: stage2Config.lighting.pointLightColor,
-            pointLightPosition: stage2Config.lighting.pointLightPosition,
-            pointLightDistance: stage2Config.lighting.pointLightDistance,
-            spotLightIntensity: stage2Config.lighting.spotLightIntensity,
-            spotLightColor: stage2Config.lighting.spotLightColor,
-            spotLightPosition: stage2Config.lighting.spotLightPosition,
-            spotLightTarget: stage2Config.lighting.spotLightTarget,
-            spotLightDistance: stage2Config.lighting.spotLightDistance,
-            spotLightAngle: stage2Config.lighting.spotLightAngle,
-            spotLightPenumbra: stage2Config.lighting.spotLightPenumbra,
-            shadowsEnabled: stage2Config.lighting.shadowsEnabled,
-            shadowMapSize: stage2Config.lighting.shadowMapSize,
-            shadowBias: stage2Config.lighting.shadowBias
-          })
+          setModelControls(stage2Config.model)
+          setCameraControls(stage2Config.camera)
+          setLightingControls(stage2Config.lighting)
           setCurrent3DStage(2) // Update stage to Stage 2
           setIsAnimating(false)
         }
@@ -1001,4 +1019,6 @@ export default function AnimationSystem({
 
   // This component doesn't render anything directly
   return null
-}
+})
+
+export default AnimationSystem

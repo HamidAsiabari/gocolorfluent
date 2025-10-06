@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
+import VideoPlayer from '../VideoPlayer'
+import { TypingAnimation, useSectionVisit } from '../Animation'
 
 interface Section3Props {
   isClient: boolean
@@ -10,7 +12,7 @@ interface Section3Props {
   transitionProgress: number
 }
 
-export default function Section3({
+const Section3 = memo(function Section3({
   isClient,
   currentSection,
   isTransitioning,
@@ -19,17 +21,21 @@ export default function Section3({
 }: Section3Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
+  const { markSectionVisited } = useSectionVisit()
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
     if (currentSection === 3) {
-      const timer = setTimeout(() => setIsVisible(true), 200)
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+        markSectionVisited(3) // Mark section as visited only when it becomes visible
+      }, 200)
       return () => clearTimeout(timer)
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection])
+  }, [currentSection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
@@ -38,6 +44,7 @@ export default function Section3({
       return () => clearTimeout(blurTimer)
     }
   }, [isVisible, currentSection])
+
 
   return (
     <section 
@@ -67,44 +74,23 @@ export default function Section3({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '10%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '5%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Visual Elements - Hidden on mobile */}
           <div className={`hidden lg:block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            <div className="relative">
+            <div className="relative w-fit">
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-emerald-900/30 to-cyan-900/30 rounded-2xl border border-emerald-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
-                {/* Mechanical components visualization */}
-                <div className="absolute inset-6 space-y-8">
-                  {/* Central gear system */}
-                  <div className="flex justify-center items-center space-x-4">
-                    <div className="w-16 h-16 border-4 border-emerald-400 rounded-full flex items-center justify-center animate-spin" style={{ animationDuration: '4s' }}>
-                      <div className="w-8 h-8 border-2 border-cyan-400 rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-                    </div>
-                    <div className="w-12 h-12 border-3 border-teal-400 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
-                  </div>
-                  
-                  {/* Precision lines */}
-                  <div className="space-y-3">
-                    <div className="h-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full animate-pulse" />
-                    <div className="h-1 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full animate-pulse delay-200" />
-                    <div className="h-1 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full animate-pulse delay-400" />
-                  </div>
-                  
-                  {/* Micro components */}
-                  <div className="flex justify-center space-x-6">
-                    <div className="w-6 h-6 bg-emerald-400/60 rounded-full animate-ping" />
-                    <div className="w-4 h-4 bg-cyan-400/60 rounded-full animate-ping delay-300" />
-                    <div className="w-5 h-5 bg-teal-400/60 rounded-full animate-ping delay-600" />
-                  </div>
-                </div>
-
-                {/* Floating mechanical elements */}
-                <div className="absolute top-4 right-4 w-3 h-3 bg-emerald-400/60 rounded-full animate-bounce" />
-                <div className="absolute bottom-4 left-4 w-2 h-2 bg-cyan-400/60 rounded-full animate-bounce delay-500" />
-                <div className="absolute top-1/2 right-4 w-2.5 h-2.5 bg-teal-400/60 rounded-full animate-bounce delay-1000" />
+                {/* Video Player */}
+                <VideoPlayer
+                  src="/video/WhatsApp Video 2025-09-12 at 18.49.17.mp4"
+                  videoId="section3-video"
+                  className="w-full h-full"
+                  currentSection={currentSection}
+                  sectionNumber={3}
+                />
               </div>
 
               {/* Decorative mechanical elements */}
@@ -137,15 +123,42 @@ export default function Section3({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">Micro-gear motor system</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Micro-gear motor system" 
+                        speed={60} 
+                        delay={0}
+                        sectionNumber={3}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">Precision coupling mechanisms</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Precision coupling mechanisms" 
+                        speed={60} 
+                        delay={1000}
+                        sectionNumber={3}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Advanced support systems</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Advanced support systems" 
+                        speed={60} 
+                        delay={2000}
+                        sectionNumber={3}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -155,35 +168,53 @@ export default function Section3({
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-gray-300">Ultra-precise movement control</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Ultra-precise movement control" 
+                        speed={60} 
+                        delay={3000}
+                        sectionNumber={3}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse delay-200" />
-                    <span className="text-gray-300">Smooth brush operation</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Smooth brush operation" 
+                        speed={60} 
+                        delay={4000}
+                        sectionNumber={3}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse delay-400" />
-                    <span className="text-gray-300">Reliable mechanical performance</span>
+                    <span className="text-gray-300">
+                      <TypingAnimation 
+                        text="Reliable mechanical performance" 
+                        speed={60} 
+                        delay={5000}
+                        sectionNumber={3}
+                        currentSection={currentSection}
+                        isVisible={isVisible}
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/25">
-                <span className="relative z-10">View Specifications</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-              </button>
-              
-              <button className="group px-8 py-4 border-2 border-emerald-400 hover:border-cyan-400 text-emerald-300 hover:text-cyan-300 font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-emerald-500/5 hover:bg-cyan-500/10">
-                <span className="relative z-10">Technical Details</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
     </section>
   )
-}
+})
+
+export default Section3
