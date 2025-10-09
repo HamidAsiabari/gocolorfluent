@@ -25,9 +25,21 @@
       "isActive": false
     },
     {
+      "id": "shop",
+      "label": "Shop",
+      "path": "/shop",
+      "isActive": false
+    },
+    {
       "id": "about",
       "label": "About Us",
       "path": "/about",
+      "isActive": false
+    },
+    {
+      "id": "team",
+      "label": "Our Team",
+      "path": "/team",
       "isActive": false
     },
     {

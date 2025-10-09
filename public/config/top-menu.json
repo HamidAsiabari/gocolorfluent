@@ -30,9 +30,21 @@
       "isActive": false
     },
     {
+      "id": "shop",
+      "label": "Shop",
+      "href": "/shop",
+      "isActive": false
+    },
+    {
       "id": "about",
       "label": "About Us",
       "href": "/about",
+      "isActive": false
+    },
+    {
+      "id": "team",
+      "label": "Our Team",
+      "href": "/team",
       "isActive": false
     },
     {
