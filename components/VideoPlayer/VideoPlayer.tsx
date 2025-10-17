@@ -312,7 +312,7 @@ export default function VideoPlayer({
       {/* Banner Image Overlay - Shows video frame at specified time */}
       {!isPlaying && showBanner && bannerImage && !bannerError && (
         <div 
-          className="absolute inset-0 w-full h-full object-cover rounded-2xl cursor-pointer z-10"
+          className="absolute inset-0 w-full h-full object-cover rounded-2xl cursor-pointer z-5"
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -329,7 +329,7 @@ export default function VideoPlayer({
 
       {/* Banner Loading State */}
       {!isPlaying && showBanner && isBannerLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl z-5">
           <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
           </div>
@@ -338,7 +338,7 @@ export default function VideoPlayer({
 
       {/* Banner Error State - Fallback to play button */}
       {!isPlaying && showBanner && bannerError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl z-5">
           <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors duration-200">
             <svg className="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
@@ -383,8 +383,8 @@ export default function VideoPlayer({
         </div>
       )}
 
-      {/* Play/Pause Overlay - Only show when banner is not displayed */}
-      {!isPlaying && !hasError && (!showBanner || bannerError) && (
+      {/* Play Button Overlay - Always show when video is not playing */}
+      {!isPlaying && !hasError && (
         <div 
           className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl cursor-pointer z-20"
           onClick={(e) => {

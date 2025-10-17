@@ -154,7 +154,7 @@ export default function Product3DObject({
             Check browser console for component mapping details
           </p>
           <p className="text-xs text-gray-400">
-            Upper Side Main Holder scale: {componentControls.upperSideMainHolder.scale.x}x
+            Upper Side Main Holder scale: {componentControls.upperSideMainHolder?.scale?.x || 1}x
           </p>
         </div>
         

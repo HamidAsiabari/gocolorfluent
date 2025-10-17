@@ -152,6 +152,11 @@ const AnimationSystem = memo(function AnimationSystem({
         toStage = getStageConfig(3)
       }
       
+      // Check if both stages are valid
+      if (!fromStage || !toStage) {
+        return null
+      }
+      
       // Calculate animated values with proper easing
       const easedProgress = easeInOut(progress)
       
@@ -241,6 +246,10 @@ const AnimationSystem = memo(function AnimationSystem({
       const stage1 = getStageConfig(1)
       const stage2 = getStageConfig(2)
       
+      if (!stage1 || !stage2) {
+        return null
+      }
+      
       return {
         model: {
           position: {
@@ -314,6 +323,9 @@ const AnimationSystem = memo(function AnimationSystem({
 
     // Return current stage configuration if no animation
     const currentStageConfig = getStageConfig(current3DStage)
+    if (!currentStageConfig) {
+      return null
+    }
     return { 
       model: currentStageConfig.model, 
       camera: currentStageConfig.camera, 
@@ -354,6 +366,10 @@ const AnimationSystem = memo(function AnimationSystem({
       // Starting Stage 3 to Stage 4 animation
       const stage3Config = getStageConfig(3)
       const stage4Config = getStageConfig(4)
+      
+      if (!stage3Config || !stage4Config) {
+        return
+      }
       
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
@@ -496,9 +512,11 @@ const AnimationSystem = memo(function AnimationSystem({
       // Console log removed
       const stage5Config = getStageConfig(5)
       const stage4Config = getStageConfig(4)
-      // Console log removed
-      // Console log removed
-      // Console log removed
+      
+      if (!stage5Config || !stage4Config) {
+        return
+      }
+      
       setIs3DAnimating(true)
       setStage3DAnimationProgress(0)
       
@@ -929,9 +947,11 @@ const AnimationSystem = memo(function AnimationSystem({
   useEffect(() => {
     if (!is3DAnimating && !isAnimating) {
       const currentStageConfig = getStageConfig(current3DStage)
-      setModelControls(currentStageConfig.model)
-      setCameraControls(currentStageConfig.camera)
-      setLightingControls(currentStageConfig.lighting)
+      if (currentStageConfig && currentStageConfig.model && currentStageConfig.camera && currentStageConfig.lighting) {
+        setModelControls(currentStageConfig.model)
+        setCameraControls(currentStageConfig.camera)
+        setLightingControls(currentStageConfig.lighting)
+      }
     }
   }, [current3DStage, is3DAnimating, isAnimating])
 
@@ -946,6 +966,11 @@ const AnimationSystem = memo(function AnimationSystem({
       // Create luxury lighting animation
       const stage1Config = getStageConfig(1)
       const stage2Config = getStageConfig(2)
+      
+      if (!stage1Config || !stage2Config) {
+        return
+      }
+      
       const luxuryLightingAnimation = new LuxuryLightingAnimation({
         stage1: stage1Config.lighting,
         stage2: stage2Config.lighting,
@@ -968,6 +993,10 @@ const AnimationSystem = memo(function AnimationSystem({
         // Update model and camera with simple interpolation
         const stage1Config = getStageConfig(1)
         const stage2Config = getStageConfig(2)
+        
+        if (!stage1Config || !stage2Config) {
+          return
+        }
         
         setModelControls({
           position: {

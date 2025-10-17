@@ -22,59 +22,55 @@ import Section7 from '../components/Section7'
 import Section8 from '../components/Section8'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 import { LoadingScreen, SectionLoadingScreen } from '../components/Loading'
+import { useDebugContext } from '../components/DebugSidebar/DebugContext'
 
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   
-  const [modelControls, setModelControls] = useState({
-    position: { x: 1.4, y: -0.5, z: 1 },
-    rotation: { x: -0.14, y: -1.14, z: 2.66 },
-    scale: { x: 10, y: 10, z: 10 }
-  })
-  const [cameraControls, setCameraControls] = useState({
-    position: { x: 0, y: 0, z: 5 },
-    fov: 75
-  })
-  const [lightingControls, setLightingControls] = useState({
-    ambientIntensity: 1.8,
-    ambientColor: '#fafafa',
-    directionalIntensity: 2.2,
-    directionalColor: '#ffffff',
-    directionalPosition: { x: 2, y: 5, z: 2 },
-    directionalTarget: { x: 1.4, y: -0.5, z: 1 },
-    pointLightIntensity: 1.2,
-    pointLightColor: '#ffffff',
-    pointLightPosition: { x: -2, y: 2, z: 2 },
-    pointLightDistance: 15,
-    spotLightIntensity: 3.5,
-    spotLightColor: '#ffd294',
-    spotLightPosition: { x: 5.2, y: -4, z: 1.4 },
-    spotLightTarget: { x: 2.3, y: 0.2, z: -0.1 },
-    spotLightDistance: 8,
-    spotLightAngle: 73,
-    spotLightPenumbra: 0.34,
-    shadowsEnabled: true,
-    shadowMapSize: 2048,
-    shadowBias: -0.0001
-  })
+  // Get debug context
+  const {
+    modelControls,
+    setModelControls,
+    cameraControls,
+    setCameraControls,
+    lightingControls,
+    setLightingControls,
+    currentSection,
+    setCurrentSection,
+    isScrolling,
+    setIsScrolling,
+    scrollDirection,
+    setScrollDirection,
+    transitionName,
+    setTransitionName,
+    scrollPosition,
+    setScrollPosition,
+    isClient,
+    setIsClient,
+    stage1Config,
+    setStage1Config,
+    stage2Config,
+    setStage2Config,
+    stage3Config,
+    setStage3Config,
+    current3DStage,
+    setCurrent3DStage,
+    stage3DAnimationProgress,
+    setStage3DAnimationProgress,
+    componentControls,
+    setComponentControls,
+    categoryVisibility,
+    setCategoryVisibility
+  } = useDebugContext()
+  
   const [isDevMode, setIsDevMode] = useState(false)
-  const [scrollPosition, setScrollPosition] = useState(0)
-  const [isClient, setIsClient] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [animationProgress, setAnimationProgress] = useState(0)
-  const [currentSection, setCurrentSection] = useState(1)
-  const [isScrolling, setIsScrolling] = useState(false)
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null)
-  const [transitionName, setTransitionName] = useState<string | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionProgress, setTransitionProgress] = useState(0)
-  const [current3DStage, setCurrent3DStage] = useState(2) // Start at Stage 2 (Section 1 → Stage 2)
   const [is3DAnimating, setIs3DAnimating] = useState(false)
-  const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
   const [isNavigatingViaDots, setIsNavigatingViaDots] = useState(false)
-  const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
-  const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [isSectionLoading, setIsSectionLoading] = useState(false)
@@ -132,6 +128,12 @@ export default function Home() {
   
   // Function to get stage configuration based on device type
   const getStageConfig = useCallback((stage: number) => {
+    // Ensure stage is a valid number
+    if (typeof stage !== 'number' || stage < 1 || stage > 9) {
+      console.warn(`Invalid stage number: ${stage}, falling back to stage 1`)
+      stage = 1
+    }
+
     switch (deviceType) {
       case 'mobile':
         switch (stage) {
@@ -274,6 +276,13 @@ export default function Home() {
   useEffect(() => {
     setLoadingStartTime(Date.now())
   }, [])
+
+  // Sync stage configurations with debug context
+  useEffect(() => {
+    setStage1Config(stage1Config)
+    setStage2Config(stage2Config)
+    setStage3Config(stage3Config)
+  }, [setStage1Config, setStage2Config, setStage3Config])
 
   // Handle loading progress
   const handleLoadingProgress = useCallback((progress: number) => {
@@ -434,6 +443,11 @@ export default function Home() {
         toStage = getStageConfig(3)
       }
       
+      // Check if both stages are valid
+      if (!fromStage || !toStage) {
+        return null
+      }
+      
       return {
         model: {
           position: {
@@ -506,10 +520,18 @@ export default function Home() {
     } else if (isAnimating) {
       const progress = easeInOutSine(animationProgress)
       
+      // Get stage configurations with null checks
+      const stage1 = getStageConfig(1)
+      const stage2 = getStageConfig(2)
+      
+      if (!stage1 || !stage2) {
+        return null
+      }
+      
       // Create luxury lighting animation for stage 1 to stage 2
       const luxuryLightingAnimation = new LuxuryLightingAnimation({
-        stage1: stage1Config.lighting,
-        stage2: stage2Config.lighting,
+        stage1: stage1.lighting,
+        stage2: stage2.lighting,
         duration: 3000 // 3 seconds for luxury product launch
       })
       
@@ -518,28 +540,28 @@ export default function Home() {
       return {
         model: {
           position: {
-            x: lerp(stage1Config.model.position.x, stage2Config.model.position.x, progress),
-            y: lerp(stage1Config.model.position.y, stage2Config.model.position.y, progress),
-            z: lerp(stage1Config.model.position.z, stage2Config.model.position.z, progress)
+            x: lerp(stage1.model.position.x, stage2.model.position.x, progress),
+            y: lerp(stage1.model.position.y, stage2.model.position.y, progress),
+            z: lerp(stage1.model.position.z, stage2.model.position.z, progress)
           },
           rotation: {
-            x: lerp(stage1Config.model.rotation.x, stage2Config.model.rotation.x, progress),
-            y: lerp(stage1Config.model.rotation.y, stage2Config.model.rotation.y, progress),
-            z: lerp(stage1Config.model.rotation.z, stage2Config.model.rotation.z, progress)
+            x: lerp(stage1.model.rotation.x, stage2.model.rotation.x, progress),
+            y: lerp(stage1.model.rotation.y, stage2.model.rotation.y, progress),
+            z: lerp(stage1.model.rotation.z, stage2.model.rotation.z, progress)
           },
           scale: {
-            x: lerp(stage1Config.model.scale.x, stage2Config.model.scale.x, progress),
-            y: lerp(stage1Config.model.scale.y, stage2Config.model.scale.y, progress),
-            z: lerp(stage1Config.model.scale.z, stage2Config.model.scale.z, progress)
+            x: lerp(stage1.model.scale.x, stage2.model.scale.x, progress),
+            y: lerp(stage1.model.scale.y, stage2.model.scale.y, progress),
+            z: lerp(stage1.model.scale.z, stage2.model.scale.z, progress)
           }
         },
         camera: {
           position: {
-            x: lerp(stage1Config.camera.position.x, stage2Config.camera.position.x, progress),
-            y: lerp(stage1Config.camera.position.y, stage2Config.camera.position.y, progress),
-            z: lerp(stage1Config.camera.position.z, stage2Config.camera.position.z, progress)
+            x: lerp(stage1.camera.position.x, stage2.camera.position.x, progress),
+            y: lerp(stage1.camera.position.y, stage2.camera.position.y, progress),
+            z: lerp(stage1.camera.position.z, stage2.camera.position.z, progress)
           },
-          fov: lerp(stage1Config.camera.fov, stage2Config.camera.fov, progress)
+          fov: lerp(stage1.camera.fov, stage2.camera.fov, progress)
         },
         lighting: luxuryLighting
       }
@@ -663,8 +685,8 @@ export default function Home() {
       <main 
         className={`relative bg-gradient-to-br from-gray-900 to-gray-800 transition-opacity duration-500 smooth-scroll ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         style={{ 
-          height: isClient ? `${window.innerHeight * 8}px` : '800vh',
-          minHeight: isClient ? `${window.innerHeight * 8}px` : '800vh',
+          height: '800vh',
+          minHeight: '800vh',
           touchAction: 'pan-y' // Allow vertical scrolling on mobile
         }}
       >

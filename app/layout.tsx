@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { VideoProvider } from '../components/VideoPlayer/VideoContext'
 import { SectionVisitProvider } from '../components/Animation'
+import DebugSidebar from '../components/DebugSidebar'
+import { DebugProvider } from '../components/DebugSidebar/DebugContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -31,11 +33,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <VideoProvider>
-          <SectionVisitProvider>
-            {children}
-          </SectionVisitProvider>
-        </VideoProvider>
+        <DebugProvider>
+          <VideoProvider>
+            <SectionVisitProvider>
+              {children}
+            </SectionVisitProvider>
+          </VideoProvider>
+          <DebugSidebar />
+        </DebugProvider>
       </body>
     </html>
   )

@@ -281,8 +281,38 @@ section {
   z-index: 1;
 }
 
+/* Debug Sidebar Styles */
+.debug-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 220px;
+  height: 100vh;
+  background-color: #1a1a1a;
+  border-left: 1px solid #333;
+  z-index: 1000;
+  overflow-y: auto;
+  /* Push content to the left by taking up space */
+  box-sizing: border-box;
+}
+
+/* Adjust body margin to account for debug sidebar */
+body {
+  margin-right: 220px;
+}
+
 /* Mobile-specific improvements */
 @media (max-width: 768px) {
+  /* Hide debug sidebar on mobile */
+  .debug-sidebar {
+    display: none;
+  }
+  
+  /* Reset body margin on mobile */
+  body {
+    margin-right: 0;
+  }
+  
   html, body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: none; /* Prevent bounce scrolling on iOS */
