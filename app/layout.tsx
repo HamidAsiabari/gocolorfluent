@@ -3,15 +3,10 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { VideoProvider } from '../components/VideoPlayer/VideoContext'
 import { SectionVisitProvider } from '../components/Animation'
-import DebugSidebar from '../components/DebugSidebar'
-import { DebugProvider } from '../components/DebugSidebar/DebugContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
-  display: 'swap',
-  fallback: ['Inter Fallback', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-  preload: true,
-  adjustFontFallback: false
+  display: 'swap'
 })
 
 export const metadata: Metadata = {
@@ -33,14 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <DebugProvider>
-          <VideoProvider>
-            <SectionVisitProvider>
-              {children}
-            </SectionVisitProvider>
-          </VideoProvider>
-          <DebugSidebar />
-        </DebugProvider>
+        <VideoProvider>
+          <SectionVisitProvider>
+            {children}
+          </SectionVisitProvider>
+        </VideoProvider>
       </body>
     </html>
   )

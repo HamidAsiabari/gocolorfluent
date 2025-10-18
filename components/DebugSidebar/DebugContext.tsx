@@ -1,7 +1,8 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react'
 import { defaultComponentControls, defaultCategoryVisibility } from '../DevControls/sections/product3d/types'
+import { useAppStore } from '../../store/useAppStore'
 
 interface ModelControls {
   position: { x: number; y: number; z: number }
@@ -44,11 +45,68 @@ interface StageConfig {
 }
 
 interface ComponentControls {
-  [key: string]: any
+  // Core Mechanical Components
+  microGearmotor: ComponentTransform
+  gearMotorPCB: ComponentTransform
+  motorHolder: ComponentTransform
+  holderSupport: ComponentTransform
+  coupling: ComponentTransform
+  m5Screw: ComponentTransform
+  
+  // Brush & Application System
+  movingPlate: ComponentTransform
+  siliconSupport: ComponentTransform
+  nozzle: ComponentTransform
+  nozzleBlinder: ComponentTransform
+  
+  // Main Housing & Structure
+  upperSideMainHolder: ComponentTransform
+  lowerSideMain: ComponentTransform
+  upperCover: ComponentTransform
+  loadingMaterialCover: ComponentTransform
+  
+  // Electronic Components
+  colorSensorPCB: ComponentTransform
+  sts8dn3llh5: ComponentTransform
+  oledDisplay: ComponentTransform
+  detectorSwitch: ComponentTransform
+  slideSwitch: ComponentTransform
+  
+  // LED & Lighting
+  everlightLEDs: ComponentTransform
+  sensorGuideLight: ComponentTransform
+  
+  // User Interface
+  knobs: ComponentTransform
+  drainButtonActuator: ComponentTransform
+  handleUpCover: ComponentTransform
+  
+  // Support & Guide Components
+  hairGuideSupport: ComponentTransform
+  skqyafComponents: ComponentTransform
+  
+  // Additional Parts
+  productComponents: ComponentTransform
+  genericParts: ComponentTransform
+  importedComponents: ComponentTransform
+}
+
+interface ComponentTransform {
+  position: { x: number; y: number; z: number }
+  rotation: { x: number; y: number; z: number }
+  scale: { x: number; y: number; z: number }
+  visible: boolean
 }
 
 interface CategoryVisibility {
-  [key: string]: boolean
+  coreMechanical: boolean
+  brushApplication: boolean
+  mainHousing: boolean
+  electronic: boolean
+  ledLighting: boolean
+  userInterface: boolean
+  supportGuide: boolean
+  additionalParts: boolean
 }
 
 interface DebugContextType {
@@ -102,55 +160,58 @@ interface DebugProviderProps {
 }
 
 export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
-  const [modelControls, setModelControls] = useState<ModelControls>({
-    position: { x: 1.4, y: -0.5, z: 1 },
-    rotation: { x: -0.14, y: -1.14, z: 2.66 },
-    scale: { x: 10, y: 10, z: 10 }
-  })
-
-  const [cameraControls, setCameraControls] = useState<CameraControls>({
-    position: { x: 0, y: 0, z: 5 },
-    fov: 75
-  })
-
-  const [lightingControls, setLightingControls] = useState<LightingControls>({
-    ambientIntensity: 1.8,
-    ambientColor: '#fafafa',
-    directionalIntensity: 2.2,
-    directionalColor: '#ffffff',
-    directionalPosition: { x: 2, y: 5, z: 2 },
-    directionalTarget: { x: 1.4, y: -0.5, z: 1 },
-    pointLightIntensity: 1.2,
-    pointLightColor: '#ffffff',
-    pointLightPosition: { x: -2, y: 2, z: 2 },
-    pointLightDistance: 15,
-    spotLightIntensity: 3.5,
-    spotLightColor: '#ffd294',
-    spotLightPosition: { x: 5.2, y: -4, z: 1.4 },
-    spotLightTarget: { x: 2.3, y: 0.2, z: -0.1 },
-    spotLightDistance: 8,
-    spotLightAngle: 73,
-    spotLightPenumbra: 0.34,
-    shadowsEnabled: true,
-    shadowMapSize: 2048,
-    shadowBias: -0.0001
-  })
-
-  const [currentSection, setCurrentSection] = useState(1)
-  const [isScrolling, setIsScrolling] = useState(false)
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null)
-  const [transitionName, setTransitionName] = useState<string | null>(null)
-  const [scrollPosition, setScrollPosition] = useState(0)
-  const [isClient, setIsClient] = useState(true)
+  // Use main store directly to avoid useSyncExternalStore issues
+  const {
+    // 3D State
+    modelControls,
+    cameraControls,
+    lightingControls,
+    current3DStage,
+    stage3DAnimationProgress,
+    is3DAnimating,
+    isAnimating,
+    animationProgress,
+    
+    // 3D Actions
+    setStage3DAnimationProgress,
+    setModelControls,
+    setCameraControls,
+    setLightingControls,
+    setCurrent3DStage,
+    setIs3DAnimating,
+    setIsAnimating,
+    setAnimationProgress,
+    
+    // Scroll State
+    currentSection,
+    isScrolling,
+    scrollDirection,
+    isTransitioning,
+    transitionProgress,
+    scrollPosition,
+    isNavigatingViaDots,
+    isClient,
+    
+    // Scroll Actions
+    setCurrentSection,
+    setIsScrolling,
+    setScrollDirection,
+    setIsTransitioning,
+    setTransitionProgress,
+    setScrollPosition,
+    setIsNavigatingViaDots,
+    setIsClient
+  } = useAppStore()
+  
+  // Local state for things not in store
   const [stage1Config, setStage1Config] = useState<StageConfig | null>(null)
   const [stage2Config, setStage2Config] = useState<StageConfig | null>(null)
   const [stage3Config, setStage3Config] = useState<StageConfig | null>(null)
-  const [current3DStage, setCurrent3DStage] = useState(2)
-  const [stage3DAnimationProgress, setStage3DAnimationProgress] = useState(0)
+  const [transitionName, setTransitionName] = useState<string | null>(null)
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
 
-  const value: DebugContextType = {
+  const value: DebugContextType = useMemo(() => ({
     modelControls,
     setModelControls,
     cameraControls,
@@ -183,7 +244,40 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     setComponentControls,
     categoryVisibility,
     setCategoryVisibility
-  }
+  }), [
+    modelControls,
+    setModelControls,
+    cameraControls,
+    setCameraControls,
+    lightingControls,
+    setLightingControls,
+    currentSection,
+    setCurrentSection,
+    isScrolling,
+    setIsScrolling,
+    scrollDirection,
+    setScrollDirection,
+    transitionName,
+    setTransitionName,
+    scrollPosition,
+    setScrollPosition,
+    isClient,
+    setIsClient,
+    stage1Config,
+    setStage1Config,
+    stage2Config,
+    setStage2Config,
+    stage3Config,
+    setStage3Config,
+    current3DStage,
+    setCurrent3DStage,
+    stage3DAnimationProgress,
+    setStage3DAnimationProgress,
+    componentControls,
+    setComponentControls,
+    categoryVisibility,
+    setCategoryVisibility
+  ])
 
   return (
     <DebugContext.Provider value={value}>

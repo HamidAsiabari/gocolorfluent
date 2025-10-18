@@ -296,10 +296,6 @@ section {
   box-sizing: border-box;
 }
 
-/* Adjust body margin to account for debug sidebar */
-body {
-  margin-right: 220px;
-}
 
 /* Mobile-specific improvements */
 @media (max-width: 768px) {

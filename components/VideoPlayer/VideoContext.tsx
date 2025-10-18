@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react'
 
 interface VideoContextType {
   currentPlayingVideo: string | null
@@ -13,14 +13,20 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined)
 export function VideoProvider({ children }: { children: ReactNode }) {
   const [currentPlayingVideo, setCurrentPlayingVideo] = useState<string | null>(null)
 
-  const pauseAllVideos = () => {
+  const pauseAllVideos = useCallback(() => {
     // This will be called when a new video starts playing
     // The individual video components will handle pausing themselves
     setCurrentPlayingVideo(null)
-  }
+  }, [])
+
+  const value = useMemo(() => ({
+    currentPlayingVideo,
+    setCurrentPlayingVideo,
+    pauseAllVideos
+  }), [currentPlayingVideo, setCurrentPlayingVideo, pauseAllVideos])
 
   return (
-    <VideoContext.Provider value={{ currentPlayingVideo, setCurrentPlayingVideo, pauseAllVideos }}>
+    <VideoContext.Provider value={value}>
       {children}
     </VideoContext.Provider>
   )

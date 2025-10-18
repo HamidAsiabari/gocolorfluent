@@ -2,20 +2,16 @@
 
 import React from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import { useAppStore } from '../../../store/useAppStore'
 
 interface SectionNavigationProps {
-  currentSection: number
-  isScrolling: boolean
-  scrollDirection: 'up' | 'down' | null
   transitionName: string | null
 }
 
 export default function SectionNavigation({
-  currentSection,
-  isScrolling,
-  scrollDirection,
   transitionName
 }: SectionNavigationProps) {
+  const { currentSection, isScrolling, scrollDirection } = useAppStore()
   return (
     <CollapsibleSection
       title="Sections"

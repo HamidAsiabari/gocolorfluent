@@ -2,39 +2,10 @@
 
 import React, { useState } from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import { useAppStore } from '../../../store/useAppStore'
 
-interface LightingControls {
-  ambientIntensity: number
-  ambientColor: string
-  directionalIntensity: number
-  directionalColor: string
-  directionalPosition: { x: number; y: number; z: number }
-  directionalTarget: { x: number; y: number; z: number }
-  pointLightIntensity: number
-  pointLightColor: string
-  pointLightPosition: { x: number; y: number; z: number }
-  pointLightDistance: number
-  spotLightIntensity: number
-  spotLightColor: string
-  spotLightPosition: { x: number; y: number; z: number }
-  spotLightTarget: { x: number; y: number; z: number }
-  spotLightDistance: number
-  spotLightAngle: number
-  spotLightPenumbra: number
-  shadowsEnabled: boolean
-  shadowMapSize: number
-  shadowBias: number
-}
-
-interface LightingControlsProps {
-  lightingControls: LightingControls
-  onLightingControlsChange: (controls: LightingControls) => void
-}
-
-export default function LightingControls({
-  lightingControls,
-  onLightingControlsChange
-}: LightingControlsProps) {
+export default function LightingControls() {
+  const { lightingControls, setLightingControls } = useAppStore()
   const [copySuccess, setCopySuccess] = useState(false)
 
   const copyLightingValues = async () => {
@@ -80,7 +51,7 @@ export default function LightingControls({
                 max="2"
                 step="0.1"
                 value={lightingControls.ambientIntensity}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   ambientIntensity: parseFloat(e.target.value)
                 })}
@@ -92,7 +63,7 @@ export default function LightingControls({
               <input
                 type="color"
                 value={lightingControls.ambientColor}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   ambientColor: e.target.value
                 })}
@@ -114,7 +85,7 @@ export default function LightingControls({
                 max="3"
                 step="0.1"
                 value={lightingControls.directionalIntensity}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   directionalIntensity: parseFloat(e.target.value)
                 })}
@@ -126,7 +97,7 @@ export default function LightingControls({
               <input
                 type="color"
                 value={lightingControls.directionalColor}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   directionalColor: e.target.value
                 })}
@@ -143,7 +114,7 @@ export default function LightingControls({
                     step="0.1"
                     placeholder={axis}
                     value={lightingControls.directionalPosition[axis as keyof typeof lightingControls.directionalPosition]}
-                    onChange={(e) => onLightingControlsChange({
+                    onChange={(e) => setLightingControls({
                       ...lightingControls,
                       directionalPosition: { ...lightingControls.directionalPosition, [axis]: parseFloat(e.target.value) || 0 }
                     })}
@@ -162,7 +133,7 @@ export default function LightingControls({
                     step="0.1"
                     placeholder={axis}
                     value={lightingControls.directionalTarget[axis as keyof typeof lightingControls.directionalTarget]}
-                    onChange={(e) => onLightingControlsChange({
+                    onChange={(e) => setLightingControls({
                       ...lightingControls,
                       directionalTarget: { ...lightingControls.directionalTarget, [axis]: parseFloat(e.target.value) || 0 }
                     })}
@@ -186,7 +157,7 @@ export default function LightingControls({
                 max="2"
                 step="0.1"
                 value={lightingControls.pointLightIntensity}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   pointLightIntensity: parseFloat(e.target.value)
                 })}
@@ -198,7 +169,7 @@ export default function LightingControls({
               <input
                 type="color"
                 value={lightingControls.pointLightColor}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   pointLightColor: e.target.value
                 })}
@@ -215,7 +186,7 @@ export default function LightingControls({
                     step="0.1"
                     placeholder={axis}
                     value={lightingControls.pointLightPosition[axis as keyof typeof lightingControls.pointLightPosition]}
-                    onChange={(e) => onLightingControlsChange({
+                    onChange={(e) => setLightingControls({
                       ...lightingControls,
                       pointLightPosition: { ...lightingControls.pointLightPosition, [axis]: parseFloat(e.target.value) || 0 }
                     })}
@@ -232,7 +203,7 @@ export default function LightingControls({
                 max="50"
                 step="1"
                 value={lightingControls.pointLightDistance}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   pointLightDistance: parseFloat(e.target.value)
                 })}
@@ -254,7 +225,7 @@ export default function LightingControls({
                 max="2"
                 step="0.1"
                 value={lightingControls.spotLightIntensity}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   spotLightIntensity: parseFloat(e.target.value)
                 })}
@@ -266,7 +237,7 @@ export default function LightingControls({
               <input
                 type="color"
                 value={lightingControls.spotLightColor}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   spotLightColor: e.target.value
                 })}
@@ -283,7 +254,7 @@ export default function LightingControls({
                     step="0.1"
                     placeholder={axis}
                     value={lightingControls.spotLightPosition[axis as keyof typeof lightingControls.spotLightPosition]}
-                    onChange={(e) => onLightingControlsChange({
+                    onChange={(e) => setLightingControls({
                       ...lightingControls,
                       spotLightPosition: { ...lightingControls.spotLightPosition, [axis]: parseFloat(e.target.value) || 0 }
                     })}
@@ -302,7 +273,7 @@ export default function LightingControls({
                     step="0.1"
                     placeholder={axis}
                     value={lightingControls.spotLightTarget[axis as keyof typeof lightingControls.spotLightTarget]}
-                    onChange={(e) => onLightingControlsChange({
+                    onChange={(e) => setLightingControls({
                       ...lightingControls,
                       spotLightTarget: { ...lightingControls.spotLightTarget, [axis]: parseFloat(e.target.value) || 0 }
                     })}
@@ -319,7 +290,7 @@ export default function LightingControls({
                 max="90"
                 step="1"
                 value={lightingControls.spotLightAngle}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   spotLightAngle: parseFloat(e.target.value)
                 })}
@@ -334,7 +305,7 @@ export default function LightingControls({
                 max="1"
                 step="0.01"
                 value={lightingControls.spotLightPenumbra}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   spotLightPenumbra: parseFloat(e.target.value)
                 })}
@@ -349,7 +320,7 @@ export default function LightingControls({
                 max="200"
                 step="1"
                 value={lightingControls.spotLightDistance}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   spotLightDistance: parseFloat(e.target.value)
                 })}
@@ -367,7 +338,7 @@ export default function LightingControls({
               <input
                 type="checkbox"
                 checked={lightingControls.shadowsEnabled}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   shadowsEnabled: e.target.checked
                 })}
@@ -383,7 +354,7 @@ export default function LightingControls({
                 max="4096"
                 step="512"
                 value={lightingControls.shadowMapSize}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   shadowMapSize: parseFloat(e.target.value)
                 })}
@@ -398,7 +369,7 @@ export default function LightingControls({
                 max="0.001"
                 step="0.0001"
                 value={lightingControls.shadowBias}
-                onChange={(e) => onLightingControlsChange({
+                onChange={(e) => setLightingControls({
                   ...lightingControls,
                   shadowBias: parseFloat(e.target.value)
                 })}

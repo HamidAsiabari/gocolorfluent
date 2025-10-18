@@ -5,6 +5,7 @@ import {
   Stage3DIndicator,
   ModelControls,
   CameraControls,
+  ModelCameraControls,
   SectionNavigation,
   ScrollPosition,
   LightingControls,
@@ -12,100 +13,54 @@ import {
   Product3DObject
 } from './sections'
 import { ComponentControls, CategoryVisibility } from './sections/product3d/types'
-
-interface ModelControls {
-  position: { x: number; y: number; z: number }
-  rotation: { x: number; y: number; z: number }
-  scale: { x: number; y: number; z: number }
-}
-
-interface CameraControls {
-  position: { x: number; y: number; z: number }
-  fov: number
-}
-
-interface LightingControls {
-  ambientIntensity: number
-  ambientColor: string
-  directionalIntensity: number
-  directionalColor: string
-  directionalPosition: { x: number; y: number; z: number }
-  directionalTarget: { x: number; y: number; z: number }
-  pointLightIntensity: number
-  pointLightColor: string
-  pointLightPosition: { x: number; y: number; z: number }
-  pointLightDistance: number
-  spotLightIntensity: number
-  spotLightColor: string
-  spotLightPosition: { x: number; y: number; z: number }
-  spotLightTarget: { x: number; y: number; z: number }
-  spotLightDistance: number
-  spotLightAngle: number
-  spotLightPenumbra: number
-  shadowsEnabled: boolean
-  shadowMapSize: number
-  shadowBias: number
-}
-
-interface StageConfig {
-  model: ModelControls
-  camera: CameraControls
-  lighting: LightingControls
-}
+import { useAppStore } from '../../store/useAppStore'
 
 interface DevControlsProps {
   isDevMode: boolean
   onToggleDevMode: () => void
-  modelControls: ModelControls
-  onModelControlsChange: (controls: ModelControls) => void
-  cameraControls: CameraControls
-  onCameraControlsChange: (controls: CameraControls) => void
-  lightingControls: LightingControls
-  onLightingControlsChange: (controls: LightingControls) => void
-  currentSection: number
-  isScrolling: boolean
-  scrollDirection: 'up' | 'down' | null
-  transitionName: string | null
-  scrollPosition: number
-  isClient: boolean
-  stage1Config: StageConfig
-  stage2Config: StageConfig
-  stage3Config: StageConfig
-  current3DStage: number
-  stage3DAnimationProgress: number
-  setCurrent3DStage: (stage: number) => void
   componentControls: ComponentControls
   onComponentControlsChange: (controls: ComponentControls) => void
   categoryVisibility: CategoryVisibility
   onCategoryVisibilityChange: (visibility: CategoryVisibility) => void
+  transitionName: string | null
+  stage1Config: any
+  stage2Config: any
+  stage3Config: any
 }
 
 export default function DevControls({
   isDevMode,
   onToggleDevMode,
-  modelControls,
-  onModelControlsChange,
-  cameraControls,
-  onCameraControlsChange,
-  lightingControls,
-  onLightingControlsChange,
-  currentSection,
-  isScrolling,
-  scrollDirection,
-  transitionName,
-  scrollPosition,
-  isClient,
-  stage1Config,
-  stage2Config,
-  stage3Config,
-  current3DStage,
-  stage3DAnimationProgress,
-  setCurrent3DStage,
   componentControls,
   onComponentControlsChange,
   categoryVisibility,
-  onCategoryVisibilityChange
+  onCategoryVisibilityChange,
+  transitionName,
+  stage1Config,
+  stage2Config,
+  stage3Config
 }: DevControlsProps) {
+  // Get state from Zustand store
+  const {
+    current3DStage,
+    stage3DAnimationProgress,
+    is3DAnimating,
+    isAnimating,
+    animationProgress,
+    modelControls,
+    cameraControls,
+    lightingControls,
+    setModelControls,
+    setCameraControls,
+    setLightingControls,
+    setCurrent3DStage,
+    currentSection,
+    isScrolling,
+    scrollDirection,
+    scrollPosition,
+    isClient
+  } = useAppStore()
+
   if (!isDevMode) return null
 
   return (
@@ -121,38 +76,17 @@ export default function DevControls({
       </div>
       
       <div className="space-y-2">
-        <Stage3DIndicator
-          current3DStage={current3DStage}
-          stage3DAnimationProgress={stage3DAnimationProgress}
-          setCurrent3DStage={setCurrent3DStage}
-        />
+        <Stage3DIndicator />
 
-        <ModelControls
-          modelControls={modelControls}
-          onModelControlsChange={onModelControlsChange}
-        />
-
-        <CameraControls
-          cameraControls={cameraControls}
-          onCameraControlsChange={onCameraControlsChange}
-        />
+        <ModelCameraControls />
 
         <SectionNavigation
-          currentSection={currentSection}
-          isScrolling={isScrolling}
-          scrollDirection={scrollDirection}
           transitionName={transitionName}
         />
 
-        <ScrollPosition
-          scrollPosition={scrollPosition}
-          isClient={isClient}
-        />
+        <ScrollPosition />
 
-        <LightingControls
-          lightingControls={lightingControls}
-          onLightingControlsChange={onLightingControlsChange}
-        />
+        <LightingControls />
 
         <Product3DObject
           componentControls={componentControls}
@@ -162,14 +96,6 @@ export default function DevControls({
         />
 
         <Presets
-          modelControls={modelControls}
-          onModelControlsChange={onModelControlsChange}
-          cameraControls={cameraControls}
-          onCameraControlsChange={onCameraControlsChange}
-          lightingControls={lightingControls}
-          onLightingControlsChange={onLightingControlsChange}
-          scrollPosition={scrollPosition}
-          isClient={isClient}
           stage1Config={stage1Config}
           stage2Config={stage2Config}
           stage3Config={stage3Config}

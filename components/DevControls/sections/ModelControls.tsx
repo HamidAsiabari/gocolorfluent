@@ -2,22 +2,10 @@
 
 import React, { useRef } from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import { useAppStore } from '../../../store/useAppStore'
 
-interface ModelControls {
-  position: { x: number; y: number; z: number }
-  rotation: { x: number; y: number; z: number }
-  scale: { x: number; y: number; z: number }
-}
-
-interface ModelControlsProps {
-  modelControls: ModelControls
-  onModelControlsChange: (controls: ModelControls) => void
-}
-
-export default function ModelControls({
-  modelControls,
-  onModelControlsChange
-}: ModelControlsProps) {
+export default function ModelControls() {
+  const { modelControls, setModelControls } = useAppStore()
   // Refs for input elements to get actual values
   const positionRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const rotationRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
@@ -93,7 +81,7 @@ export default function ModelControls({
                   type="number"
                   step="0.1"
                   value={modelControls.position[axis as keyof typeof modelControls.position]}
-                  onChange={(e) => onModelControlsChange({
+                  onChange={(e) => setModelControls({
                     ...modelControls,
                     position: { ...modelControls.position, [axis]: parseFloat(e.target.value) || 0 }
                   })}
@@ -115,7 +103,7 @@ export default function ModelControls({
                   type="number"
                   step="0.01"
                   value={modelControls.rotation[axis as keyof typeof modelControls.rotation]}
-                  onChange={(e) => onModelControlsChange({
+                  onChange={(e) => setModelControls({
                     ...modelControls,
                     rotation: { ...modelControls.rotation, [axis]: parseFloat(e.target.value) || 0 }
                   })}
@@ -137,7 +125,7 @@ export default function ModelControls({
                   type="number"
                   step="0.1"
                   value={modelControls.scale[axis as keyof typeof modelControls.scale]}
-                  onChange={(e) => onModelControlsChange({
+                  onChange={(e) => setModelControls({
                     ...modelControls,
                     scale: { ...modelControls.scale, [axis]: parseFloat(e.target.value) || 1 }
                   })}

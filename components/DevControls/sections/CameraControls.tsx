@@ -2,21 +2,10 @@
 
 import React from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import { useAppStore } from '../../../store/useAppStore'
 
-interface CameraControls {
-  position: { x: number; y: number; z: number }
-  fov: number
-}
-
-interface CameraControlsProps {
-  cameraControls: CameraControls
-  onCameraControlsChange: (controls: CameraControls) => void
-}
-
-export default function CameraControls({
-  cameraControls,
-  onCameraControlsChange
-}: CameraControlsProps) {
+export default function CameraControls() {
+  const { cameraControls, setCameraControls } = useAppStore()
   return (
     <CollapsibleSection
       title="Camera"
@@ -31,7 +20,7 @@ export default function CameraControls({
             min="10"
             max="120"
             value={cameraControls.fov}
-            onChange={(e) => onCameraControlsChange({
+            onChange={(e) => setCameraControls({
               ...cameraControls,
               fov: parseFloat(e.target.value)
             })}
@@ -48,7 +37,7 @@ export default function CameraControls({
                   type="number"
                   step="0.1"
                   value={cameraControls.position[axis as keyof typeof cameraControls.position]}
-                  onChange={(e) => onCameraControlsChange({
+                  onChange={(e) => setCameraControls({
                     ...cameraControls,
                     position: { ...cameraControls.position, [axis]: parseFloat(e.target.value) || 0 }
                   })}

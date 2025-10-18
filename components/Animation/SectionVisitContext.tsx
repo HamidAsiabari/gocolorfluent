@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react'
 
 interface SectionVisitState {
   [sectionNumber: number]: {
@@ -52,14 +52,16 @@ export function SectionVisitProvider({ children }: { children: ReactNode }) {
     return result
   }, [sectionStates])
 
+  const value = useMemo(() => ({
+    sectionStates,
+    markSectionVisited,
+    markTypingAnimated,
+    hasSectionBeenVisited,
+    hasTypingAnimated
+  }), [sectionStates, markSectionVisited, markTypingAnimated, hasSectionBeenVisited, hasTypingAnimated])
+
   return (
-    <SectionVisitContext.Provider value={{
-      sectionStates,
-      markSectionVisited,
-      markTypingAnimated,
-      hasSectionBeenVisited,
-      hasTypingAnimated
-    }}>
+    <SectionVisitContext.Provider value={value}>
       {children}
     </SectionVisitContext.Provider>
   )

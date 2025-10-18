@@ -2,16 +2,10 @@
 
 import React from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import { useAppStore } from '../../../store/useAppStore'
 
-interface ScrollPositionProps {
-  scrollPosition: number
-  isClient: boolean
-}
-
-export default function ScrollPosition({
-  scrollPosition,
-  isClient
-}: ScrollPositionProps) {
+export default function ScrollPosition() {
+  const { scrollPosition, isClient } = useAppStore()
   return (
     <CollapsibleSection
       title="Scroll Position"
@@ -27,14 +21,14 @@ export default function ScrollPosition({
             <div 
               className="bg-purple-500 h-2 rounded-full transition-all duration-100"
               style={{ 
-                width: isClient ? `${Math.min((scrollPosition / Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)) * 100, 100)}%` : '0%'
+                width: isClient ? `${Math.min((scrollPosition / Math.max((typeof document !== 'undefined' ? document.documentElement.scrollHeight : 0) - (typeof window !== 'undefined' ? window.innerHeight : 0), 1)) * 100, 100)}%` : '0%'
               }}
             />
           </div>
         </div>
         <div className="text-xs text-gray-400">
-          <div>Max: {isClient ? `${document.documentElement.scrollHeight - window.innerHeight}px` : '0px'}</div>
-          <div>Progress: {isClient ? `${Math.round((scrollPosition / Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)) * 100)}%` : '0%'}</div>
+          <div>Max: {isClient ? `${(typeof document !== 'undefined' ? document.documentElement.scrollHeight : 0) - (typeof window !== 'undefined' ? window.innerHeight : 0)}px` : '0px'}</div>
+          <div>Progress: {isClient ? `${Math.round((scrollPosition / Math.max((typeof document !== 'undefined' ? document.documentElement.scrollHeight : 0) - (typeof window !== 'undefined' ? window.innerHeight : 0), 1)) * 100)}%` : '0%'}</div>
         </div>
         <div className="text-xs text-green-400 font-medium">
           {isClient ? '🟢 Live Tracking' : '🟡 Initializing...'}

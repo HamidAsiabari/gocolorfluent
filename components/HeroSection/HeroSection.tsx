@@ -19,6 +19,7 @@ const HeroSection = memo(function HeroSection({
   transitionProgress
 }: HeroSectionProps) {
   const [isVisible, setIsVisible] = useState(false)
+  const [windowHeight, setWindowHeight] = useState(0)
 
   useEffect(() => {
     // Trigger entrance animation
@@ -26,11 +27,17 @@ const HeroSection = memo(function HeroSection({
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setWindowHeight(window.innerHeight)
+    }
+  }, [])
+
   return (
     <section 
       className="flex flex-col items-center md:items-center items-start justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-16 md:pt-20"
       style={{
-        transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`,
+        transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
         zIndex: 10
       }}
     >

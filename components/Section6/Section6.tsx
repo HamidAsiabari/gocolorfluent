@@ -21,7 +21,15 @@ const Section6 = memo(function Section6({
 }: Section6Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
+  const [windowHeight, setWindowHeight] = useState(0)
   const { markSectionVisited } = useSectionVisit()
+
+  useEffect(() => {
+    // Set window height on client side
+    if (typeof window !== 'undefined') {
+      setWindowHeight(window.innerHeight)
+    }
+  }, [])
 
   useEffect(() => {
     // Trigger entrance animation when section becomes active
@@ -50,14 +58,14 @@ const Section6 = memo(function Section6({
     <section 
       className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
       style={{
-        transform: `translateY(${isClient ? (6 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * window.innerHeight : 0}px)`,
+        transform: `translateY(${isClient ? (6 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
         zIndex: 10
       }}
     >
       {/* Background Elements */}
       <div className="section-background absolute inset-0 overflow-hidden">
         {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-900/20 via-pink-900/10 to-red-900/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-900 via-pink-900 to-red-900" />
         
         {/* Control-inspired geometric shapes - reduced animations for performance */}
         <div className="absolute top-16 right-16 w-40 h-40 border-2 border-rose-400/20 rounded-lg rotate-12" />

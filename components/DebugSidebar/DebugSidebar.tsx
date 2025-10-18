@@ -5,6 +5,7 @@ import {
   Stage3DIndicator,
   ModelControls,
   CameraControls,
+  ModelCameraControls,
   SectionNavigation,
   ScrollPosition,
   LightingControls,
@@ -84,32 +85,15 @@ const DebugSidebar: React.FC<DebugSidebarProps> = ({
               setCurrent3DStage={setCurrent3DStage}
             />
 
-            <ModelControls
-              modelControls={modelControls}
-              onModelControlsChange={setModelControls}
-            />
-
-            <CameraControls
-              cameraControls={cameraControls}
-              onCameraControlsChange={setCameraControls}
-            />
+            <ModelCameraControls />
 
             <SectionNavigation
-              currentSection={currentSection}
-              isScrolling={isScrolling}
-              scrollDirection={scrollDirection}
               transitionName={transitionName}
             />
 
-            <ScrollPosition
-              scrollPosition={scrollPosition}
-              isClient={isClient}
-            />
+            <ScrollPosition />
 
-            <LightingControls
-              lightingControls={lightingControls}
-              onLightingControlsChange={setLightingControls}
-            />
+            <LightingControls />
 
             <Product3DObject
               componentControls={componentControls}
@@ -120,14 +104,6 @@ const DebugSidebar: React.FC<DebugSidebarProps> = ({
 
             {stage1Config && stage2Config && stage3Config && (
               <Presets
-                modelControls={modelControls}
-                onModelControlsChange={setModelControls}
-                cameraControls={cameraControls}
-                onCameraControlsChange={setCameraControls}
-                lightingControls={lightingControls}
-                onLightingControlsChange={setLightingControls}
-                scrollPosition={scrollPosition}
-                isClient={isClient}
                 stage1Config={stage1Config}
                 stage2Config={stage2Config}
                 stage3Config={stage3Config}

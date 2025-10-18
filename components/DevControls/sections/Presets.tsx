@@ -2,74 +2,35 @@
 
 import React from 'react'
 import CollapsibleSection from './CollapsibleSection'
-
-interface ModelControls {
-  position: { x: number; y: number; z: number }
-  rotation: { x: number; y: number; z: number }
-  scale: { x: number; y: number; z: number }
-}
-
-interface CameraControls {
-  position: { x: number; y: number; z: number }
-  fov: number
-}
-
-interface LightingControls {
-  ambientIntensity: number
-  ambientColor: string
-  directionalIntensity: number
-  directionalColor: string
-  directionalPosition: { x: number; y: number; z: number }
-  directionalTarget: { x: number; y: number; z: number }
-  pointLightIntensity: number
-  pointLightColor: string
-  pointLightPosition: { x: number; y: number; z: number }
-  pointLightDistance: number
-  spotLightIntensity: number
-  spotLightColor: string
-  spotLightPosition: { x: number; y: number; z: number }
-  spotLightTarget: { x: number; y: number; z: number }
-  spotLightDistance: number
-  spotLightAngle: number
-  spotLightPenumbra: number
-  shadowsEnabled: boolean
-  shadowMapSize: number
-  shadowBias: number
-}
+import { useAppStore } from '../../../store/useAppStore'
 
 interface StageConfig {
-  model: ModelControls
-  camera: CameraControls
-  lighting: LightingControls
+  model: any
+  camera: any
+  lighting: any
 }
 
 interface PresetsProps {
-  modelControls: ModelControls
-  onModelControlsChange: (controls: ModelControls) => void
-  cameraControls: CameraControls
-  onCameraControlsChange: (controls: CameraControls) => void
-  lightingControls: LightingControls
-  onLightingControlsChange: (controls: LightingControls) => void
-  scrollPosition: number
-  isClient: boolean
   stage1Config: StageConfig
   stage2Config: StageConfig
   stage3Config: StageConfig
 }
 
 export default function Presets({
-  modelControls,
-  onModelControlsChange,
-  cameraControls,
-  onCameraControlsChange,
-  lightingControls,
-  onLightingControlsChange,
-  scrollPosition,
-  isClient,
   stage1Config,
   stage2Config,
   stage3Config
 }: PresetsProps) {
+  const { 
+    modelControls, 
+    cameraControls, 
+    lightingControls,
+    setModelControls, 
+    setCameraControls, 
+    setLightingControls,
+    scrollPosition, 
+    isClient
+  } = useAppStore()
   const handleCopyAll = () => {
     const allValues = {
       model: modelControls,
@@ -85,16 +46,16 @@ export default function Presets({
   }
 
   const handleResetAll = () => {
-    onModelControlsChange({
+    setModelControls({
       position: { x: 0.9, y: -0.2, z: 0.3 },
       rotation: { x: -0.09, y: -0.78, z: 0.9 },
       scale: { x: 10, y: 10, z: 10 }
     })
-    onCameraControlsChange({
+    setCameraControls({
       position: { x: 0, y: 0, z: 5 },
       fov: 75
     })
-    onLightingControlsChange({
+    setLightingControls({
       ambientIntensity: 0,
       ambientColor: '#404040',
       directionalIntensity: 0,
@@ -123,28 +84,28 @@ export default function Presets({
   }
 
   const handleStage1Preset = () => {
-    onModelControlsChange({
+    setModelControls({
       position: stage1Config.model.position,
       rotation: stage1Config.model.rotation,
       scale: stage1Config.model.scale
     })
-    onCameraControlsChange({
+    setCameraControls({
       position: stage1Config.camera.position,
       fov: stage1Config.camera.fov
     })
-    onLightingControlsChange(stage1Config.lighting)
+    setLightingControls(stage1Config.lighting)
   }
 
   const handleStage2Preset = () => {
-    onModelControlsChange(stage2Config.model)
-    onCameraControlsChange(stage2Config.camera)
-    onLightingControlsChange(stage2Config.lighting)
+    setModelControls(stage2Config.model)
+    setCameraControls(stage2Config.camera)
+    setLightingControls(stage2Config.lighting)
   }
 
   const handleStage3Preset = () => {
-    onModelControlsChange(stage3Config.model)
-    onCameraControlsChange(stage3Config.camera)
-    onLightingControlsChange(stage3Config.lighting)
+    setModelControls(stage3Config.model)
+    setCameraControls(stage3Config.camera)
+    setLightingControls(stage3Config.lighting)
   }
 
   return (
@@ -155,7 +116,7 @@ export default function Presets({
     >
       <div className="grid grid-cols-2 gap-1 mb-2">
         <button
-          onClick={() => onModelControlsChange({
+          onClick={() => setModelControls({
             position: { x: 0.9, y: -0.2, z: 0.3 },
             rotation: { x: -0.09, y: -0.78, z: 0.9 },
             scale: { x: 10, y: 10, z: 10 }
@@ -187,7 +148,7 @@ export default function Presets({
           🎯 Stage 3
         </button>
         <button
-          onClick={() => onModelControlsChange({
+          onClick={() => setModelControls({
             position: { x: 0, y: 0, z: 0 },
             rotation: { x: 0, y: Math.PI / 4, z: 0 },
             scale: { x: 1, y: 1, z: 1 }
@@ -198,7 +159,7 @@ export default function Presets({
           🔄 Rotate
         </button>
         <button
-          onClick={() => onModelControlsChange({
+          onClick={() => setModelControls({
             position: { x: 0, y: -1, z: 2 },
             rotation: { x: 0, y: 0, z: 0 },
             scale: { x: 3, y: 3, z: 3 }
@@ -209,7 +170,7 @@ export default function Presets({
           🔍 Close
         </button>
         <button
-          onClick={() => onModelControlsChange({
+          onClick={() => setModelControls({
             position: { x: 0, y: -3, z: -2 },
             rotation: { x: 0, y: Math.PI, z: 0 },
             scale: { x: 1.5, y: 1.5, z: 1.5 }

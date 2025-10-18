@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback, memo } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
-import { StageConfig, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config, stage1MobileConfig, stage2MobileConfig, stage3MobileConfig, stage4MobileConfig, stage5MobileConfig, stage6MobileConfig, stage7MobileConfig, stage8MobileConfig, stage9MobileConfig, stage1TabletConfig, stage2TabletConfig, stage3TabletConfig, stage4TabletConfig, stage5TabletConfig, stage6TabletConfig, stage7TabletConfig, stage8TabletConfig, stage9TabletConfig } from './StageConfig'
+import { StageConfig, stage0Config, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './index'
 import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
 
 interface ThreeSceneManagerProps {
@@ -114,6 +114,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       isRenderingRef.current = true
       animationFrameRef.current = requestAnimationFrame(() => {
         if (rendererRef.current && sceneRef.current && cameraRef.current && needsRenderRef.current) {
+          console.log('🎨 Rendering scene with', sceneRef.current.children.length, 'children')
           rendererRef.current.render(sceneRef.current, cameraRef.current)
         }
         isRenderingRef.current = false
@@ -363,9 +364,11 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     loader.load(
       '/product-3d/Color_Brush_assembly_V1_1.glb', 
       (gltf) => {
+        console.log('✅ Model loaded successfully:', gltf)
         updateProgress(30) // Model loaded
       model = gltf.scene
       modelRef.current = model
+      console.log('✅ Model added to ref:', model)
       
       // Analyze the 3D object structure
       // // Console log removed
@@ -725,10 +728,18 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       model.position.set(modelControls.position.x, modelControls.position.y, modelControls.position.z)
       model.rotation.set(modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z)
       
+      console.log('✅ Model positioned:', {
+        position: model.position,
+        scale: model.scale,
+        rotation: model.rotation
+      })
+      
       scene.add(model)
+      console.log('✅ Model added to scene. Scene children count:', scene.children.length)
 
       // Set initial camera position
       camera.position.set(cameraControls.position.x, cameraControls.position.y, cameraControls.position.z)
+      console.log('✅ Camera positioned:', camera.position)
       
       // Function to apply texture to OLED Display
       const applyOLEDTexture = (texturePath: string) => {
@@ -1992,11 +2003,13 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       onLoadingComplete?.()
       
     }, undefined, (error) => {
+      console.error('❌ Model loading failed:', error)
       updateProgress(100) // Still complete loading even if there's an error
       onLoadingComplete?.()
     })
 
     // Initial render
+    console.log('✅ Requesting initial render')
     requestRender()
 
     // Handle window resize
@@ -2070,17 +2083,24 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const model = modelRef.current
       const { scale, position, rotation } = modelControls
       
+      console.log(`ThreeSceneManager: Updating model controls:`, { scale, position, rotation })
+      
       // Only update if values have actually changed
       if (model.scale.x !== scale.x || model.scale.y !== scale.y || model.scale.z !== scale.z) {
+        console.log(`Updating scale from (${model.scale.x}, ${model.scale.y}, ${model.scale.z}) to (${scale.x}, ${scale.y}, ${scale.z})`)
         model.scale.set(scale.x, scale.y, scale.z)
       }
       if (model.position.x !== position.x || model.position.y !== position.y || model.position.z !== position.z) {
+        console.log(`Updating position from (${model.position.x}, ${model.position.y}, ${model.position.z}) to (${position.x}, ${position.y}, ${position.z})`)
         model.position.set(position.x, position.y, position.z)
       }
       if (model.rotation.x !== rotation.x || model.rotation.y !== rotation.y || model.rotation.z !== rotation.z) {
+        console.log(`Updating rotation from (${model.rotation.x}, ${model.rotation.y}, ${model.rotation.z}) to (${rotation.x}, ${rotation.y}, ${rotation.z})`)
         model.rotation.set(rotation.x, rotation.y, rotation.z)
       }
       requestRender()
+    } else {
+      console.log(`ThreeSceneManager: modelRef.current is null, cannot update model controls`)
     }
   }, [modelControls.scale.x, modelControls.scale.y, modelControls.scale.z, modelControls.position.x, modelControls.position.y, modelControls.position.z, modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z, requestRender])
 

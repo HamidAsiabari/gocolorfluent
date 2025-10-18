@@ -1,14 +1,14 @@
-import { LightingConfig } from '../ThreeScene/StageConfig'
+import { LightingControls } from '../../store/useAppStore'
 
 export interface LuxuryLightingAnimationConfig {
-  stage1: LightingConfig
-  stage2: LightingConfig
+  stage1: LightingControls
+  stage2: LightingControls
   duration: number
 }
 
 export interface LuxuryLightingStep {
   progress: number
-  lighting: LightingConfig
+  lighting: LightingControls
 }
 
 export class LuxuryLightingAnimation {
@@ -32,7 +32,7 @@ export class LuxuryLightingAnimation {
     }
   }
 
-  private calculateLuxuryLighting(stage1: LightingConfig, stage2: LightingConfig, progress: number): LightingConfig {
+  private calculateLuxuryLighting(stage1: LightingControls, stage2: LightingControls, progress: number): LightingControls {
     // Create a luxury product launch animation with cinematic phases
     
     // Phase 1 (0-0.2): Dramatic entrance - very dark with focused spotlight
@@ -212,7 +212,7 @@ export class LuxuryLightingAnimation {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
   }
 
-  public getLightingAtProgress(progress: number): LightingConfig {
+  public getLightingAtProgress(progress: number): LightingControls {
     const clampedProgress = Math.max(0, Math.min(1, progress))
     
     // Find the two steps to interpolate between
@@ -232,7 +232,7 @@ export class LuxuryLightingAnimation {
     return this.interpolateLighting(lowerStep.lighting, upperStep.lighting, localProgress)
   }
 
-  private interpolateLighting(lighting1: LightingConfig, lighting2: LightingConfig, t: number): LightingConfig {
+  private interpolateLighting(lighting1: LightingControls, lighting2: LightingControls, t: number): LightingControls {
     return {
       ambientIntensity: lighting1.ambientIntensity + (lighting2.ambientIntensity - lighting1.ambientIntensity) * t,
       ambientColor: this.lerpColor(lighting1.ambientColor, lighting2.ambientColor, t),

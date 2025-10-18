@@ -2,31 +2,46 @@
 
 import React from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import { useAppStore } from '../../../store/useAppStore'
 
 interface Stage3DIndicatorProps {
-  current3DStage: number
-  stage3DAnimationProgress: number
-  setCurrent3DStage: (stage: number) => void
+  current3DStage?: number
+  stage3DAnimationProgress?: number
+  setCurrent3DStage?: (stage: number) => void
 }
 
 export default function Stage3DIndicator({
-  current3DStage,
-  stage3DAnimationProgress,
-  setCurrent3DStage
-}: Stage3DIndicatorProps) {
+  current3DStage: propCurrent3DStage,
+  stage3DAnimationProgress: propStage3DAnimationProgress,
+  setCurrent3DStage: propSetCurrent3DStage
+}: Stage3DIndicatorProps = {}) {
+  const {
+    current3DStage: storeCurrent3DStage,
+    stage3DAnimationProgress: storeStage3DAnimationProgress,
+    is3DAnimating,
+    isAnimating,
+    animationProgress,
+    setCurrent3DStage: storeSetCurrent3DStage
+  } = useAppStore()
+  
+  // Use props if provided, otherwise fall back to store values
+  const current3DStage = propCurrent3DStage ?? storeCurrent3DStage
+  const stage3DAnimationProgress = propStage3DAnimationProgress ?? storeStage3DAnimationProgress
+  const setCurrent3DStage = propSetCurrent3DStage ?? storeSetCurrent3DStage
   return (
     <CollapsibleSection
       title="3D Stage"
       icon="🎯"
       color="text-orange-400"
+      defaultExpanded={true}
     >
       <div className="space-y-2">
         <div className="text-xs text-gray-300">
           Current: Stage {current3DStage}
         </div>
-        {stage3DAnimationProgress > 0 && (
+        {(stage3DAnimationProgress > 0 || (isAnimating && animationProgress > 0)) && (
           <div className="text-xs text-yellow-400">
-            Animating: {Math.round(stage3DAnimationProgress * 100)}%
+            Animating: {Math.round((stage3DAnimationProgress || animationProgress) * 100)}%
           </div>
         )}
         

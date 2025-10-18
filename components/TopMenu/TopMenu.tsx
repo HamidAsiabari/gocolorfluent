@@ -139,14 +139,13 @@ const TopMenu = memo(function TopMenu() {
           <div className="flex justify-between items-center py-6">
             {/* Logo */}
             <Link href={menuConfig.logo.href} className="flex-shrink-0 pl-[5%]">
-              <div className="relative">
+              <div className="relative w-[120px] h-[120px]">
                 <Image
                   src={menuConfig.logo.src}
                   alt={menuConfig.logo.alt}
-                  width={120}
-                  height={120}
-                  className="h-[120px] w-auto relative z-10"
-                  style={{ width: 'auto', height: '120px' }}
+                  fill
+                  className="object-contain relative z-10"
+                  sizes="120px"
                   priority
                 />
                 {/* White glowing shadow */}
@@ -222,14 +221,13 @@ const TopMenu = memo(function TopMenu() {
                 onClick={closeMenu}
                 className="block mb-6"
               >
-                <div className="relative inline-block">
+                <div className="relative w-[676px] h-[216px] mx-auto">
                   <Image
                     src={menuConfig.logo.src}
                     alt={menuConfig.logo.alt}
-                    width={676}
-                    height={203}
-                    className="h-[216px] w-auto mx-auto relative z-10"
-                    style={{ width: 'auto', height: '216px' }}
+                    fill
+                    className="object-contain relative z-10"
+                    sizes="676px"
                     priority
                   />
                   {/* White glowing shadow */}

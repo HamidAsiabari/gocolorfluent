@@ -1,14 +1,36 @@
 'use client'
 
-
 import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import TopMenu from '../components/TopMenu'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
-import DevControls from '../components/DevControls'
-import { ThreeSceneManager, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config, stage1MobileConfig, stage2MobileConfig, stage3MobileConfig, stage4MobileConfig, stage5MobileConfig, stage6MobileConfig, stage7MobileConfig, stage8MobileConfig, stage9MobileConfig, stage1TabletConfig, stage2TabletConfig, stage3TabletConfig, stage4TabletConfig, stage5TabletConfig, stage6TabletConfig, stage7TabletConfig, stage8TabletConfig, stage9TabletConfig } from '../components/ThreeScene'
+import { ThreeSceneManager, stage0Config, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from '../components/ThreeScene'
+import { useAppStore, StageConfig } from '../store/useAppStore'
+import PerformanceMonitor, { useStateTracker, useEffectTracker } from '../components/PerformanceMonitor/PerformanceMonitor'
+
+// Debug: Check if stage configs are properly imported
+console.log('Imported stage configs:', {
+  stage1Config: !!stage1Config,
+  stage2Config: !!stage2Config,
+  stage3Config: !!stage3Config,
+  stage2ConfigValue: stage2Config
+})
+
+// Create direct references to avoid circular dependency issues
+const stageConfigs: Record<number, any> = {
+  0: stage0Config,
+  1: stage1Config,
+  2: stage2Config,
+  3: stage3Config,
+  4: stage4Config,
+  5: stage5Config,
+  6: stage6Config,
+  7: stage7Config,
+  8: stage8Config,
+  9: stage9Config
+}
 import { ScrollManager } from '../components/ScrollSystem'
 import { AnimationSystem, easeInOut } from '../components/Animation'
 import { LuxuryLightingAnimation } from '../components/Animation/LuxuryLightingAnimation'
@@ -20,59 +42,71 @@ import Section5 from '../components/Section5'
 import Section6 from '../components/Section6'
 import Section7 from '../components/Section7'
 import Section8 from '../components/Section8'
-import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 import { LoadingScreen, SectionLoadingScreen } from '../components/Loading'
-import { useDebugContext } from '../components/DebugSidebar/DebugContext'
+import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   
-  // Get debug context
+  // Get minimal state from Zustand store to prevent infinite loops
   const {
-    modelControls,
-    setModelControls,
-    cameraControls,
-    setCameraControls,
-    lightingControls,
-    setLightingControls,
+    // Only essential state
     currentSection,
-    setCurrentSection,
     isScrolling,
-    setIsScrolling,
     scrollDirection,
-    setScrollDirection,
-    transitionName,
-    setTransitionName,
+    isTransitioning,
+    transitionProgress,
     scrollPosition,
-    setScrollPosition,
+    isNavigatingViaDots,
+    isLoading,
+    loadingProgress,
     isClient,
+    
+    // Only essential actions
+    setCurrentSection,
+    setIsScrolling,
+    setScrollDirection,
+    setIsTransitioning,
+    setTransitionProgress,
+    setScrollPosition,
     setIsClient,
-    stage1Config,
-    setStage1Config,
-    stage2Config,
-    setStage2Config,
-    stage3Config,
-    setStage3Config,
-    current3DStage,
-    setCurrent3DStage,
-    stage3DAnimationProgress,
-    setStage3DAnimationProgress,
-    componentControls,
-    setComponentControls,
-    categoryVisibility,
-    setCategoryVisibility
-  } = useDebugContext()
+    setLoading,
+    setLoadingProgress,
+    setIsNavigatingViaDots,
+    addDebugLog,
+    setDebugMode
+  } = useAppStore()
   
-  const [isDevMode, setIsDevMode] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [animationProgress, setAnimationProgress] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [transitionProgress, setTransitionProgress] = useState(0)
-  const [is3DAnimating, setIs3DAnimating] = useState(false)
-  const [isNavigatingViaDots, setIsNavigatingViaDots] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [loadingProgress, setLoadingProgress] = useState(0)
+  // Get all 3D state and actions from main store to avoid useSyncExternalStore issues
+  const {
+    // 3D State
+    current3DStage,
+    stage3DAnimationProgress,
+    is3DAnimating,
+    isAnimating,
+    animationProgress,
+    modelControls,
+    cameraControls,
+    lightingControls,
+    
+    // 3D Actions
+    setCurrent3DStage,
+    setModelControls,
+    setCameraControls,
+    setLightingControls,
+    setStage3DAnimationProgress,
+    setIs3DAnimating,
+    setIsAnimating,
+    setAnimationProgress
+  } = useAppStore()
+  
+  // Local state for things not in store yet
+  const [transitionName, setTransitionName] = useState<string | null>(null)
+  
+  // Default dev controls state (disabled)
+  const componentControls = defaultComponentControls
+  const categoryVisibility = defaultCategoryVisibility
   const [isSectionLoading, setIsSectionLoading] = useState(false)
   const [sectionLoadingFrom, setSectionLoadingFrom] = useState(1)
   const [sectionLoadingTo, setSectionLoadingTo] = useState(1)
@@ -96,90 +130,19 @@ export default function Home() {
   }, [])
 
 
-  // Device type detection - initialize synchronously to avoid timing issues
-  const getInitialDeviceType = () => {
-    if (typeof window === 'undefined') return 'desktop'
-    const width = window.innerWidth
-    if (width <= 768) return 'mobile'
-    if (width <= 1024) return 'tablet'
-    return 'desktop'
-  }
   
-  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>(getInitialDeviceType)
-  
-  // Check device type based on window width
-  useEffect(() => {
-    const checkDeviceType = () => {
-      const width = window.innerWidth
-      if (width <= 768) {
-        setDeviceType('mobile')
-      } else if (width <= 1024) {
-        setDeviceType('tablet')
-      } else {
-        setDeviceType('desktop')
-      }
-    }
-    
-    // Only add resize listener, initial check is done synchronously
-    window.addEventListener('resize', checkDeviceType)
-    
-    return () => window.removeEventListener('resize', checkDeviceType)
-  }, [])
-  
-  // Function to get stage configuration based on device type
-  const getStageConfig = useCallback((stage: number) => {
+  // Function to get stage configuration
+  const getStageConfigLocal = useCallback((stage: number): StageConfig => {
     // Ensure stage is a valid number
-    if (typeof stage !== 'number' || stage < 1 || stage > 9) {
-      console.warn(`Invalid stage number: ${stage}, falling back to stage 1`)
+    if (typeof stage !== 'number' || stage < 0 || stage > 9) {
       stage = 1
     }
 
-    switch (deviceType) {
-      case 'mobile':
-        switch (stage) {
-          case 1: return stage1MobileConfig
-          case 2: return stage2MobileConfig
-          case 3: return stage3MobileConfig
-          case 4: return stage4MobileConfig
-          case 5: return stage5MobileConfig
-          case 6: return stage6MobileConfig
-          case 7: return stage7MobileConfig
-          case 8: return stage8MobileConfig
-          case 9: return stage9MobileConfig
-          default: 
-            return stage1MobileConfig
-        }
-      case 'tablet':
-        switch (stage) {
-          case 1: return stage1TabletConfig
-          case 2: return stage2TabletConfig
-          case 3: return stage3TabletConfig
-          case 4: return stage4TabletConfig
-          case 5: return stage5TabletConfig
-          case 6: return stage6TabletConfig
-          case 7: return stage7TabletConfig
-          case 8: return stage8TabletConfig
-          case 9: return stage9TabletConfig
-          default: 
-            return stage1TabletConfig
-        }
-      case 'desktop':
-      default:
-        switch (stage) {
-          case 1: return stage1Config
-          case 2: return stage2Config
-          case 3: return stage3Config
-          case 4: return stage4Config
-          case 5: return stage5Config
-          case 6: return stage6Config
-          case 7: return stage7Config
-          case 8: return stage8Config
-          case 9: return stage9Config
-          default: 
-            return stage1Config
-        }
-    }
-  }, [deviceType])
+    // Use direct reference to avoid circular dependency issues
+    const config = stageConfigs[stage] || stageConfigs[1]
+    
+    return config
+  }, [])
 
   // Memoized easing function to prevent recreation
   const easeOutCubic = useCallback((t: number) => {
@@ -252,14 +215,43 @@ export default function Home() {
         
         // Update 3D stage to match the target section (stage = section + 1)
         const targetStage = targetSection + 1
-        setCurrent3DStage(targetStage)
         
-        // Apply the stage configuration immediately
-        const stageConfig = getStageConfig(targetStage)
-        if (stageConfig) {
-          setModelControls(stageConfig.model)
-          setCameraControls(stageConfig.camera)
-          setLightingControls(stageConfig.lighting)
+        // Trigger animation for all stage transitions
+        if (targetStage !== current3DStage) {
+          // Start animation to the target stage
+          setIs3DAnimating(true)
+          setStage3DAnimationProgress(0)
+          
+          const startTime = Date.now()
+          const duration = 1000 // 1 second for smooth transition
+          
+          const animateToStage = () => {
+            const elapsed = Date.now() - startTime
+            const rawProgress = elapsed / duration
+            const progress = Math.min(rawProgress, 1)
+            
+            // Update animation progress
+            setStage3DAnimationProgress(progress)
+            
+            if (progress < 1) {
+              requestAnimationFrame(animateToStage)
+            } else {
+              // Animation complete - transition to target stage
+              setIs3DAnimating(false)
+              setCurrent3DStage(targetStage)
+              setStage3DAnimationProgress(1)
+              
+              // Apply final stage configuration
+              const stageConfig = getStageConfigLocal(targetStage)
+              if (stageConfig) {
+                setModelControls(stageConfig.model)
+                setCameraControls(stageConfig.camera)
+                setLightingControls(stageConfig.lighting)
+              }
+            }
+          }
+          
+          requestAnimationFrame(animateToStage)
         }
         
         // Clear the navigation flag after a short delay to prevent conflicts
@@ -270,19 +262,134 @@ export default function Home() {
     }
     
     requestAnimationFrame(animateTransition)
-  }, [currentSection, isScrolling, isTransitioning, isClient, easeOutCubic, setScrollDirection, setTransitionName, setIsScrolling, setIsTransitioning, setTransitionProgress, setScrollPosition, setCurrentSection, setCurrent3DStage, getStageConfig, setModelControls, setCameraControls, setLightingControls])
+  }, [currentSection, isScrolling, isTransitioning, isClient, easeOutCubic, getStageConfigLocal])
 
   // Set loading start time when component mounts
   useEffect(() => {
     setLoadingStartTime(Date.now())
   }, [])
 
-  // Sync stage configurations with debug context
+  // Set initial stage 0 configuration when component mounts
   useEffect(() => {
-    setStage1Config(stage1Config)
-    setStage2Config(stage2Config)
-    setStage3Config(stage3Config)
-  }, [setStage1Config, setStage2Config, setStage3Config])
+    if (isClient) {
+      const stage0Config = getStageConfigLocal(0)
+      if (stage0Config) {
+        setModelControls(stage0Config.model)
+        setCameraControls(stage0Config.camera)
+        setLightingControls(stage0Config.lighting)
+      }
+    }
+  }, [isClient, getStageConfigLocal, setModelControls, setCameraControls, setLightingControls])
+
+  // Animate from stage 0 (loading) to stage 1 when page loads
+  useEffect(() => {
+    if (!isClient || isLoading) return
+
+    // Start the stage 0 to stage 1 animation
+    setIs3DAnimating(true)
+    setStage3DAnimationProgress(0)
+    
+    const startTime = Date.now()
+    const duration = 2000 // 2 seconds for smooth transition
+    
+    const animateToStage1 = () => {
+      const elapsed = Date.now() - startTime
+      const rawProgress = elapsed / duration
+      const progress = Math.min(rawProgress, 1)
+      
+      // Update animation progress
+      setStage3DAnimationProgress(progress)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateToStage1)
+      } else {
+        // Animation complete - transition to stage 1
+        setIs3DAnimating(false)
+        setCurrent3DStage(1)
+        setStage3DAnimationProgress(1)
+      }
+    }
+    
+    requestAnimationFrame(animateToStage1)
+  }, [isClient, isLoading, setStage3DAnimationProgress, setIs3DAnimating, setCurrent3DStage])
+  
+  // Track key state changes
+  // Note: useStateTracker calls removed to fix invalid hook call errors
+
+  // Sync stage configurations with store - DISABLED TO PREVENT INFINITE LOOPS
+  // useEffect(() => {
+  //   setStageConfig(1, stage1Config)
+  //   setStageConfig(2, stage2Config)
+  //   setStageConfig(3, stage3Config)
+  // }, [setStageConfig, stage1Config, stage2Config, stage3Config])
+
+  // Initialize 3D stage configuration on mount - DISABLED TO PREVENT INFINITE LOOPS
+  // useEffect(() => {
+  //   if (isClient && !isLoading) {
+  //     // Apply initial stage 1 configuration
+  //     const initialStageConfig = getStageConfigLocal(1)
+  //     if (initialStageConfig) {
+  //       setModelControls(initialStageConfig.model)
+  //       setCameraControls(initialStageConfig.camera)
+  //       setLightingControls(initialStageConfig.lighting)
+  //     }
+  //   }
+  // }, [isClient, isLoading, getStageConfigLocal])
+
+  // Consolidated effect to handle 3D stage synchronization and configuration - DISABLED TO PREVENT INFINITE LOOPS
+  // useEffect(() => {
+  //   if (!isClient || isLoading) return
+  //   
+  //   // Only sync stage with section if not navigating via dots and not transitioning
+  //   if (!isNavigatingViaDots && !isTransitioning && current3DStage > 0) {
+  //     const targetStage = currentSection + 1
+  //     if (targetStage !== current3DStage) {
+  //       setCurrent3DStage(targetStage)
+  //       return // Let the next effect handle the configuration
+  //     }
+  //   }
+  //   
+  //   // Apply stage configuration when not animating
+  //   if (!isAnimating && !is3DAnimating) {
+  //     const stageConfig = getStageConfigLocal(current3DStage)
+  //     if (stageConfig) {
+  //       setModelControls(stageConfig.model)
+  //       setCameraControls(stageConfig.camera)
+  //       setLightingControls(stageConfig.lighting)
+  //     } else {
+  //       // Fallback to a basic configuration
+  //       const fallbackConfig = {
+  //         model: { position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+  //         camera: { position: { x: 0, y: 0, z: 5 }, fov: 75 },
+  //         lighting: { 
+  //           ambientIntensity: 1, 
+  //           ambientColor: '#ffffff', 
+  //           directionalIntensity: 1, 
+  //           directionalColor: '#ffffff', 
+  //           directionalPosition: { x: 0, y: 0, z: 0 }, 
+  //           directionalTarget: { x: 0, y: 0, z: 0 }, 
+  //           pointLightIntensity: 0, 
+  //           pointLightColor: '#ffffff', 
+  //           pointLightPosition: { x: 0, y: 0, z: 0 }, 
+  //           pointLightDistance: 10, 
+  //           spotLightIntensity: 0, 
+  //           spotLightColor: '#ffffff', 
+  //           spotLightPosition: { x: 0, y: 0, z: 0 }, 
+  //           spotLightTarget: { x: 0, y: 0, z: 0 }, 
+  //           spotLightDistance: 10, 
+  //           spotLightAngle: 30, 
+  //           spotLightPenumbra: 0, 
+  //           shadowsEnabled: false, 
+  //           shadowMapSize: 1024, 
+  //           shadowBias: 0 
+  //         }
+  //       }
+  //       setModelControls(fallbackConfig.model)
+  //       setCameraControls(fallbackConfig.camera)
+  //       setLightingControls(fallbackConfig.lighting)
+  //     }
+  //   }
+  // }, [currentSection, current3DStage, isClient, isNavigatingViaDots, isTransitioning, isLoading, isAnimating, is3DAnimating, getStageConfigLocal])
 
   // Handle loading progress
   const handleLoadingProgress = useCallback((progress: number) => {
@@ -299,12 +406,12 @@ export default function Home() {
         const remainingTime = Math.max(0, minLoadingTime - elapsedTime)
         
         setTimeout(() => {
-          setIsLoading(false)
+          setLoading(false)
         }, remainingTime)
       } else {
         // Fallback: if loadingStartTime is not set, wait the full 2 seconds
         setTimeout(() => {
-          setIsLoading(false)
+          setLoading(false)
         }, minLoadingTime)
       }
     }
@@ -384,64 +491,18 @@ export default function Home() {
       const progress = easeInOutSine(stage3DAnimationProgress)
       let fromStage, toStage
       
-      if (current3DStage === 2) {
-        fromStage = getStageConfig(2)
-        toStage = getStageConfig(3)
-      } else if (current3DStage === 3) {
-        if (scrollDirection === 'down') {
-          fromStage = getStageConfig(3)
-          toStage = getStageConfig(4)
-        } else {
-          fromStage = getStageConfig(3)
-          toStage = getStageConfig(2)
-        }
-      } else if (current3DStage === 4) {
-        if (scrollDirection === 'down') {
-          fromStage = getStageConfig(4)
-          toStage = getStageConfig(5)
-        } else {
-          fromStage = getStageConfig(4)
-          toStage = getStageConfig(3)
-        }
-      } else if (current3DStage === 5) {
-        if (scrollDirection === 'down') {
-          fromStage = getStageConfig(5)
-          toStage = getStageConfig(6)
-        } else {
-          fromStage = getStageConfig(5)
-          toStage = getStageConfig(4)
-        }
-      } else if (current3DStage === 6) {
-        if (scrollDirection === 'down') {
-          fromStage = getStageConfig(6)
-          toStage = getStageConfig(7)
-        } else {
-          fromStage = getStageConfig(6)
-          toStage = getStageConfig(5)
-        }
-      } else if (current3DStage === 7) {
-        if (scrollDirection === 'down') {
-          fromStage = getStageConfig(7)
-          toStage = getStageConfig(8)
-        } else {
-          fromStage = getStageConfig(7)
-          toStage = getStageConfig(6)
-        }
-      } else if (current3DStage === 8) {
-        if (scrollDirection === 'down') {
-          fromStage = getStageConfig(8)
-          toStage = getStageConfig(9)
-        } else {
-          fromStage = getStageConfig(8)
-          toStage = getStageConfig(7)
-        }
-      } else if (current3DStage === 9) {
-        fromStage = getStageConfig(9)
-        toStage = getStageConfig(8)
-      } else {
-        fromStage = getStageConfig(2)
-        toStage = getStageConfig(3)
+      // Handle all stage transitions - animate from current stage to target stage
+      // The target stage is determined by the current section + 1
+      const targetStage = currentSection + 1
+      
+      if (current3DStage === targetStage) {
+        // No animation needed if already at target stage
+        return null
       }
+      
+      // Get the current stage configuration and target stage configuration
+      fromStage = getStageConfigLocal(current3DStage)
+      toStage = getStageConfigLocal(targetStage)
       
       // Check if both stages are valid
       if (!fromStage || !toStage) {
@@ -521,21 +582,12 @@ export default function Home() {
       const progress = easeInOutSine(animationProgress)
       
       // Get stage configurations with null checks
-      const stage1 = getStageConfig(1)
-      const stage2 = getStageConfig(2)
+      const stage1 = getStageConfigLocal(1)
+      const stage2 = getStageConfigLocal(2)
       
       if (!stage1 || !stage2) {
         return null
       }
-      
-      // Create luxury lighting animation for stage 1 to stage 2
-      const luxuryLightingAnimation = new LuxuryLightingAnimation({
-        stage1: stage1.lighting,
-        stage2: stage2.lighting,
-        duration: 3000 // 3 seconds for luxury product launch
-      })
-      
-      const luxuryLighting = luxuryLightingAnimation.getLightingAtProgress(progress)
       
       return {
         model: {
@@ -563,16 +615,57 @@ export default function Home() {
           },
           fov: lerp(stage1.camera.fov, stage2.camera.fov, progress)
         },
-        lighting: luxuryLighting
+        lighting: {
+          ambientIntensity: lerp(stage1.lighting.ambientIntensity, stage2.lighting.ambientIntensity, progress),
+          ambientColor: lerpColor(stage1.lighting.ambientColor, stage2.lighting.ambientColor, progress),
+          directionalIntensity: lerp(stage1.lighting.directionalIntensity, stage2.lighting.directionalIntensity, progress),
+          directionalColor: lerpColor(stage1.lighting.directionalColor, stage2.lighting.directionalColor, progress),
+          directionalPosition: {
+            x: lerp(stage1.lighting.directionalPosition.x, stage2.lighting.directionalPosition.x, progress),
+            y: lerp(stage1.lighting.directionalPosition.y, stage2.lighting.directionalPosition.y, progress),
+            z: lerp(stage1.lighting.directionalPosition.z, stage2.lighting.directionalPosition.z, progress)
+          },
+          directionalTarget: {
+            x: lerp(stage1.lighting.directionalTarget.x, stage2.lighting.directionalTarget.x, progress),
+            y: lerp(stage1.lighting.directionalTarget.y, stage2.lighting.directionalTarget.y, progress),
+            z: lerp(stage1.lighting.directionalTarget.z, stage2.lighting.directionalTarget.z, progress)
+          },
+          pointLightIntensity: lerp(stage1.lighting.pointLightIntensity, stage2.lighting.pointLightIntensity, progress),
+          pointLightColor: lerpColor(stage1.lighting.pointLightColor, stage2.lighting.pointLightColor, progress),
+          pointLightPosition: {
+            x: lerp(stage1.lighting.pointLightPosition.x, stage2.lighting.pointLightPosition.x, progress),
+            y: lerp(stage1.lighting.pointLightPosition.y, stage2.lighting.pointLightPosition.y, progress),
+            z: lerp(stage1.lighting.pointLightPosition.z, stage2.lighting.pointLightPosition.z, progress)
+          },
+          pointLightDistance: lerp(stage1.lighting.pointLightDistance, stage2.lighting.pointLightDistance, progress),
+          spotLightIntensity: lerp(stage1.lighting.spotLightIntensity, stage2.lighting.spotLightIntensity, progress),
+          spotLightColor: lerpColor(stage1.lighting.spotLightColor, stage2.lighting.spotLightColor, progress),
+          spotLightPosition: {
+            x: lerp(stage1.lighting.spotLightPosition.x, stage2.lighting.spotLightPosition.x, progress),
+            y: lerp(stage1.lighting.spotLightPosition.y, stage2.lighting.spotLightPosition.y, progress),
+            z: lerp(stage1.lighting.spotLightPosition.z, stage2.lighting.spotLightPosition.z, progress)
+          },
+          spotLightTarget: {
+            x: lerp(stage1.lighting.spotLightTarget.x, stage2.lighting.spotLightTarget.x, progress),
+            y: lerp(stage1.lighting.spotLightTarget.y, stage2.lighting.spotLightTarget.y, progress),
+            z: lerp(stage1.lighting.spotLightTarget.z, stage2.lighting.spotLightTarget.z, progress)
+          },
+          spotLightDistance: lerp(stage1.lighting.spotLightDistance, stage2.lighting.spotLightDistance, progress),
+          spotLightAngle: lerp(stage1.lighting.spotLightAngle, stage2.lighting.spotLightAngle, progress),
+          spotLightPenumbra: lerp(stage1.lighting.spotLightPenumbra, stage2.lighting.spotLightPenumbra, progress),
+          shadowsEnabled: stage2.lighting.shadowsEnabled, // Use Stage 2 shadows setting
+          shadowMapSize: stage2.lighting.shadowMapSize,
+          shadowBias: lerp(stage1.lighting.shadowBias, stage2.lighting.shadowBias, progress)
+        }
       }
     }
     
     return null
-  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage, scrollDirection, deviceType, getStageConfig, easeInOutSine, lerp, lerpColor])
+  }, [is3DAnimating, stage3DAnimationProgress, isAnimating, animationProgress, current3DStage, scrollDirection, easeInOutSine, lerp, lerpColor])
 
-  // Update model controls to reflect current animated values
+  // Update model controls to reflect current animated values (only when animating)
   useEffect(() => {
-    if (animatedValues) {
+    if (animatedValues && (is3DAnimating || isAnimating)) {
       setModelControls(animatedValues.model)
       if (animatedValues.camera) {
         setCameraControls(animatedValues.camera)
@@ -581,34 +674,17 @@ export default function Home() {
         setLightingControls(animatedValues.lighting)
       }
     }
-  }, [animatedValues])
-
-  // Update model controls when stage changes (not animating and not navigating via dots)
-  useEffect(() => {
-    if (!is3DAnimating && !isAnimating && !isNavigatingViaDots) {
-      // Update model controls to match the current stage configuration
-      const stageConfig = getStageConfig(current3DStage)
-      
-      // Safety check to prevent undefined errors
-      if (stageConfig && stageConfig.model) {
-        setModelControls(stageConfig.model)
-      } else {
-        // Fallback to stage 1 configuration
-        const fallbackConfig = getStageConfig(1)
-        if (fallbackConfig && fallbackConfig.model) {
-          setModelControls(fallbackConfig.model)
-        }
-      }
-    }
-  }, [current3DStage, is3DAnimating, isAnimating, isNavigatingViaDots, deviceType])
+  }, [animatedValues, is3DAnimating, isAnimating])
 
 
 
 
   return (
-    <div className="relative home-page">
-      {/* Loading Screen */}
-      <LoadingScreen isLoading={isLoading} progress={loadingProgress} />
+    <PerformanceMonitor componentName="Home">
+      <div className="relative home-page">
+        
+        {/* Loading Screen */}
+        <LoadingScreen isLoading={isLoading} progress={loadingProgress} />
       
       {/* Section Loading Screen */}
       <SectionLoadingScreen 
@@ -637,7 +713,7 @@ export default function Home() {
         current3DStage={current3DStage}
         componentControls={componentControls}
         categoryVisibility={categoryVisibility}
-        onComponentControlsChange={setComponentControls}
+        onComponentControlsChange={() => {}} // Disabled - no-op function
         onAnimationFunctionsReady={handleAnimationFunctionsReady}
         onLoadingProgress={handleLoadingProgress}
         onLoadingComplete={handleLoadingComplete}
@@ -658,28 +734,7 @@ export default function Home() {
       />
 
       {/* Animation System */}
-      <AnimationSystem
-        isAnimating={isAnimating}
-        setIsAnimating={setIsAnimating}
-        animationProgress={animationProgress}
-        setAnimationProgress={setAnimationProgress}
-        is3DAnimating={is3DAnimating}
-        setIs3DAnimating={setIs3DAnimating}
-        stage3DAnimationProgress={stage3DAnimationProgress}
-        setStage3DAnimationProgress={setStage3DAnimationProgress}
-        current3DStage={current3DStage}
-        setCurrent3DStage={setCurrent3DStage}
-        isTransitioning={isTransitioning}
-        scrollDirection={scrollDirection}
-        currentSection={currentSection}
-        isClient={isClient}
-        isLoading={isLoading}
-        setModelControls={setModelControls}
-        setCameraControls={setCameraControls}
-        setLightingControls={setLightingControls}
-        stage8AnimationFunctions={stage8AnimationFunctions}
-        getStageConfig={getStageConfig}
-      />
+      <AnimationSystem />
 
       {/* Scrollable Content - 8x screen height */}
       <main 
@@ -796,47 +851,11 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Compact Development Helper Box */}
-      {!isLoading && <DevControls
-        isDevMode={isDevMode}
-        onToggleDevMode={() => setIsDevMode(false)}
-        modelControls={modelControls}
-        onModelControlsChange={setModelControls}
-        cameraControls={cameraControls}
-        onCameraControlsChange={setCameraControls}
-        lightingControls={lightingControls}
-        onLightingControlsChange={setLightingControls}
-        currentSection={currentSection}
-        isScrolling={isScrolling}
-        scrollDirection={scrollDirection}
-        transitionName={transitionName}
-        scrollPosition={scrollPosition}
-        isClient={isClient}
-        stage1Config={stage1Config}
-        stage2Config={stage2Config}
-        stage3Config={stage3Config}
-        current3DStage={current3DStage}
-        stage3DAnimationProgress={stage3DAnimationProgress}
-        setCurrent3DStage={setCurrent3DStage}
-        componentControls={componentControls}
-        onComponentControlsChange={setComponentControls}
-        categoryVisibility={categoryVisibility}
-        onCategoryVisibilityChange={setCategoryVisibility}
-      />}
 
       {/* Top Menu */}
       {!isLoading && <TopMenu />}
 
-      {/* Show Dev Mode Button when hidden - TEMPORARILY HIDDEN */}
-      {false && !isLoading && !isDevMode && (
-        <button
-          onClick={() => setIsDevMode(true)}
-          className="fixed bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-auto z-20 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-gray-600 rounded-lg px-3 py-2 text-white text-xs sm:text-sm text-center"
-          style={{ minHeight: '44px' }}
-        >
-          Show Dev Controls
-        </button>
-      )}
-    </div>
+      </div>
+    </PerformanceMonitor>
   )
 }
