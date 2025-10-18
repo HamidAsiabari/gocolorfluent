@@ -35,7 +35,7 @@ const HeroSection = memo(function HeroSection({
 
   return (
     <section 
-      className="flex flex-col items-center md:items-center items-start justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-16 md:pt-20"
+      className="flex flex-col items-center md:items-center items-start justify-start h-screen w-screen absolute inset-0 pt-16 md:pt-20"
       style={{
         transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
         zIndex: 10
@@ -43,18 +43,18 @@ const HeroSection = memo(function HeroSection({
     >
 
       {/* Main Content */}
-      <div className="section-content relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto mt-[120px]">
+      <div className="section-content relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto mt-[120px] px-4 sm:px-6">
         {/* Hero Title with enhanced typography */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black leading-[0.9] tracking-tight">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">Color </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Fluent</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600">Color </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">Fluent</span>
           </h1>
         </div>
         
         {/* Subtitle with improved styling */}
         <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light text-gray-200 max-w-4xl mx-auto leading-relaxed tracking-wide">
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light text-gray-800 max-w-4xl mx-auto leading-relaxed tracking-wide">
             Smart Precision. Rooted in Beauty
           </p>
         </div>

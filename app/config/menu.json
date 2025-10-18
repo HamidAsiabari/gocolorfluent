@@ -19,12 +19,6 @@
       "isActive": false
     },
     {
-      "id": "catalog",
-      "label": "Catalog",
-      "path": "/catalog",
-      "isActive": false
-    },
-    {
       "id": "shop",
       "label": "Shop",
       "path": "/shop",
@@ -48,17 +42,5 @@
       "path": "/contact",
       "isActive": false
     },
-    {
-      "id": "blog",
-      "label": "Blog",
-      "path": "/blog",
-      "isActive": false
-    },
-    {
-      "id": "faq",
-      "label": "FAQ",
-      "path": "/faq",
-      "isActive": false
-    }
   ]
 }

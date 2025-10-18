@@ -24,12 +24,6 @@
       "isActive": false
     },
     {
-      "id": "catalog",
-      "label": "Catalog",
-      "href": "/catalog",
-      "isActive": false
-    },
-    {
       "id": "shop",
       "label": "Shop",
       "href": "/shop",
@@ -53,17 +47,5 @@
       "href": "/contact",
       "isActive": false
     },
-    {
-      "id": "blog",
-      "label": "Blog",
-      "href": "/blog",
-      "isActive": false
-    },
-    {
-      "id": "faq",
-      "label": "FAQ",
-      "href": "/faq",
-      "isActive": false
-    }
   ]
 }

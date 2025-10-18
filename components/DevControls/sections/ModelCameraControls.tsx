@@ -12,7 +12,12 @@ export default function ModelCameraControls() {
   const rotationRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const scaleRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const cameraPositionRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const cameraRotationRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const cameraTargetRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const fovRef = useRef<HTMLInputElement | null>(null)
+  const nearRef = useRef<HTMLInputElement | null>(null)
+  const farRef = useRef<HTMLInputElement | null>(null)
+  const zoomRef = useRef<HTMLInputElement | null>(null)
 
   const copyModelCameraConfig = () => {
     // Get actual values from input fields
@@ -40,7 +45,22 @@ export default function ModelCameraControls() {
       z: parseFloat(cameraPositionRefs.current.z?.value || '5')
     }
 
+    const cameraRotation = {
+      x: parseFloat(cameraRotationRefs.current.x?.value || '0'),
+      y: parseFloat(cameraRotationRefs.current.y?.value || '0'),
+      z: parseFloat(cameraRotationRefs.current.z?.value || '0')
+    }
+
+    const cameraTarget = {
+      x: parseFloat(cameraTargetRefs.current.x?.value || '0'),
+      y: parseFloat(cameraTargetRefs.current.y?.value || '0'),
+      z: parseFloat(cameraTargetRefs.current.z?.value || '0')
+    }
+
     const fov = parseFloat(fovRef.current?.value || '75')
+    const near = parseFloat(nearRef.current?.value || '0.1')
+    const far = parseFloat(farRef.current?.value || '1000')
+    const zoom = parseFloat(zoomRef.current?.value || '1')
 
     const config = {
       model: {
@@ -66,7 +86,20 @@ export default function ModelCameraControls() {
           y: parseFloat(cameraPosition.y.toFixed(3)),
           z: parseFloat(cameraPosition.z.toFixed(3))
         },
-        fov: parseFloat(fov.toFixed(1))
+        rotation: {
+          x: parseFloat(cameraRotation.x.toFixed(3)),
+          y: parseFloat(cameraRotation.y.toFixed(3)),
+          z: parseFloat(cameraRotation.z.toFixed(3))
+        },
+        target: {
+          x: parseFloat(cameraTarget.x.toFixed(3)),
+          y: parseFloat(cameraTarget.y.toFixed(3)),
+          z: parseFloat(cameraTarget.z.toFixed(3))
+        },
+        fov: parseFloat(fov.toFixed(1)),
+        near: parseFloat(near.toFixed(3)),
+        far: parseFloat(far.toFixed(1)),
+        zoom: parseFloat(zoom.toFixed(2))
       },
       timestamp: new Date().toISOString(),
       description: "Model and Camera configuration"
@@ -203,6 +236,111 @@ export default function ModelCameraControls() {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Camera Rotation */}
+          <div>
+            <label className="text-xs text-gray-300">Rotation</label>
+            <div className="grid grid-cols-3 gap-1">
+              {['x', 'y', 'z'].map((axis) => (
+                <div key={axis} className="flex flex-col">
+                  <label className="text-xs text-gray-400 uppercase">{axis}</label>
+                  <input
+                    ref={(el) => cameraRotationRefs.current[axis] = el}
+                    type="number"
+                    step="0.01"
+                    value={cameraControls.rotation[axis as keyof typeof cameraControls.rotation]}
+                    onChange={(e) => setCameraControls({
+                      ...cameraControls,
+                      rotation: { ...cameraControls.rotation, [axis]: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="w-full px-1 py-0.5 bg-gray-700 border border-gray-600 rounded text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Camera Target */}
+          <div>
+            <label className="text-xs text-gray-300">Target</label>
+            <div className="grid grid-cols-3 gap-1">
+              {['x', 'y', 'z'].map((axis) => (
+                <div key={axis} className="flex flex-col">
+                  <label className="text-xs text-gray-400 uppercase">{axis}</label>
+                  <input
+                    ref={(el) => cameraTargetRefs.current[axis] = el}
+                    type="number"
+                    step="0.1"
+                    value={cameraControls.target[axis as keyof typeof cameraControls.target]}
+                    onChange={(e) => setCameraControls({
+                      ...cameraControls,
+                      target: { ...cameraControls.target, [axis]: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="w-full px-1 py-0.5 bg-gray-700 border border-gray-600 rounded text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Camera Settings */}
+          <div className="space-y-2">
+            <label className="text-xs text-gray-300">Settings</label>
+            
+            {/* Near Plane */}
+            <div>
+              <label className="text-xs text-gray-400">Near: {cameraControls.near}</label>
+              <input
+                ref={nearRef}
+                type="range"
+                min="0.01"
+                max="10"
+                step="0.01"
+                value={cameraControls.near}
+                onChange={(e) => setCameraControls({
+                  ...cameraControls,
+                  near: parseFloat(e.target.value)
+                })}
+                className="w-full h-1"
+              />
+            </div>
+
+            {/* Far Plane */}
+            <div>
+              <label className="text-xs text-gray-400">Far: {cameraControls.far}</label>
+              <input
+                ref={farRef}
+                type="range"
+                min="100"
+                max="10000"
+                step="100"
+                value={cameraControls.far}
+                onChange={(e) => setCameraControls({
+                  ...cameraControls,
+                  far: parseFloat(e.target.value)
+                })}
+                className="w-full h-1"
+              />
+            </div>
+
+            {/* Zoom */}
+            <div>
+              <label className="text-xs text-gray-400">Zoom: {cameraControls.zoom}</label>
+              <input
+                ref={zoomRef}
+                type="range"
+                min="0.1"
+                max="5"
+                step="0.1"
+                value={cameraControls.zoom}
+                onChange={(e) => setCameraControls({
+                  ...cameraControls,
+                  zoom: parseFloat(e.target.value)
+                })}
+                className="w-full h-1"
+              />
             </div>
           </div>
         </div>

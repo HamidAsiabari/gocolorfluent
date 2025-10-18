@@ -97,7 +97,7 @@ This document outlines the debugging improvements implemented to make 3D applica
 
 ## 🚨 Common Issues to Watch For
 
-1. **Stage/Section Mismatch**: 3D stage doesn't match current section + 1
+1. **Stage/Section Mismatch**: 3D stage doesn't match current section
 2. **Animation Conflicts**: Both 3D and regular animations running simultaneously
 3. **Excessive Re-renders**: Components rendering too frequently
 4. **Client Not Ready**: 3D operations before client initialization

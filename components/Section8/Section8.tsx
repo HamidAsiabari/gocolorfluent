@@ -28,18 +28,21 @@ const Section8 = memo(function Section8({
   }, [])
 
   useEffect(() => {
-    // Trigger entrance animation when section becomes active
-    if (currentSection === 8) {
-      const timer = setTimeout(() => setIsVisible(true), 200)
-      return () => clearTimeout(timer)
+    // Trigger entrance animation when section becomes active or when transitioning to this section
+    const shouldBeVisible = currentSection === 8 || 
+      (isTransitioning && scrollDirection === 'down' && currentSection === 7)
+    
+    if (shouldBeVisible) {
+      // Start animation immediately when section becomes active or transition starts
+      setIsVisible(true)
     } else {
       setIsVisible(false)
     }
-  }, [currentSection])
+  }, [currentSection, isTransitioning, scrollDirection])
 
   return (
     <section 
-      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (8 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
         zIndex: 10
@@ -65,7 +68,7 @@ const Section8 = memo(function Section8({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-5xl mx-auto text-center" style={{ paddingTop: '5%' }}>
+      <div className="section-content relative z-10 max-w-5xl mx-auto text-center px-4 sm:px-6" style={{ paddingTop: '5%' }}>
         <div className="space-y-8">
           
           {/* Section Title */}

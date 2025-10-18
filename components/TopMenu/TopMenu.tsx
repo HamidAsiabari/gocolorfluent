@@ -55,11 +55,9 @@ const TopMenu = memo(function TopMenu() {
             { id: "home", label: "Home", href: "/", isActive: false },
             { id: "application", label: "Application", href: "/application", isActive: false },
             { id: "history", label: "History", href: "/history", isActive: false },
-            { id: "catalog", label: "Catalog", href: "/catalog", isActive: false },
+            { id: "shop", label: "Shop", href: "/shop", isActive: false },
             { id: "about", label: "About Us", href: "/about", isActive: false },
             { id: "contact", label: "Contact Us", href: "/contact", isActive: false },
-            { id: "blog", label: "Blog", href: "/blog", isActive: false },
-            { id: "faq", label: "FAQ", href: "/faq", isActive: false }
           ]
         })
       })
@@ -121,10 +119,10 @@ const TopMenu = memo(function TopMenu() {
   if (!menuConfig) {
     return (
       <header className="absolute top-0 left-0 right-0 z-[100]">
-        <div className="w-full px-2 sm:px-3 lg:px-4">
-          <div className="flex justify-between items-center py-6">
-            <div className="w-[120px] h-[120px] bg-gray-600 rounded animate-pulse pl-[5%]"></div>
-            <div className="w-10 h-10 bg-gray-600 rounded animate-pulse pr-[5%] mt-[15px]"></div>
+        <div className="w-full">
+          <div className="flex justify-between items-center py-6 px-4 sm:px-6 lg:px-8">
+            <div className="w-[120px] h-[120px] bg-gray-600 rounded animate-pulse"></div>
+            <div className="w-10 h-10 bg-gray-600 rounded animate-pulse mt-[15px]"></div>
           </div>
         </div>
       </header>
@@ -135,10 +133,10 @@ const TopMenu = memo(function TopMenu() {
     <>
       {/* Top Menu Bar */}
       <header className="absolute top-0 left-0 right-0 z-[100]">
-        <div className="w-full px-2 sm:px-3 lg:px-4">
-          <div className="flex justify-between items-center py-6">
+        <div className="w-full">
+          <div className="flex justify-between items-center py-6 px-4 sm:px-6 lg:px-8">
             {/* Logo */}
-            <Link href={menuConfig.logo.href} className="flex-shrink-0 pl-[5%]">
+            <Link href={menuConfig.logo.href} className="flex-shrink-0">
               <div className="relative w-[120px] h-[120px]">
                 <Image
                   src={menuConfig.logo.src}
@@ -157,7 +155,7 @@ const TopMenu = memo(function TopMenu() {
             {/* Menu Button */}
             <button
               onClick={toggleMenu}
-              className="text-white hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg p-2 pr-[5%] mt-[15px]"
+              className="text-white hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg p-2 mt-[15px]"
               aria-label="Open menu"
             >
               <svg

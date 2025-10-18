@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import { StageConfig, stage0Config, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './index'
 import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
+import { CameraControls } from '../../store/useAppStore'
 
 interface ThreeSceneManagerProps {
   mountRef: React.RefObject<HTMLDivElement>
@@ -13,10 +14,7 @@ interface ThreeSceneManagerProps {
     rotation: { x: number; y: number; z: number }
     scale: { x: number; y: number; z: number }
   }
-  cameraControls: {
-    position: { x: number; y: number; z: number }
-    fov: number
-  }
+  cameraControls: CameraControls
   lightingControls: {
     ambientIntensity: number
     ambientColor: string
@@ -39,15 +37,10 @@ interface ThreeSceneManagerProps {
     shadowMapSize: number
     shadowBias: number
   }
-  isAnimating: boolean
-  animationProgress: number
-  is3DAnimating: boolean
-  stage3DAnimationProgress: number
   current3DStage: number
   componentControls: ComponentControls
   categoryVisibility: CategoryVisibility
   onComponentControlsChange?: (controls: ComponentControls) => void
-  onAnimationFunctionsReady?: (functions: { stage8OpenAnimation: () => void; stage8CloseAnimation: () => void }) => void
   onLoadingProgress?: (progress: number) => void
   onLoadingComplete?: () => void
 }
@@ -57,15 +50,10 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   modelControls,
   cameraControls,
   lightingControls,
-  isAnimating,
-  animationProgress,
-  is3DAnimating,
-  stage3DAnimationProgress,
   current3DStage,
   componentControls,
   categoryVisibility,
   onComponentControlsChange,
-  onAnimationFunctionsReady,
   onLoadingProgress,
   onLoadingComplete
 }: ThreeSceneManagerProps) {
@@ -81,8 +69,6 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   const textureLoader = useRef<THREE.TextureLoader | null>(null)
   const upperCoverRef = useRef<THREE.Object3D | null>(null)
   const upperCoverOriginalPosition = useRef<THREE.Vector3 | null>(null)
-  const stage8OpenAnimationRef = useRef<number | null>(null)
-  const stage8CloseAnimationRef = useRef<number | null>(null)
   const oledTextureRef = useRef<THREE.Texture | null>(null)
   const upperCoverTextureRef = useRef<THREE.Texture | null>(null)
   const lowerSideMainTextureRef = useRef<THREE.Texture | null>(null)
@@ -91,114 +77,187 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   const loadingMaterialCoverTextureRef = useRef<THREE.Texture | null>(null)
   const upperSideMainHolderTextureRef = useRef<THREE.Texture | null>(null)
   
-  // Animation state tracking for conditional rendering
-  const animationFrameRef = useRef<number | null>(null)
+  // Rendering state tracking
   const isRenderingRef = useRef<boolean>(false)
   const needsRenderRef = useRef<boolean>(false)
-  const backgroundAnimationsRef = useRef<{
-    grid: THREE.Object3D | null
-    particles: THREE.Object3D | null
-    gridAnimationId: number | null
-    particlesAnimationId: number | null
-  }>({
-    grid: null,
-    particles: null,
-    gridAnimationId: null,
-    particlesAnimationId: null
-  })
 
-  // Helper functions for conditional rendering with debouncing
+  // Helper functions for rendering
   const requestRender = useCallback(() => {
-    needsRenderRef.current = true
-    if (!isRenderingRef.current) {
-      isRenderingRef.current = true
-      animationFrameRef.current = requestAnimationFrame(() => {
-        if (rendererRef.current && sceneRef.current && cameraRef.current && needsRenderRef.current) {
-          console.log('🎨 Rendering scene with', sceneRef.current.children.length, 'children')
-          rendererRef.current.render(sceneRef.current, cameraRef.current)
-        }
-        isRenderingRef.current = false
-        needsRenderRef.current = false
-      })
+    if (rendererRef.current && sceneRef.current && cameraRef.current) {
+      rendererRef.current.render(sceneRef.current, cameraRef.current)
     }
   }, [])
+
+  // Force dev control updates (replicating useEffect logic)
+  const forceDevControlUpdates = useCallback(() => {
+    console.log('🔄 Force updating all dev controls after model load')
+    console.log('📊 Current dev control values:', {
+      modelControls,
+      cameraControls,
+      lightingControls
+    })
+    
+    // Update model controls
+    if (modelRef.current) {
+      const model = modelRef.current
+      const { scale, position, rotation } = modelControls
+      
+      console.log(`Force updating model controls:`, { scale, position, rotation })
+      console.log(`Model before update: scale(${model.scale.x}, ${model.scale.y}, ${model.scale.z}), position(${model.position.x}, ${model.position.y}, ${model.position.z}), rotation(${model.rotation.x}, ${model.rotation.y}, ${model.rotation.z})`)
+      
+      model.scale.set(scale.x, scale.y, scale.z)
+      model.position.set(position.x, position.y, position.z)
+      model.rotation.set(rotation.x, rotation.y, rotation.z)
+      model.updateMatrix()
+      model.updateMatrixWorld(true)
+      
+      console.log(`Model after update: scale(${model.scale.x}, ${model.scale.y}, ${model.scale.z}), position(${model.position.x}, ${model.position.y}, ${model.position.z}), rotation(${model.rotation.x}, ${model.rotation.y}, ${model.rotation.z})`)
+    } else {
+      console.log('❌ modelRef.current is null during force update')
+    }
+    
+    // Update camera controls
+    if (cameraRef.current) {
+      const camera = cameraRef.current
+      const { position, rotation, target, fov, near, far, zoom } = cameraControls
+      
+      console.log(`Force updating camera controls:`, { position, rotation, target, fov, near, far, zoom })
+      console.log(`Camera before update: position(${camera.position.x}, ${camera.position.y}, ${camera.position.z}), rotation(${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}), fov(${camera.fov})`)
+      
+      camera.position.set(position.x, position.y, position.z)
+      camera.rotation.set(rotation.x, rotation.y, rotation.z)
+      camera.lookAt(target.x, target.y, target.z)
+      camera.fov = fov
+      camera.near = near
+      camera.far = far
+      camera.zoom = zoom
+      camera.updateProjectionMatrix()
+      camera.updateMatrixWorld(true)
+      
+      console.log(`Camera after update: position(${camera.position.x}, ${camera.position.y}, ${camera.position.z}), rotation(${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}), fov(${camera.fov})`)
+    } else {
+      console.log('❌ cameraRef.current is null during force update')
+    }
+    
+    // Update lighting controls
+    if (ambientLightRef.current) {
+      ambientLightRef.current.intensity = lightingControls.ambientIntensity
+      ambientLightRef.current.color.setHex(parseInt(lightingControls.ambientColor.replace('#', ''), 16))
+    }
+    
+    if (directionalLightRef.current) {
+      directionalLightRef.current.intensity = lightingControls.directionalIntensity
+      directionalLightRef.current.color.setHex(parseInt(lightingControls.directionalColor.replace('#', ''), 16))
+      directionalLightRef.current.position.set(lightingControls.directionalPosition.x, lightingControls.directionalPosition.y, lightingControls.directionalPosition.z)
+      directionalLightRef.current.target.position.set(lightingControls.directionalTarget.x, lightingControls.directionalTarget.y, lightingControls.directionalTarget.z)
+    }
+    
+    if (pointLightRef.current) {
+      pointLightRef.current.intensity = lightingControls.pointLightIntensity
+      pointLightRef.current.color.setHex(parseInt(lightingControls.pointLightColor.replace('#', ''), 16))
+      pointLightRef.current.position.set(lightingControls.pointLightPosition.x, lightingControls.pointLightPosition.y, lightingControls.pointLightPosition.z)
+    }
+    
+    if (spotLightRef.current) {
+      spotLightRef.current.intensity = lightingControls.spotLightIntensity
+      spotLightRef.current.color.setHex(parseInt(lightingControls.spotLightColor.replace('#', ''), 16))
+      spotLightRef.current.position.set(lightingControls.spotLightPosition.x, lightingControls.spotLightPosition.y, lightingControls.spotLightPosition.z)
+      spotLightRef.current.target.position.set(lightingControls.spotLightTarget.x, lightingControls.spotLightTarget.y, lightingControls.spotLightTarget.z)
+    }
+    
+    requestRender()
+  }, [modelControls, cameraControls, lightingControls, requestRender])
+
+  // Sync dev controls with actual 3D scene values
+  const syncDevControlsWithScene = useCallback(() => {
+    console.log('🔄 Syncing dev controls with actual 3D scene values')
+    
+    if (modelRef.current && cameraRef.current) {
+      const model = modelRef.current
+      const camera = cameraRef.current
+      
+      // Get actual scene values
+      const actualModelPosition = {
+        x: model.position.x,
+        y: model.position.y,
+        z: model.position.z
+      }
+      const actualModelRotation = {
+        x: model.rotation.x,
+        y: model.rotation.y,
+        z: model.rotation.z
+      }
+      const actualModelScale = {
+        x: model.scale.x,
+        y: model.scale.y,
+        z: model.scale.z
+      }
+      
+      const actualCameraPosition = {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z
+      }
+      const actualCameraRotation = {
+        x: camera.rotation.x,
+        y: camera.rotation.y,
+        z: camera.rotation.z
+      }
+      
+      console.log('📊 Actual scene values:', {
+        modelPosition: actualModelPosition,
+        modelRotation: actualModelRotation,
+        modelScale: actualModelScale,
+        cameraPosition: actualCameraPosition,
+        cameraRotation: actualCameraRotation
+      })
+      
+      console.log('📊 Current dev control values:', {
+        modelControls,
+        cameraControls
+      })
+      
+      // Update dev controls to match actual scene values
+      // Note: This would require access to the setter functions from the parent component
+      // For now, we'll just log the differences
+      const positionDiff = {
+        x: Math.abs(actualModelPosition.x - modelControls.position.x),
+        y: Math.abs(actualModelPosition.y - modelControls.position.y),
+        z: Math.abs(actualModelPosition.z - modelControls.position.z)
+      }
+      
+      const rotationDiff = {
+        x: Math.abs(actualModelRotation.x - modelControls.rotation.x),
+        y: Math.abs(actualModelRotation.y - modelControls.rotation.y),
+        z: Math.abs(actualModelRotation.z - modelControls.rotation.z)
+      }
+      
+      console.log('📊 Position differences:', positionDiff)
+      console.log('📊 Rotation differences:', rotationDiff)
+    }
+  }, [modelControls, cameraControls])
 
   const stopRendering = useCallback(() => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-      animationFrameRef.current = null
-    }
-    isRenderingRef.current = false
-    needsRenderRef.current = false
+    // No animation frames to cancel in static scene
   }, [])
 
-  const startBackgroundAnimations = useCallback(() => {
-    const { grid, particles } = backgroundAnimationsRef.current
-    
-    // Start grid animation with reduced frequency
-    if (grid && !backgroundAnimationsRef.current.gridAnimationId) {
-      let lastTime = 0
-      const animateGrid = (currentTime: number) => {
-        // Throttle to 30fps instead of 60fps for better performance
-        if (currentTime - lastTime >= 33) {
-          const time = currentTime * 0.0003 // Reduced animation speed
-          grid.rotation.z = Math.sin(time) * 0.05 // Reduced rotation amplitude
-          lastTime = currentTime
-        }
-        backgroundAnimationsRef.current.gridAnimationId = requestAnimationFrame(animateGrid)
-      }
-      animateGrid(0)
-    }
-    
-    // Start particles animation with reduced frequency and complexity
-    if (particles && !backgroundAnimationsRef.current.particlesAnimationId) {
-      let lastTime = 0
-      const animateParticles = (currentTime: number) => {
-        // Throttle to 30fps instead of 60fps for better performance
-        if (currentTime - lastTime >= 33) {
-          const time = currentTime * 0.0005 // Reduced animation speed
-          if (particles instanceof THREE.Points) {
-            const positions = particles.geometry.attributes.position.array as Float32Array
-            const particleCount = positions.length / 3
-            
-            // Process particles in batches to reduce frame time
-            const batchSize = 10
-            const startIndex = Math.floor((time * 1000) % particleCount)
-            
-            for (let i = 0; i < batchSize && startIndex + i < particleCount; i++) {
-              const particleIndex = (startIndex + i) % particleCount
-              const i3 = particleIndex * 3
-              positions[i3 + 1] += Math.sin(time + particleIndex * 0.1) * 0.005 // Reduced movement
-              positions[i3] += Math.cos(time + particleIndex * 0.05) * 0.002 // Reduced movement
-            }
-            
-            particles.geometry.attributes.position.needsUpdate = true
-            lastTime = currentTime
-          }
-        }
-        backgroundAnimationsRef.current.particlesAnimationId = requestAnimationFrame(animateParticles)
-      }
-      animateParticles(0)
-    }
-  }, [])
-
-  const stopBackgroundAnimations = useCallback(() => {
-    if (backgroundAnimationsRef.current.gridAnimationId) {
-      cancelAnimationFrame(backgroundAnimationsRef.current.gridAnimationId)
-      backgroundAnimationsRef.current.gridAnimationId = null
-    }
-    if (backgroundAnimationsRef.current.particlesAnimationId) {
-      cancelAnimationFrame(backgroundAnimationsRef.current.particlesAnimationId)
-      backgroundAnimationsRef.current.particlesAnimationId = null
-    }
-  }, [])
 
   useEffect(() => {
     if (!mountRef.current) return
 
+    console.log('🎯 ThreeSceneManager: Initializing scene for stage', current3DStage)
+    console.log('🎯 Model controls:', modelControls)
+    console.log('🎯 Camera controls:', cameraControls)
+    console.log('🎯 Lighting controls:', lightingControls)
+
     // Scene setup
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(cameraControls.fov, window.innerWidth / window.innerHeight, 0.1, 1000)
+    const camera = new THREE.PerspectiveCamera(
+      cameraControls.fov, 
+      window.innerWidth / window.innerHeight, 
+      cameraControls.near, 
+      cameraControls.far
+    )
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     
     // Store refs
@@ -209,6 +268,97 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     // Initialize texture loader
     textureLoader.current = new THREE.TextureLoader()
     
+    // Create environment map for reflections
+    const createEnvironmentMap = () => {
+      const pmremGenerator = new THREE.PMREMGenerator(renderer)
+      
+      // Create a simple environment map using a cube texture
+      let envMap = null
+      try {
+        const cubeTextureLoader = new THREE.CubeTextureLoader()
+        envMap = cubeTextureLoader.load([
+          '/img/skybox/px.jpg', // positive x
+          '/img/skybox/nx.jpg', // negative x
+          '/img/skybox/py.jpg', // positive y
+          '/img/skybox/ny.jpg', // negative y
+          '/img/skybox/pz.jpg', // positive z
+          '/img/skybox/nz.jpg'  // negative z
+        ])
+        
+        // Configure the cubemap to prevent WebGL errors
+        if (envMap) {
+          envMap.format = THREE.RGBAFormat
+          envMap.type = THREE.UnsignedByteType
+          envMap.generateMipmaps = false
+          envMap.minFilter = THREE.LinearFilter
+          envMap.magFilter = THREE.LinearFilter
+          envMap.wrapS = THREE.ClampToEdgeWrapping
+          envMap.wrapT = THREE.ClampToEdgeWrapping
+        }
+      } catch (error) {
+        console.warn('Failed to load skybox textures, using procedural environment:', error)
+      }
+      
+      // If skybox images don't exist, create a procedural environment
+      if (!envMap) {
+        console.log('📦 Creating detailed procedural environment map for reflections')
+        
+        // Create a more detailed environment for better reflections
+        const envGroup = new THREE.Group()
+        
+        // Create a gradient sky sphere
+        const skyGeometry = new THREE.SphereGeometry(100, 64, 32)
+        const skyMaterial = new THREE.MeshBasicMaterial({
+          color: 0x87CEEB, // Sky blue
+          side: THREE.BackSide
+        })
+        const skySphere = new THREE.Mesh(skyGeometry, skyMaterial)
+        envGroup.add(skySphere)
+        
+        // Add some clouds for more interesting reflections
+        for (let i = 0; i < 5; i++) {
+          const cloudGeometry = new THREE.SphereGeometry(15 + Math.random() * 10, 16, 8)
+          const cloudMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8
+          })
+          const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial)
+          cloud.position.set(
+            (Math.random() - 0.5) * 200,
+            Math.random() * 50 + 20,
+            (Math.random() - 0.5) * 200
+          )
+          cloud.scale.set(1, 0.5, 1)
+          envGroup.add(cloud)
+        }
+        
+        // Add some ground elements for floor reflections
+        const groundGeometry = new THREE.PlaneGeometry(200, 200)
+        const groundMaterial = new THREE.MeshBasicMaterial({
+          color: 0x90EE90, // Light green
+          side: THREE.DoubleSide
+        })
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial)
+        ground.rotation.x = -Math.PI / 2
+        ground.position.y = -50
+        envGroup.add(ground)
+        
+        scene.add(envGroup)
+        
+        // Generate environment map from the detailed scene
+        const generatedEnvMap = pmremGenerator.fromScene(scene).texture
+        scene.environment = generatedEnvMap
+        
+        // Remove the temporary environment group
+        scene.remove(envGroup)
+      } else {
+        scene.environment = envMap
+      }
+      
+      console.log('✅ Environment map created for reflections')
+    }
+    
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x1a1a1a)
     renderer.shadowMap.enabled = true
@@ -216,99 +366,478 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
     renderer.domElement.style.display = 'block'
-
-    // Add background elements similar to loading component
-    const addBackgroundElements = () => {
-
-      // Create grid pattern with better visual appeal
-      const createGridPattern = () => {
-        const gridSize = 120
-        const gridDivisions = 60
-        const gridGeometry = new THREE.PlaneGeometry(gridSize, gridSize, gridDivisions, gridDivisions)
+    
+    // Add sophisticated focus effect with depth of field and periphery darkening
+    const applyFocusEffect = () => {
+      if (cameraControls.focusDistance && cameraControls.aperture && cameraControls.maxBlur) {
+        const focusDistance = cameraControls.focusDistance
+        const aperture = cameraControls.aperture
+        const maxBlur = cameraControls.maxBlur
+        const bokehScale = cameraControls.bokehScale || 2
+        const darkenPeriphery = cameraControls.darkenPeriphery || 0.3
         
-        // Create grid material with subtle glow
-        const gridMaterial = new THREE.MeshBasicMaterial({
-          color: 0xffffff,
-          transparent: true,
-          opacity: 0.02,
-          wireframe: true,
-          side: THREE.DoubleSide
-        })
+        const canvas = renderer.domElement
+        const parent = canvas.parentNode
         
-        const grid = new THREE.Mesh(gridGeometry, gridMaterial)
-        grid.rotation.x = -Math.PI / 2
-        grid.position.set(0, -25, -60)
+        if (!parent) return
         
-        // Store grid reference for conditional animation
-        backgroundAnimationsRef.current.grid = grid
+        // Remove any existing focus effects
+        const existingWrapper = parent.querySelector('.focus-effect-wrapper')
+        if (existingWrapper) {
+          parent.removeChild(existingWrapper)
+        }
         
-        return grid
-      }
-
-      const grid = createGridPattern()
-      scene.add(grid)
-
-      // Add floating particles for more conceptual feel
-      const createParticleField = () => {
-        const particleCount = 50 // Reduced from 150 to 50 for better performance
-        const particles = new THREE.BufferGeometry()
-        const positions = new Float32Array(particleCount * 3)
-        const colors = new Float32Array(particleCount * 3)
+        // Create wrapper for the focus effect
+        const wrapper = document.createElement('div')
+        wrapper.className = 'focus-effect-wrapper'
+        wrapper.style.position = 'relative'
+        wrapper.style.width = '100%'
+        wrapper.style.height = '100%'
+        wrapper.style.overflow = 'hidden'
         
-        for (let i = 0; i < particleCount; i++) {
-          const i3 = i * 3
-          
-          // Random positions in a large sphere, positioned in the background but visible
-          positions[i3] = (Math.random() - 0.5) * 200
-          positions[i3 + 1] = (Math.random() - 0.5) * 200
-          positions[i3 + 2] = (Math.random() - 0.5) * 150 - 60
-          
-          // Random colors with blue/purple theme
-          const colorChoice = Math.random()
-          if (colorChoice < 0.3) {
-            colors[i3] = 0.2     // R
-            colors[i3 + 1] = 0.4 // G
-            colors[i3 + 2] = 0.8 // B
-          } else if (colorChoice < 0.6) {
-            colors[i3] = 0.5     // R
-            colors[i3 + 1] = 0.2 // G
-            colors[i3 + 2] = 0.8 // B
-          } else {
-            colors[i3] = 0.8     // R
-            colors[i3 + 1] = 0.3 // G
-            colors[i3 + 2] = 0.6 // B
+        // Create the blurred background layer
+        const blurredLayer = document.createElement('canvas')
+        blurredLayer.width = canvas.width
+        blurredLayer.height = canvas.height
+        blurredLayer.style.position = 'absolute'
+        blurredLayer.style.top = '0'
+        blurredLayer.style.left = '0'
+        blurredLayer.style.width = '100%'
+        blurredLayer.style.height = '100%'
+        blurredLayer.style.filter = `blur(${maxBlur * 30}px)`
+        blurredLayer.style.transform = 'scale(1.1)' // Slight scale to avoid edge artifacts
+        
+        // Create the sharp foreground layer (center focus)
+        const sharpLayer = document.createElement('canvas')
+        sharpLayer.width = canvas.width
+        sharpLayer.height = canvas.height
+        sharpLayer.style.position = 'absolute'
+        sharpLayer.style.top = '0'
+        sharpLayer.style.left = '0'
+        sharpLayer.style.width = '100%'
+        sharpLayer.style.height = '100%'
+        
+        // Create radial mask for the sharp layer
+        const mask = document.createElement('div')
+        mask.style.position = 'absolute'
+        mask.style.top = '0'
+        mask.style.left = '0'
+        mask.style.width = '100%'
+        mask.style.height = '100%'
+        mask.style.background = `radial-gradient(circle at center, 
+          transparent 0%, 
+          transparent 30%, 
+          rgba(0,0,0,0.05) 50%, 
+          rgba(0,0,0,${darkenPeriphery}) 70%, 
+          rgba(0,0,0,${darkenPeriphery + 0.1}) 100%)`
+        mask.style.pointerEvents = 'none'
+        mask.style.zIndex = '3'
+        
+        // Create the sharp area mask (inverted)
+        const sharpMask = document.createElement('div')
+        sharpMask.style.position = 'absolute'
+        sharpMask.style.top = '0'
+        sharpMask.style.left = '0'
+        sharpMask.style.width = '100%'
+        sharpMask.style.height = '100%'
+        sharpMask.style.background = `radial-gradient(circle at center, 
+          rgba(255,255,255,1) 0%, 
+          rgba(255,255,255,1) 30%, 
+          rgba(255,255,255,0.8) 40%, 
+          rgba(255,255,255,0) 50%, 
+          rgba(255,255,255,0) 100%)`
+        sharpMask.style.pointerEvents = 'none'
+        sharpMask.style.zIndex = '2'
+        sharpMask.style.mixBlendMode = 'multiply'
+        
+        // Function to copy canvas content
+        const copyCanvasContent = () => {
+          const ctx = blurredLayer.getContext('2d')
+          const sharpCtx = sharpLayer.getContext('2d')
+          if (ctx && sharpCtx) {
+            ctx.drawImage(canvas, 0, 0)
+            sharpCtx.drawImage(canvas, 0, 0)
           }
         }
         
-        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-        particles.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+        // Initial copy
+        copyCanvasContent()
         
-        const particleMaterial = new THREE.PointsMaterial({
-          size: 0.5,
-          transparent: true,
-          opacity: 0.6,
-          vertexColors: true,
-          blending: THREE.AdditiveBlending
-        })
+        // Set up the layers
+        wrapper.appendChild(blurredLayer)
+        wrapper.appendChild(sharpLayer)
+        wrapper.appendChild(sharpMask)
+        wrapper.appendChild(mask)
         
-        const particleSystem = new THREE.Points(particles, particleMaterial)
+        // Replace the original canvas with our wrapper
+        parent.insertBefore(wrapper, canvas)
+        wrapper.appendChild(canvas)
         
-        // Store particles reference for conditional animation
-        backgroundAnimationsRef.current.particles = particleSystem
+        // Hide the original canvas and show our composite
+        canvas.style.position = 'absolute'
+        canvas.style.top = '0'
+        canvas.style.left = '0'
+        canvas.style.width = '100%'
+        canvas.style.height = '100%'
+        canvas.style.zIndex = '1'
         
-        return particleSystem
+        // Update the blurred layer on each render
+        const originalRender = rendererRef.current?.render
+        if (originalRender && rendererRef.current) {
+          rendererRef.current.render = function(scene: THREE.Scene, camera: THREE.Camera) {
+            originalRender.call(this, scene, camera)
+            copyCanvasContent()
+          }
+        }
       }
-
-      const particles = createParticleField()
-      scene.add(particles)
-
-
-      // Add enhanced fog for depth and atmosphere
-      scene.fog = new THREE.Fog(0x1a1a1a, 15, 80)
     }
+    
+    // Apply focus effect
+    applyFocusEffect()
 
-    // Add background elements
-    addBackgroundElements()
+    // Create environment map for reflections
+    createEnvironmentMap()
+
+    // No fog effect - completely clear scene
+    
+       // Create a complete room environment
+       const createRoomEnvironment = () => {
+         console.log('🏠 Creating room environment')
+         
+        // Create realistic wall materials
+        const createWallMaterial = () => {
+          const canvas = document.createElement('canvas')
+          canvas.width = 2048
+          canvas.height = 2048
+          const context = canvas.getContext('2d')
+          
+          if (context) {
+            // Create a warm, realistic wall color gradient
+            const gradient = context.createLinearGradient(0, 0, 0, canvas.height)
+            gradient.addColorStop(0, '#f5f1eb') // Warm cream at top
+            gradient.addColorStop(0.2, '#ede7dc') // Light beige
+            gradient.addColorStop(0.5, '#e6ddd4') // Medium beige
+            gradient.addColorStop(0.8, '#ddd4c7') // Darker beige
+            gradient.addColorStop(1, '#d4c9ba') // Warm brown at bottom
+            
+            context.fillStyle = gradient
+            context.fillRect(0, 0, canvas.width, canvas.height)
+            
+            // Add realistic wall texture patterns
+            context.fillStyle = 'rgba(200, 190, 180, 0.1)'
+            
+            // Add subtle vertical lines (wall seams)
+            for (let x = 0; x < canvas.width; x += 200) {
+              context.fillRect(x, 0, 2, canvas.height)
+            }
+            
+            // Add horizontal lines (wall panels)
+            for (let y = 0; y < canvas.height; y += 300) {
+              context.fillRect(0, y, canvas.width, 1)
+            }
+            
+            // Add subtle noise and texture
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+            const data = imageData.data
+            
+            for (let i = 0; i < data.length; i += 4) {
+              // Add fine noise for texture
+              const noise = (Math.random() - 0.5) * 12
+              data[i] = Math.max(0, Math.min(255, data[i] + noise))
+              data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
+              data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
+              
+              // Add occasional darker spots (imperfections)
+              if (Math.random() < 0.01) {
+                data[i] = Math.max(0, data[i] - 20)
+                data[i + 1] = Math.max(0, data[i + 1] - 20)
+                data[i + 2] = Math.max(0, data[i + 2] - 20)
+              }
+            }
+            
+            context.putImageData(imageData, 0, 0)
+            
+            const wallTexture = new THREE.CanvasTexture(canvas)
+            wallTexture.wrapS = THREE.RepeatWrapping
+            wallTexture.wrapT = THREE.RepeatWrapping
+            wallTexture.repeat.set(2, 2) // Repeat for larger walls
+            wallTexture.generateMipmaps = false
+            wallTexture.minFilter = THREE.LinearFilter
+            wallTexture.magFilter = THREE.LinearFilter
+            wallTexture.anisotropy = 16
+            
+            // Create normal map for surface detail
+            const normalCanvas = document.createElement('canvas')
+            normalCanvas.width = 512
+            normalCanvas.height = 512
+            const normalContext = normalCanvas.getContext('2d')
+            
+            if (normalContext) {
+              // Create a subtle normal map
+              const normalGradient = normalContext.createLinearGradient(0, 0, 0, normalCanvas.height)
+              normalGradient.addColorStop(0, '#8080ff')
+              normalGradient.addColorStop(0.5, '#8080ff')
+              normalGradient.addColorStop(1, '#8080ff')
+              
+              normalContext.fillStyle = normalGradient
+              normalContext.fillRect(0, 0, normalCanvas.width, normalCanvas.height)
+              
+              // Add subtle normal variations
+              const normalImageData = normalContext.getImageData(0, 0, normalCanvas.width, normalCanvas.height)
+              const normalData = normalImageData.data
+              
+              for (let i = 0; i < normalData.length; i += 4) {
+                const variation = (Math.random() - 0.5) * 20
+                normalData[i] = Math.max(0, Math.min(255, 128 + variation))
+                normalData[i + 1] = Math.max(0, Math.min(255, 128 + variation))
+                normalData[i + 2] = Math.max(0, Math.min(255, 255 + variation))
+              }
+              
+              normalContext.putImageData(normalImageData, 0, 0)
+              
+              const normalTexture = new THREE.CanvasTexture(normalCanvas)
+              normalTexture.wrapS = THREE.RepeatWrapping
+              normalTexture.wrapT = THREE.RepeatWrapping
+              normalTexture.repeat.set(2, 2)
+              normalTexture.generateMipmaps = false
+              normalTexture.minFilter = THREE.LinearFilter
+              normalTexture.magFilter = THREE.LinearFilter
+              
+              return new THREE.MeshPhysicalMaterial({
+                map: wallTexture,
+                normalMap: normalTexture,
+                normalScale: new THREE.Vector2(0.3, 0.3),
+                roughness: 0.8,
+                metalness: 0.0,
+                transparent: false,
+                opacity: 1,
+                side: THREE.DoubleSide
+              })
+            }
+            
+            return new THREE.MeshPhysicalMaterial({
+              map: wallTexture,
+              roughness: 0.8,
+              metalness: 0.0,
+              transparent: false,
+              opacity: 1,
+              side: THREE.DoubleSide
+            })
+          } else {
+            return new THREE.MeshPhysicalMaterial({
+              color: 0xe6ddd4,
+              roughness: 0.8,
+              metalness: 0.0,
+              transparent: false,
+              opacity: 1,
+              side: THREE.DoubleSide
+            })
+          }
+        }
+
+         // Create realistic floor material
+         const createFloorMaterial = () => {
+           const canvas = document.createElement('canvas')
+           canvas.width = 1024
+           canvas.height = 1024
+           const context = canvas.getContext('2d')
+           
+           if (context) {
+             // Create a warm wood-like floor gradient
+             const gradient = context.createLinearGradient(0, 0, 0, canvas.height)
+             gradient.addColorStop(0, '#f4f1ed') // Light wood
+             gradient.addColorStop(0.3, '#ede6dc') // Medium wood
+             gradient.addColorStop(0.7, '#e0d5c7') // Darker wood
+             gradient.addColorStop(1, '#d4c4b0') // Dark wood
+             
+             context.fillStyle = gradient
+             context.fillRect(0, 0, canvas.width, canvas.height)
+             
+             // Add wood grain pattern
+             context.strokeStyle = 'rgba(180, 160, 140, 0.3)'
+             context.lineWidth = 1
+             
+             // Vertical wood grain lines
+             for (let x = 0; x < canvas.width; x += 20) {
+               context.beginPath()
+               context.moveTo(x + Math.random() * 5, 0)
+               context.lineTo(x + Math.random() * 5, canvas.height)
+               context.stroke()
+             }
+             
+             // Horizontal wood planks
+             for (let y = 0; y < canvas.height; y += 80) {
+               context.strokeStyle = 'rgba(160, 140, 120, 0.4)'
+               context.lineWidth = 2
+               context.beginPath()
+               context.moveTo(0, y)
+               context.lineTo(canvas.width, y)
+               context.stroke()
+             }
+             
+             // Add subtle noise and texture
+             const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+             const data = imageData.data
+             
+             for (let i = 0; i < data.length; i += 4) {
+               // Add fine noise for wood texture
+               const noise = (Math.random() - 0.5) * 8
+               data[i] = Math.max(0, Math.min(255, data[i] + noise))
+               data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
+               data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
+               
+               // Add occasional wood knots
+               if (Math.random() < 0.005) {
+                 data[i] = Math.max(0, data[i] - 30)
+                 data[i + 1] = Math.max(0, data[i + 1] - 30)
+                 data[i + 2] = Math.max(0, data[i + 2] - 30)
+               }
+             }
+             
+             context.putImageData(imageData, 0, 0)
+             
+             const floorTexture = new THREE.CanvasTexture(canvas)
+             floorTexture.wrapS = THREE.RepeatWrapping
+             floorTexture.wrapT = THREE.RepeatWrapping
+             floorTexture.repeat.set(3, 3) // Repeat for larger floor
+             floorTexture.generateMipmaps = false
+             floorTexture.minFilter = THREE.LinearFilter
+             floorTexture.magFilter = THREE.LinearFilter
+             floorTexture.anisotropy = 16
+             
+             return new THREE.MeshPhysicalMaterial({
+               map: floorTexture,
+               roughness: 0.6, // Slightly glossy wood
+               metalness: 0.0,
+               transparent: false,
+               opacity: 1,
+               side: THREE.DoubleSide
+             })
+          } else {
+             return new THREE.MeshPhysicalMaterial({
+               color: 0xe0d5c7,
+               roughness: 0.6,
+               metalness: 0.0,
+               transparent: false,
+               opacity: 1,
+               side: THREE.DoubleSide
+             })
+           }
+         }
+
+         const wallMaterial = createWallMaterial()
+         const floorMaterial = createFloorMaterial()
+         
+         // Create ceiling material (lighter than walls)
+         const createCeilingMaterial = () => {
+           const canvas = document.createElement('canvas')
+           canvas.width = 1024
+           canvas.height = 1024
+           const context = canvas.getContext('2d')
+           
+           if (context) {
+             // Create a light ceiling gradient
+             const gradient = context.createLinearGradient(0, 0, 0, canvas.height)
+             gradient.addColorStop(0, '#faf9f7') // Very light cream
+             gradient.addColorStop(0.5, '#f5f3f0') // Light cream
+             gradient.addColorStop(1, '#f0ede8') // Slightly darker cream
+             
+             context.fillStyle = gradient
+             context.fillRect(0, 0, canvas.width, canvas.height)
+             
+             // Add subtle ceiling texture
+             const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+             const data = imageData.data
+             
+             for (let i = 0; i < data.length; i += 4) {
+               const noise = (Math.random() - 0.5) * 6
+               data[i] = Math.max(0, Math.min(255, data[i] + noise))
+               data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
+               data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
+             }
+             
+             context.putImageData(imageData, 0, 0)
+             
+             const ceilingTexture = new THREE.CanvasTexture(canvas)
+             ceilingTexture.wrapS = THREE.RepeatWrapping
+             ceilingTexture.wrapT = THREE.RepeatWrapping
+             ceilingTexture.repeat.set(2, 2)
+             ceilingTexture.generateMipmaps = false
+             ceilingTexture.minFilter = THREE.LinearFilter
+             ceilingTexture.magFilter = THREE.LinearFilter
+             ceilingTexture.anisotropy = 16
+             
+             return new THREE.MeshPhysicalMaterial({
+               map: ceilingTexture,
+               roughness: 0.9, // Matte ceiling
+               metalness: 0.0,
+               transparent: false,
+               opacity: 1,
+               side: THREE.DoubleSide
+             })
+           } else {
+             return new THREE.MeshPhysicalMaterial({
+               color: 0xf5f3f0,
+               roughness: 0.9,
+               metalness: 0.0,
+               transparent: false,
+               opacity: 1,
+               side: THREE.DoubleSide
+             })
+           }
+         }
+         
+         const ceilingMaterial = createCeilingMaterial()
+         
+         // Room dimensions (larger to accommodate furniture)
+         const roomWidth = 25
+         const roomDepth = 20
+         const roomHeight = 20 // Doubled from 10 to 20
+         
+         // 1. Back Wall (behind the furniture)
+         const backWallGeometry = new THREE.PlaneGeometry(roomWidth, roomHeight)
+         const backWall = new THREE.Mesh(backWallGeometry, wallMaterial)
+         backWall.position.set(0, roomHeight/2, -roomDepth/2)
+         scene.add(backWall)
+         console.log('✅ Back wall added to room')
+         
+         // 2. Left Wall
+         const leftWallGeometry = new THREE.PlaneGeometry(roomDepth, roomHeight)
+         const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial)
+         leftWall.position.set(-roomWidth/2, roomHeight/2, 0)
+         leftWall.rotation.y = Math.PI / 2
+         scene.add(leftWall)
+         console.log('✅ Left wall added to room')
+         
+         // 3. Right Wall
+         const rightWallGeometry = new THREE.PlaneGeometry(roomDepth, roomHeight)
+         const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial)
+         rightWall.position.set(roomWidth/2, roomHeight/2, 0)
+         rightWall.rotation.y = -Math.PI / 2
+         scene.add(rightWall)
+         console.log('✅ Right wall added to room')
+         
+         // 4. Floor
+         const floorGeometry = new THREE.PlaneGeometry(roomWidth, roomDepth)
+         const floor = new THREE.Mesh(floorGeometry, floorMaterial)
+         floor.position.set(0, 0, 0)
+         floor.rotation.x = -Math.PI / 2
+         scene.add(floor)
+         console.log('✅ Floor added to room')
+         
+         // 5. Ceiling
+         const ceilingGeometry = new THREE.PlaneGeometry(roomWidth, roomDepth)
+         const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial)
+         ceiling.position.set(0, roomHeight, 0)
+         ceiling.rotation.x = Math.PI / 2
+         scene.add(ceiling)
+         console.log('✅ Ceiling added to room')
+         
+         console.log('✅ Complete room environment created with walls, floor, and ceiling')
+       }
+    
+    // Create room environment
+    createRoomEnvironment()
     
     // Apply z-index container class to the mount element
     mountRef.current.className = 'three-scene-container'
@@ -349,6 +878,134 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     scene.add(spotLight)
     scene.add(directionalLight.target)
     scene.add(spotLight.target)
+    
+    // Force render after lighting is set up
+    requestRender()
+
+    // Load the furniture environment
+    const furnitureLoader = new GLTFLoader()
+    furnitureLoader.load(
+      '/product-3d/Furniture_No-23.glb',
+      (furnitureGltf) => {
+        console.log('✅ Furniture environment loaded successfully:', furnitureGltf)
+        const furniture = furnitureGltf.scene
+        
+        // Position and scale the furniture environment to sit on the floor in front of the back wall
+        furniture.position.set(0, 0, -8) // Move towards the back wall (room depth is 20, so -8 is closer to back wall)
+        furniture.scale.set(1, 1, 1)
+        
+        // Ensure furniture is properly positioned on the floor
+        // Find the lowest point of the furniture and adjust accordingly
+        let minY = Infinity
+        furniture.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            const box = new THREE.Box3().setFromObject(child)
+            const childMinY = box.min.y
+            if (childMinY < minY) {
+              minY = childMinY
+            }
+          }
+        })
+        
+        // Adjust furniture position so the bottom touches the floor
+        if (minY !== Infinity) {
+          furniture.position.y = -minY
+          console.log(`✅ Furniture adjusted to floor level. Min Y was: ${minY}, adjusted to: ${furniture.position.y}`)
+        }
+        
+        // Add the furniture to the scene
+        scene.add(furniture)
+        console.log('✅ Furniture environment added to scene')
+        
+        // Apply reflection materials to mirror surfaces and force material updates for furniture
+        furniture.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.material) {
+            // Check if this might be a mirror surface based on name or material properties
+            const isMirrorSurface = child.name.toLowerCase().includes('mirror') || 
+                                  child.name.toLowerCase().includes('glass') ||
+                                  child.name.toLowerCase().includes('reflection') ||
+                                  (child.material && child.material.name && 
+                                   (child.material.name.toLowerCase().includes('mirror') || 
+                                    child.material.name.toLowerCase().includes('glass')))
+            
+            // Also check for dark/black materials that might be mirrors
+            const isDarkMaterial = child.material.color && 
+                                 (child.material.color.getHex() === 0x000000 || 
+                                  child.material.color.getHex() === 0x1a1a1a ||
+                                  child.material.color.getHex() === 0x333333)
+            
+            // Check for flat surfaces that might be mirrors (based on geometry)
+            const isFlatSurface = child.geometry && 
+                                 child.geometry.boundingBox && 
+                                 (Math.abs(child.geometry.boundingBox.max.y - child.geometry.boundingBox.min.y) < 0.1 ||
+                                  Math.abs(child.geometry.boundingBox.max.x - child.geometry.boundingBox.min.x) < 0.1 ||
+                                  Math.abs(child.geometry.boundingBox.max.z - child.geometry.boundingBox.min.z) < 0.1)
+            
+            // Check for materials with high specular properties that might be mirrors
+            const isSpecularMaterial = child.material && 
+                                     (child.material.specular || 
+                                      (child.material.metalness && child.material.metalness > 0.8) ||
+                                      (child.material.roughness && child.material.roughness < 0.1))
+            
+            if (isMirrorSurface || isDarkMaterial || isFlatSurface || isSpecularMaterial) {
+              console.log('🪞 Found mirror surface:', child.name, 'applying realistic mirror material')
+              console.log('🪞 Detection reasons:', {
+                isMirrorSurface,
+                isDarkMaterial,
+                isFlatSurface,
+                isSpecularMaterial,
+                materialColor: child.material.color ? child.material.color.getHex() : 'no color',
+                materialName: child.material.name || 'unnamed'
+              })
+              
+              // Create a highly realistic mirror material
+              const mirrorMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                metalness: 0.0, // Pure mirror, not metallic
+                roughness: 0.0, // Perfectly smooth surface
+                reflectivity: 1.0, // Maximum reflectivity
+                clearcoat: 1.0, // Perfect clear coating
+                clearcoatRoughness: 0.0, // Perfectly smooth clear coat
+                envMap: scene.environment,
+                envMapIntensity: 2.0, // Enhanced environment reflection
+                transmission: 0.0, // No transmission for pure mirror
+                transparent: false,
+                opacity: 1.0,
+                side: THREE.DoubleSide, // Render both sides for better reflections
+                // Additional properties for realism
+                ior: 1.5, // Index of refraction for glass
+                sheen: 0.0, // No sheen for pure mirror
+                sheenRoughness: 0.0,
+                sheenColor: 0xffffff
+              })
+              
+              // Apply the mirror material
+              child.material = mirrorMaterial
+              console.log('✅ Applied realistic mirror material to:', child.name)
+            }
+            
+            if (Array.isArray(child.material)) {
+              child.material.forEach((mat: THREE.Material) => {
+                mat.needsUpdate = true
+              })
+            } else {
+              child.material.needsUpdate = true
+            }
+            child.updateMatrix()
+            child.updateMatrixWorld(true)
+          }
+        })
+        
+        // Force render after furniture is added
+        requestRender()
+      },
+      (progress) => {
+        console.log('Furniture loading progress:', (progress.loaded / progress.total) * 100 + '%')
+      },
+      (error) => {
+        console.error('❌ Error loading furniture environment:', error)
+      }
+    )
 
     // Load the GLB model
     const loader = new GLTFLoader()
@@ -475,7 +1132,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
                 // Mark this component as mapped for later identification
                 child.userData.isMappedComponent = true
                 
-                // Store original position for animation
+                // Store original position
                 child.userData.originalPosition = {
                   x: child.position.x,
                   y: child.position.y,
@@ -484,7 +1141,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
                 
                 // // Console log removed
                 
-                // Store Upper Cover reference for stage 8 animations
+                // Store Upper Cover reference
                 if (controlKey === 'upperCover') {
                   upperCoverRef.current = child
                   upperCoverOriginalPosition.current = new THREE.Vector3(
@@ -705,15 +1362,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         }
       })
       
-      // Check for animations
-      if (gltf.animations && gltf.animations.length > 0) {
-        // Animations found in the model
-        gltf.animations.forEach((anim, index) => {
-          // Process each animation
-        })
-      } else {
-        // No animations found in the model
-      }
+      // Model loaded without animations (static scene)
       
       // Enable shadows for the model
       model.traverse((child) => {
@@ -737,9 +1386,111 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       scene.add(model)
       console.log('✅ Model added to scene. Scene children count:', scene.children.length)
 
-      // Set initial camera position
+      // Set initial camera position, rotation, and target
       camera.position.set(cameraControls.position.x, cameraControls.position.y, cameraControls.position.z)
+      camera.rotation.set(cameraControls.rotation.x, cameraControls.rotation.y, cameraControls.rotation.z)
+      camera.lookAt(cameraControls.target.x, cameraControls.target.y, cameraControls.target.z)
+      camera.zoom = cameraControls.zoom
       console.log('✅ Camera positioned:', camera.position)
+      console.log('✅ Camera rotation:', camera.rotation)
+      console.log('✅ Camera target:', cameraControls.target)
+      console.log('✅ Camera zoom:', camera.zoom)
+      
+      // Force material and matrix updates
+      model.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          // Update material properties
+          if (Array.isArray(child.material)) {
+            child.material.forEach((mat: THREE.Material) => {
+              mat.needsUpdate = true
+            })
+          } else {
+            child.material.needsUpdate = true
+          }
+          // Update matrices
+          child.updateMatrix()
+          child.updateMatrixWorld(true)
+        }
+      })
+      
+      // Force lighting updates
+      if (ambientLightRef.current) {
+        ambientLightRef.current.intensity = lightingControls.ambientIntensity
+        ambientLightRef.current.color.setHex(parseInt(lightingControls.ambientColor.replace('#', '0x')))
+      }
+      if (directionalLightRef.current) {
+        directionalLightRef.current.intensity = lightingControls.directionalIntensity
+        directionalLightRef.current.color.setHex(parseInt(lightingControls.directionalColor.replace('#', '0x')))
+        directionalLightRef.current.position.set(
+          lightingControls.directionalPosition.x,
+          lightingControls.directionalPosition.y,
+          lightingControls.directionalPosition.z
+        )
+        directionalLightRef.current.target.position.set(
+          lightingControls.directionalTarget.x,
+          lightingControls.directionalTarget.y,
+          lightingControls.directionalTarget.z
+        )
+      }
+      if (pointLightRef.current) {
+        pointLightRef.current.intensity = lightingControls.pointLightIntensity
+        pointLightRef.current.color.setHex(parseInt(lightingControls.pointLightColor.replace('#', '0x')))
+        pointLightRef.current.position.set(
+          lightingControls.pointLightPosition.x,
+          lightingControls.pointLightPosition.y,
+          lightingControls.pointLightPosition.z
+        )
+      }
+      if (spotLightRef.current) {
+        spotLightRef.current.intensity = lightingControls.spotLightIntensity
+        spotLightRef.current.color.setHex(parseInt(lightingControls.spotLightColor.replace('#', '0x')))
+        spotLightRef.current.position.set(
+          lightingControls.spotLightPosition.x,
+          lightingControls.spotLightPosition.y,
+          lightingControls.spotLightPosition.z
+        )
+        spotLightRef.current.target.position.set(
+          lightingControls.spotLightTarget.x,
+          lightingControls.spotLightTarget.y,
+          lightingControls.spotLightTarget.z
+        )
+      }
+      
+      // Force complete scene update
+      scene.updateMatrixWorld(true)
+      camera.updateMatrixWorld(true)
+      model.updateMatrixWorld(true)
+      
+      // Force render after model is added and positioned
+      console.log('✅ Forcing render after model setup with material and lighting updates')
+      requestRender()
+      
+      // Force update all dev controls after model is loaded
+      console.log('✅ Forcing dev control updates after model load')
+      forceDevControlUpdates()
+      
+      // Final render after all control updates
+      console.log('✅ Final render after all control updates')
+      requestRender()
+      
+      // Additional render after a short delay to ensure everything is applied
+      setTimeout(() => {
+        console.log('✅ Final render to ensure all settings are applied')
+        requestRender()
+      }, 200)
+      
+      // One more render after a longer delay to catch any remaining updates
+      setTimeout(() => {
+        console.log('✅ Ultimate final render to guarantee correct display')
+        forceDevControlUpdates()
+        requestRender()
+      }, 500)
+      
+      // Sync dev controls with actual scene values to identify differences
+      setTimeout(() => {
+        console.log('🔍 Checking dev control vs scene value differences')
+        syncDevControlsWithScene()
+      }, 600)
       
       // Function to apply texture to OLED Display
       const applyOLEDTexture = (texturePath: string) => {
@@ -758,6 +1509,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
           texture.flipY = false
           texture.minFilter = THREE.LinearFilter
           texture.magFilter = THREE.LinearFilter
+          texture.generateMipmaps = false
+          texture.format = THREE.RGBAFormat
+          texture.type = THREE.UnsignedByteType
           
           
           // Find ALL objects in the model that might be OLED displays
@@ -915,6 +1669,8 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
               }
             })
           }
+        }, (error: Error) => {
+          console.warn('Failed to load OLED texture:', error)
         })
         
         // Console log removed
@@ -935,6 +1691,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
           texture.flipY = false
           texture.minFilter = THREE.LinearFilter
           texture.magFilter = THREE.LinearFilter
+          texture.generateMipmaps = false
+          texture.format = THREE.RGBAFormat
+          texture.type = THREE.UnsignedByteType
           
           // Find Upper Cover component and apply texture
           const upperCoverComponent = componentRefs.current.get('upperCover')
@@ -1024,6 +1783,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
           texture.flipY = false
           texture.minFilter = THREE.LinearFilter
           texture.magFilter = THREE.LinearFilter
+          texture.generateMipmaps = false
+          texture.format = THREE.RGBAFormat
+          texture.type = THREE.UnsignedByteType
           
           // Find Lower Side Main component and apply texture
           const lowerSideMainComponent = componentRefs.current.get('lowerSideMain')
@@ -1126,6 +1888,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         texture.wrapS = THREE.RepeatWrapping
         texture.wrapT = THREE.RepeatWrapping
         texture.flipY = false
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
         texture.minFilter = THREE.LinearFilter
         texture.magFilter = THREE.LinearFilter
         
@@ -1283,6 +2048,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         texture.wrapS = THREE.RepeatWrapping
         texture.wrapT = THREE.RepeatWrapping
         texture.flipY = false
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
         texture.minFilter = THREE.LinearFilter
         texture.magFilter = THREE.LinearFilter
         
@@ -1440,6 +2208,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         texture.wrapS = THREE.RepeatWrapping
         texture.wrapT = THREE.RepeatWrapping
         texture.flipY = false
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
         texture.minFilter = THREE.LinearFilter
         texture.magFilter = THREE.LinearFilter
         
@@ -1597,6 +2368,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         texture.wrapS = THREE.RepeatWrapping
         texture.wrapT = THREE.RepeatWrapping
         texture.flipY = false
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
         texture.minFilter = THREE.LinearFilter
         texture.magFilter = THREE.LinearFilter
         
@@ -2008,9 +2782,8 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       onLoadingComplete?.()
     })
 
-    // Initial render
-    console.log('✅ Requesting initial render')
-    requestRender()
+    // Skip initial render - will render after model is loaded and controls are applied
+    console.log('⏸️ Skipping initial render - will render after model load')
 
     // Handle window resize
     const handleResize = () => {
@@ -2027,20 +2800,19 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     return () => {
       window.removeEventListener('resize', handleResize)
       
-      // Stop all animations
+      // Stop rendering
       stopRendering()
-      stopBackgroundAnimations()
       
-      // Cancel any pending animation frames
-      if (stage8OpenAnimationRef.current) {
-        cancelAnimationFrame(stage8OpenAnimationRef.current)
-      }
-      if (stage8CloseAnimationRef.current) {
-        cancelAnimationFrame(stage8CloseAnimationRef.current)
-      }
-      
-      if (mountRef.current && rendererRef.current && mountRef.current.contains(rendererRef.current.domElement)) {
-        mountRef.current.removeChild(rendererRef.current.domElement)
+      if (mountRef.current && rendererRef.current && rendererRef.current.domElement) {
+        try {
+          // Check if the element is still in the DOM and is a child of mountRef
+          if (mountRef.current.contains(rendererRef.current.domElement)) {
+            mountRef.current.removeChild(rendererRef.current.domElement)
+          }
+        } catch (error) {
+          // Silently handle the error - the element may have already been removed
+          // This is common in React's StrictMode or when components unmount quickly
+        }
       }
       if (rendererRef.current) {
         rendererRef.current.dispose()
@@ -2077,7 +2849,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     }
   }, [])
 
-  // Force updates when model controls change or during animation
+  // Force updates when model controls change
   useEffect(() => {
     if (modelRef.current) {
       const model = modelRef.current
@@ -2100,38 +2872,182 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       }
       requestRender()
     } else {
-      console.log(`ThreeSceneManager: modelRef.current is null, cannot update model controls`)
+      console.log(`ThreeSceneManager: modelRef.current is null, cannot update model controls - will retry when model loads`)
     }
   }, [modelControls.scale.x, modelControls.scale.y, modelControls.scale.z, modelControls.position.x, modelControls.position.y, modelControls.position.z, modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z, requestRender])
 
-  // Conditional background animations - only run when 3D scene is active
-  useEffect(() => {
-    if (current3DStage >= 1 && current3DStage <= 8) {
-      startBackgroundAnimations()
-    } else {
-      stopBackgroundAnimations()
-    }
-  }, [current3DStage, startBackgroundAnimations, stopBackgroundAnimations])
 
-  // Force updates when camera controls change or during animation
+  // Force updates when camera controls change
   useEffect(() => {
     if (cameraRef.current) {
       const camera = cameraRef.current
-      const { position, fov } = cameraControls
+      const { position, rotation, target, fov, near, far, zoom } = cameraControls
       
       // Only update if values have actually changed
       if (camera.position.x !== position.x || camera.position.y !== position.y || camera.position.z !== position.z) {
         camera.position.set(position.x, position.y, position.z)
       }
-      if (camera.fov !== fov) {
+      
+      if (camera.rotation.x !== rotation.x || camera.rotation.y !== rotation.y || camera.rotation.z !== rotation.z) {
+        camera.rotation.set(rotation.x, rotation.y, rotation.z)
+      }
+      
+      if (camera.lookAt) {
+        camera.lookAt(target.x, target.y, target.z)
+      }
+      
+      if (camera.fov !== fov || camera.near !== near || camera.far !== far) {
         camera.fov = fov
+        camera.near = near
+        camera.far = far
         camera.updateProjectionMatrix()
       }
+      
+      if (camera.zoom !== zoom) {
+        camera.zoom = zoom
+        camera.updateProjectionMatrix()
+      }
+      
+      // Reapply focus effect when focus parameters change
+      if (cameraControls.focusDistance && cameraControls.aperture && cameraControls.maxBlur) {
+        const applyFocusEffect = () => {
+          const focusDistance = cameraControls.focusDistance
+          const aperture = cameraControls.aperture
+          const maxBlur = cameraControls.maxBlur
+          const bokehScale = cameraControls.bokehScale || 2
+          const darkenPeriphery = cameraControls.darkenPeriphery || 0.3
+          
+          const canvas = rendererRef.current?.domElement
+          const parent = canvas?.parentNode
+          
+          if (!canvas || !parent) return
+          
+          // Remove any existing focus effects
+          const existingWrapper = parent.querySelector('.focus-effect-wrapper')
+          if (existingWrapper) {
+            parent.removeChild(existingWrapper)
+          }
+          
+          // Create wrapper for the focus effect
+          const wrapper = document.createElement('div')
+          wrapper.className = 'focus-effect-wrapper'
+          wrapper.style.position = 'relative'
+          wrapper.style.width = '100%'
+          wrapper.style.height = '100%'
+          wrapper.style.overflow = 'hidden'
+          
+          // Create the blurred background layer
+          const blurredLayer = document.createElement('canvas')
+          blurredLayer.width = canvas.width
+          blurredLayer.height = canvas.height
+          blurredLayer.style.position = 'absolute'
+          blurredLayer.style.top = '0'
+          blurredLayer.style.left = '0'
+          blurredLayer.style.width = '100%'
+          blurredLayer.style.height = '100%'
+          blurredLayer.style.filter = `blur(${(maxBlur ?? 0.01) * 30}px)`
+          blurredLayer.style.transform = 'scale(1.1)'
+          
+          // Create the sharp foreground layer (center focus)
+          const sharpLayer = document.createElement('canvas')
+          sharpLayer.width = canvas.width
+          sharpLayer.height = canvas.height
+          sharpLayer.style.position = 'absolute'
+          sharpLayer.style.top = '0'
+          sharpLayer.style.left = '0'
+          sharpLayer.style.width = '100%'
+          sharpLayer.style.height = '100%'
+          
+          // Create radial mask for the sharp layer
+          const mask = document.createElement('div')
+          mask.style.position = 'absolute'
+          mask.style.top = '0'
+          mask.style.left = '0'
+          mask.style.width = '100%'
+          mask.style.height = '100%'
+          mask.style.background = `radial-gradient(circle at center, 
+            transparent 0%, 
+            transparent 30%, 
+            rgba(0,0,0,0.05) 50%, 
+            rgba(0,0,0,${darkenPeriphery}) 70%, 
+            rgba(0,0,0,${darkenPeriphery + 0.1}) 100%)`
+          mask.style.pointerEvents = 'none'
+          mask.style.zIndex = '3'
+          
+          // Create the sharp area mask (inverted)
+          const sharpMask = document.createElement('div')
+          sharpMask.style.position = 'absolute'
+          sharpMask.style.top = '0'
+          sharpMask.style.left = '0'
+          sharpMask.style.width = '100%'
+          sharpMask.style.height = '100%'
+          sharpMask.style.background = `radial-gradient(circle at center, 
+            rgba(255,255,255,1) 0%, 
+            rgba(255,255,255,1) 30%, 
+            rgba(255,255,255,0.8) 40%, 
+            rgba(255,255,255,0) 50%, 
+            rgba(255,255,255,0) 100%)`
+          sharpMask.style.pointerEvents = 'none'
+          sharpMask.style.zIndex = '2'
+          sharpMask.style.mixBlendMode = 'multiply'
+          
+          // Function to copy canvas content
+          const copyCanvasContent = () => {
+            const ctx = blurredLayer.getContext('2d')
+            const sharpCtx = sharpLayer.getContext('2d')
+            if (ctx && sharpCtx) {
+              ctx.drawImage(canvas, 0, 0)
+              sharpCtx.drawImage(canvas, 0, 0)
+            }
+          }
+          
+          // Initial copy
+          copyCanvasContent()
+          
+          // Set up the layers
+          wrapper.appendChild(blurredLayer)
+          wrapper.appendChild(sharpLayer)
+          wrapper.appendChild(sharpMask)
+          wrapper.appendChild(mask)
+          
+          // Replace the original canvas with our wrapper
+          parent.insertBefore(wrapper, canvas)
+          wrapper.appendChild(canvas)
+          
+          // Hide the original canvas and show our composite
+          canvas.style.position = 'absolute'
+          canvas.style.top = '0'
+          canvas.style.left = '0'
+          canvas.style.width = '100%'
+          canvas.style.height = '100%'
+          canvas.style.zIndex = '1'
+          
+          // Update the blurred layer on each render
+          const originalRender = rendererRef.current?.render
+          if (originalRender && rendererRef.current) {
+            rendererRef.current.render = function(scene: THREE.Scene, camera: THREE.Camera) {
+              originalRender.call(this, scene, camera)
+              copyCanvasContent()
+            }
+          }
+        }
+        
+        applyFocusEffect()
+      }
+      
       requestRender()
     }
-  }, [cameraControls.position.x, cameraControls.position.y, cameraControls.position.z, cameraControls.fov, requestRender])
+  }, [
+    cameraControls.position.x, cameraControls.position.y, cameraControls.position.z,
+    cameraControls.rotation.x, cameraControls.rotation.y, cameraControls.rotation.z,
+    cameraControls.target.x, cameraControls.target.y, cameraControls.target.z,
+    cameraControls.fov, cameraControls.near, cameraControls.far, cameraControls.zoom,
+    cameraControls.focusDistance, cameraControls.aperture, cameraControls.maxBlur,
+    cameraControls.bokehScale, cameraControls.darkenPeriphery,
+    requestRender
+  ])
 
-  // Force updates when lighting controls change or during animation
+  // Force updates when lighting controls change
   useEffect(() => {
     // Ambient light
     if (ambientLightRef.current) {
@@ -2333,16 +3249,8 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     }
   }, [componentControls, categoryVisibility, requestRender])
 
-  // Control background animations based on animation state
-  useEffect(() => {
-    if (isAnimating || is3DAnimating) {
-      startBackgroundAnimations()
-    } else {
-      stopBackgroundAnimations()
-    }
-  }, [isAnimating, is3DAnimating, startBackgroundAnimations, stopBackgroundAnimations])
 
-  // Apply visibility changes in Stage 4 (separate from position animation)
+  // Apply visibility changes in Stage 4
   useEffect(() => {
     if (current3DStage !== 4 || !modelRef.current || !componentRefs.current.size) return
 
@@ -2402,137 +3310,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
 
 
 
-  // Stage 8 Upper Cover Animation Functions
-  const stage8OpenAnimation = useCallback(() => {
-    if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
-      // console.warn('⚠️ Upper Cover not found for stage-8-open-animation')
-      return
-    }
-
-    // // Console log removed
-    
-    const startTime = Date.now()
-    const duration = 1500 // 1.5 seconds
-    const startZ = upperCoverRef.current.position.z
-    const targetZ = 70
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      
-      // Easing function for smooth animation
-      const easeInOutCubic = (t: number) => {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-      }
-      
-      const easedProgress = easeInOutCubic(progress)
-      const currentZ = startZ + (targetZ - startZ) * easedProgress
-      
-      upperCoverRef.current!.position.z = currentZ
-      upperCoverRef.current!.updateMatrix()
-      upperCoverRef.current!.updateMatrixWorld(true)
-      requestRender()
-      
-      if (progress < 1) {
-        stage8OpenAnimationRef.current = requestAnimationFrame(animate)
-      } else {
-        // // Console log removed
-        stage8OpenAnimationRef.current = null
-      }
-    }
-    
-    stage8OpenAnimationRef.current = requestAnimationFrame(animate)
-  }, [requestRender])
-
-  const stage8CloseAnimation = useCallback(() => {
-    if (!upperCoverRef.current || !upperCoverOriginalPosition.current) {
-      // console.warn('⚠️ Upper Cover not found for stage-8-close-animation')
-      return
-    }
-
-    // // Console log removed
-    
-    const startTime = Date.now()
-    const duration = 500 // 0.5 seconds
-    const startZ = upperCoverRef.current.position.z
-    const targetZ = upperCoverOriginalPosition.current.z
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      
-      // Easing function for smooth animation
-      const easeInOutCubic = (t: number) => {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-      }
-      
-      const easedProgress = easeInOutCubic(progress)
-      const currentZ = startZ + (targetZ - startZ) * easedProgress
-      
-      upperCoverRef.current!.position.z = currentZ
-      upperCoverRef.current!.updateMatrix()
-      upperCoverRef.current!.updateMatrixWorld(true)
-      requestRender()
-      
-      if (progress < 1) {
-        stage8CloseAnimationRef.current = requestAnimationFrame(animate)
-      } else {
-        // // Console log removed
-        stage8CloseAnimationRef.current = null
-      }
-    }
-    
-    stage8CloseAnimationRef.current = requestAnimationFrame(animate)
-  }, [requestRender])
-
-  // Store animation functions in a ref for external access
-  const animationFunctionsRef = useRef({
-    stage8OpenAnimation,
-    stage8CloseAnimation
-  })
-
-  // Update the ref when functions change and notify parent
-  useEffect(() => {
-    animationFunctionsRef.current = {
-      stage8OpenAnimation,
-      stage8CloseAnimation
-    }
-    
-    // Notify parent component that animation functions are ready
-    if (onAnimationFunctionsReady) {
-      onAnimationFunctionsReady({
-        stage8OpenAnimation,
-        stage8CloseAnimation
-      })
-    }
-  }, [onAnimationFunctionsReady])
-
-
-  // OLED Display texture is now applied immediately when model loads
-  // No need for stage-based application
-
-  // Stage 8 Upper Cover Animations
-  useEffect(() => {
-    if (current3DStage === 8) {
-      // // Console log removed
-      // Cancel any existing close animation
-      if (stage8CloseAnimationRef.current) {
-        cancelAnimationFrame(stage8CloseAnimationRef.current)
-        stage8CloseAnimationRef.current = null
-      }
-      // Start open animation
-      stage8OpenAnimation()
-    } else if (current3DStage !== 8 && upperCoverRef.current) {
-      // // Console log removed
-      // Cancel any existing open animation
-      if (stage8OpenAnimationRef.current) {
-        cancelAnimationFrame(stage8OpenAnimationRef.current)
-        stage8OpenAnimationRef.current = null
-      }
-      // Start close animation
-      stage8CloseAnimation()
-    }
-  }, [current3DStage])
+  // Static scene - no animations
 
   return null // This component doesn't render anything directly
 })

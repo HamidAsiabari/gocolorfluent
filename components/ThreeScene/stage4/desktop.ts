@@ -9,7 +9,12 @@ export const stage4DesktopConfig: StageConfig = {
   },
   camera: {
     position: { x: 0.6, y: 0.3, z: 5.6 },
-    fov: 75
+    rotation: { x: 0, y: 0, z: 0 },
+    target: { x: 0, y: 0, z: 0 },
+    fov: 75,
+    near: 0.1,
+    far: 1000,
+    zoom: 1
   },
   lighting: {
     ambientIntensity: 2.3,

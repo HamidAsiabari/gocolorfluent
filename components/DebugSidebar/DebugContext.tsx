@@ -12,7 +12,17 @@ interface ModelControls {
 
 interface CameraControls {
   position: { x: number; y: number; z: number }
+  rotation: { x: number; y: number; z: number }
+  target: { x: number; y: number; z: number }
   fov: number
+  near: number
+  far: number
+  zoom: number
+  focusDistance?: number
+  aperture?: number
+  maxBlur?: number
+  bokehScale?: number
+  darkenPeriphery?: number
 }
 
 interface LightingControls {

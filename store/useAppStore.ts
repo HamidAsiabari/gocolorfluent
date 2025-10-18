@@ -12,7 +12,17 @@ export interface ModelControls {
 
 export interface CameraControls {
   position: { x: number; y: number; z: number }
+  rotation: { x: number; y: number; z: number }
+  target: { x: number; y: number; z: number }
   fov: number
+  near: number
+  far: number
+  zoom: number
+  focusDistance?: number
+  aperture?: number
+  maxBlur?: number
+  bokehScale?: number
+  darkenPeriphery?: number
 }
 
 export interface LightingControls {
@@ -121,7 +131,15 @@ const defaultModelControls: ModelControls = {
 
 const defaultCameraControls: CameraControls = {
   position: { x: 0, y: 0, z: 8 },
-  fov: 120
+  rotation: { x: 0, y: 0, z: 0 },
+  target: { x: 0, y: 0, z: 0 },
+  fov: 75,
+  near: 0.1,
+  far: 1000,
+  zoom: 1,
+  focusDistance: 10,
+  aperture: 0.1,
+  maxBlur: 0.01
 }
 
 const defaultLightingControls: LightingControls = {
@@ -291,7 +309,7 @@ export const useAppStore = create<AppState>()(
           // Return a default stage config if not found
           return {
             model: { position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
-            camera: { position: { x: 0, y: 0, z: 5 }, fov: 75 },
+            camera: { position: { x: 0, y: 0, z: 5 }, rotation: { x: 0, y: 0, z: 0 }, target: { x: 0, y: 0, z: 0 }, fov: 75, near: 0.1, far: 1000, zoom: 1 },
             lighting: { ambientIntensity: 1, ambientColor: '#ffffff', directionalIntensity: 1, directionalColor: '#ffffff', directionalPosition: { x: 0, y: 0, z: 0 }, directionalTarget: { x: 0, y: 0, z: 0 }, pointLightIntensity: 0, pointLightColor: '#ffffff', pointLightPosition: { x: 0, y: 0, z: 0 }, pointLightDistance: 10, spotLightIntensity: 0, spotLightColor: '#ffffff', spotLightPosition: { x: 0, y: 0, z: 0 }, spotLightTarget: { x: 0, y: 0, z: 0 }, spotLightDistance: 10, spotLightAngle: 30, spotLightPenumbra: 0, shadowsEnabled: false, shadowMapSize: 1024, shadowBias: 0 }
           }
         }
@@ -353,7 +371,7 @@ const serverSnapshot: AppState = {
   isClient: false,
   
   // 3D Scene states
-  current3DStage: 1,
+  current3DStage: 0,
   stage3DAnimationProgress: 0,
   is3DAnimating: false,
   isAnimating: false,

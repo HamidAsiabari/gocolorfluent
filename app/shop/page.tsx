@@ -8,37 +8,74 @@ import Footer from '../../components/Footer'
 
 export default function Shop() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [selectedProduct, setSelectedProduct] = useState(0)
   
-  const product = {
-    id: 'color-fluent-device',
-    name: 'Color Fluent Smart Hair Coloring Device',
-    price: 399,
-    originalPrice: 499,
-    discount: 20,
-    description: 'The revolutionary smart hair coloring device that brings salon-quality results to your home. Features intelligent color matching, guided application, and seamless app integration.',
-    features: [
-      'Smart color detection and matching',
-      'Guided step-by-step application',
-      'Wi-Fi connectivity for updates',
-      'Customizable color profiles',
-      'Professional-grade precision',
-      'Easy cleanup and maintenance'
-    ],
-    specifications: {
-      'Battery Life': 'Up to 2 hours continuous use',
-      'Charging Time': '3 hours for full charge',
-      'Connectivity': 'Wi-Fi 802.11 b/g/n',
-      'Weight': '1.2 lbs (0.54 kg)',
-      'Dimensions': '8.5" x 3.2" x 2.1"',
-      'Warranty': '2 years manufacturer warranty'
+  const products = [
+    {
+      id: 'color-fluent-device-standard',
+      name: 'Color Fluent Smart Hair Coloring Device',
+      price: 99,
+      originalPrice: 149,
+      discount: 33,
+      description: 'The essential smart hair coloring device that brings salon-quality results to your home. Features intelligent color matching and guided application.',
+      features: [
+        'Smart color detection and matching',
+        'Guided step-by-step application',
+        'Basic color profiles',
+        'Professional-grade precision',
+        'Easy cleanup and maintenance'
+      ],
+      specifications: {
+        'Battery Life': 'Up to 1.5 hours continuous use',
+        'Charging Time': '2.5 hours for full charge',
+        'Connectivity': 'Bluetooth 5.0',
+        'Weight': '1.0 lbs (0.45 kg)',
+        'Dimensions': '8.0" x 3.0" x 2.0"',
+        'Warranty': '1 year manufacturer warranty'
+      },
+      stock: 0, // Currently out of stock
+      images: [
+        '/shop/1.png',
+        '/shop/2.png',
+        '/shop/3.png'
+      ]
     },
-    stock: 0, // Currently out of stock
-    images: [
-      '/shop/1.png',
-      '/shop/2.png',
-      '/shop/3.png'
-    ]
-  }
+    {
+      id: 'color-fluent-device-pro',
+      name: 'Color Fluent Smart Hair Coloring Device PRO',
+      price: 399,
+      originalPrice: 499,
+      discount: 20,
+      description: 'The revolutionary smart hair coloring device that brings salon-quality results to your home. Features intelligent color matching, guided application, and seamless app integration.',
+      features: [
+        'Smart color detection and matching',
+        'Guided step-by-step application',
+        'Wi-Fi connectivity for updates',
+        'Customizable color profiles',
+        'Professional-grade precision',
+        'Easy cleanup and maintenance',
+        'Advanced AI color analysis',
+        'Cloud sync capabilities',
+        'Premium materials'
+      ],
+      specifications: {
+        'Battery Life': 'Up to 2 hours continuous use',
+        'Charging Time': '3 hours for full charge',
+        'Connectivity': 'Wi-Fi 802.11 b/g/n + Bluetooth 5.0',
+        'Weight': '1.2 lbs (0.54 kg)',
+        'Dimensions': '8.5" x 3.2" x 2.1"',
+        'Warranty': '2 years manufacturer warranty'
+      },
+      stock: 0, // Currently out of stock
+      images: [
+        '/shop/1.png',
+        '/shop/2.png',
+        '/shop/3.png'
+      ]
+    }
+  ]
+
+  const product = products[selectedProduct]
 
   const isOutOfStock = product.stock === 0
 
@@ -49,6 +86,63 @@ export default function Shop() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" style={{ paddingTop: '190px' }}>
+
+        {/* Product Selector */}
+        <div className="mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white text-center mb-8">
+            Choose Your Color Fluent Device
+          </h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {products.map((prod, index) => (
+              <div
+                key={prod.id}
+                onClick={() => setSelectedProduct(index)}
+                className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-300 ${
+                  selectedProduct === index
+                    ? 'border-logo-bg bg-logo-bg/10'
+                    : 'border-gray-600 bg-black/20 hover:border-gray-500'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-bold text-white">{prod.name}</h3>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-logo-bg">${prod.price}</div>
+                    <div className="text-sm text-gray-400 line-through">${prod.originalPrice}</div>
+                  </div>
+                </div>
+                
+                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                  {prod.description}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    prod.stock > 0 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-red-600 text-white'
+                  }`}>
+                    {prod.stock > 0 ? `In Stock (${prod.stock})` : 'Out of Stock'}
+                  </div>
+                  
+                  <div className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold">
+                    {prod.discount}% OFF
+                  </div>
+                </div>
+                
+                {selectedProduct === index && (
+                  <div className="absolute top-2 right-2">
+                    <div className="w-6 h-6 bg-logo-bg rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Product Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 mb-16">
@@ -163,7 +257,7 @@ export default function Shop() {
                     : 'bg-logo-bg hover:bg-logo-bg/80 text-white hover:scale-105 transform'
                 }`}
               >
-                {isOutOfStock ? 'Out of Stock' : 'Add to Cart - $399'}
+                {isOutOfStock ? 'Out of Stock' : `Add to Cart - $${product.price}`}
               </button>
               
               {!isOutOfStock && (

@@ -53,7 +53,12 @@ export default function Presets({
     })
     setCameraControls({
       position: { x: 0, y: 0, z: 5 },
-      fov: 75
+      rotation: { x: 0, y: 0, z: 0 },
+      target: { x: 0, y: 0, z: 0 },
+      fov: 75,
+      near: 0.1,
+      far: 1000,
+      zoom: 1
     })
     setLightingControls({
       ambientIntensity: 0,
@@ -90,8 +95,13 @@ export default function Presets({
       scale: stage1Config.model.scale
     })
     setCameraControls({
-      position: stage1Config.camera.position,
-      fov: stage1Config.camera.fov
+      position: stage1Config.camera.position || { x: 0, y: 0, z: 5 },
+      rotation: stage1Config.camera.rotation || { x: 0, y: 0, z: 0 },
+      target: stage1Config.camera.target || { x: 0, y: 0, z: 0 },
+      fov: stage1Config.camera.fov || 75,
+      near: stage1Config.camera.near || 0.1,
+      far: stage1Config.camera.far || 1000,
+      zoom: stage1Config.camera.zoom || 1
     })
     setLightingControls(stage1Config.lighting)
   }

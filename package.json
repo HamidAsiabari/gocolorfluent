@@ -13,6 +13,8 @@
     "test:ci": "jest --ci --coverage --watchAll=false"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.4.0",
+    "@react-three/postprocessing": "^3.0.4",
     "@types/three": "^0.158.0",
     "next": "^14.0.0",
     "react": "^18.2.0",

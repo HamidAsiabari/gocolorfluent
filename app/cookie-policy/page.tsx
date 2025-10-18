@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import TopMenu from '../../components/TopMenu'
 import Footer from '../../components/Footer'

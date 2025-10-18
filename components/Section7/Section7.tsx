@@ -31,30 +31,34 @@ const Section7 = memo(function Section7({
   }, [])
 
   useEffect(() => {
-    // Trigger entrance animation when section becomes active
-    if (currentSection === 7) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-        markSectionVisited(7) // Mark section as visited only when it becomes visible
-      }, 200)
-      return () => clearTimeout(timer)
+    // Trigger entrance animation when section becomes active or when transitioning to this section
+    const shouldBeVisible = currentSection === 7 || 
+      (isTransitioning && scrollDirection === 'down' && currentSection === 6) ||
+      (isTransitioning && scrollDirection === 'up' && currentSection === 8)
+    
+    if (shouldBeVisible) {
+      // Start animation immediately when section becomes active or transition starts
+      setIsVisible(true)
+      if (currentSection === 7) {
+        markSectionVisited(7) // Mark section as visited only when it becomes the current section
+      }
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection, markSectionVisited])
+  }, [currentSection, isTransitioning, scrollDirection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
     if (isVisible && currentSection === 7) {
-      const blurTimer = setTimeout(() => setIsBlurred(true), 1200) // 200ms (slide-in delay) + 1000ms (slide-in duration)
+      const blurTimer = setTimeout(() => setIsBlurred(true), 1000) // 1000ms (slide-in duration)
       return () => clearTimeout(blurTimer)
     }
   }, [isVisible, currentSection])
 
   return (
     <section 
-      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (7 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
         zIndex: 10
@@ -79,7 +83,7 @@ const Section7 = memo(function Section7({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '5%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6" style={{ paddingTop: '5%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Visual Elements - Hidden on mobile */}
@@ -180,7 +184,7 @@ const Section7 = memo(function Section7({
                       <TypingAnimation 
                         text="Precision sensor arrays" 
                         speed={60} 
-                        delay={1000}
+                        delay={300}
                         sectionNumber={7}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -193,7 +197,7 @@ const Section7 = memo(function Section7({
                       <TypingAnimation 
                         text="Advanced electronic systems" 
                         speed={60} 
-                        delay={2000}
+                        delay={600}
                         sectionNumber={7}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -212,7 +216,7 @@ const Section7 = memo(function Section7({
                       <TypingAnimation 
                         text="98.5% operational efficiency" 
                         speed={60} 
-                        delay={3000}
+                        delay={900}
                         sectionNumber={7}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -225,7 +229,7 @@ const Section7 = memo(function Section7({
                       <TypingAnimation 
                         text="±0.01mm precision accuracy" 
                         speed={60} 
-                        delay={4000}
+                        delay={1200}
                         sectionNumber={7}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -238,7 +242,7 @@ const Section7 = memo(function Section7({
                       <TypingAnimation 
                         text="Professional-grade reliability" 
                         speed={60} 
-                        delay={5000}
+                        delay={1500}
                         sectionNumber={7}
                         currentSection={currentSection}
                         isVisible={isVisible}

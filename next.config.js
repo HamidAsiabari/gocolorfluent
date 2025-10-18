@@ -6,6 +6,20 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
+  // Disable headers for static export
+  // async headers() {
+  //   return [
+  //     {
+  //       source: '/(.*)',
+  //       headers: [
+  //         {
+  //           key: 'X-DNS-Prefetch-Control',
+  //           value: 'on'
+  //         }
+  //       ],
+  //     },
+  //   ]
+  // },
   // App Router is enabled by default in Next.js 14
   // Add timeout configuration for font loading
   webpack: (config, { isServer }) => {
@@ -13,23 +27,24 @@ const nextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
+        path: false,
+        crypto: false,
       }
     }
-    return config
-  },
-  // Add headers for better font loading
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
-          }
-        ],
+    
+    // Handle Three.js and related modules
+    config.module.rules.push({
+      test: /\.(glb|gltf)$/,
+      use: {
+        loader: 'file-loader',
+        options: {
+          publicPath: '/_next/static/',
+          outputPath: 'static/',
+        },
       },
-    ]
+    })
+    
+    return config
   },
 }
 

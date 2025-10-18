@@ -32,23 +32,27 @@ const Section5 = memo(function Section5({
   }, [])
 
   useEffect(() => {
-    // Trigger entrance animation when section becomes active
-    if (currentSection === 5) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-        markSectionVisited(5) // Mark section as visited only when it becomes visible
-      }, 200)
-      return () => clearTimeout(timer)
+    // Trigger entrance animation when section becomes active or when transitioning to this section
+    const shouldBeVisible = currentSection === 5 || 
+      (isTransitioning && scrollDirection === 'down' && currentSection === 4) ||
+      (isTransitioning && scrollDirection === 'up' && currentSection === 6)
+    
+    if (shouldBeVisible) {
+      // Start animation immediately when section becomes active or transition starts
+      setIsVisible(true)
+      if (currentSection === 5) {
+        markSectionVisited(5) // Mark section as visited only when it becomes the current section
+      }
     } else {
       setIsVisible(false)
       setIsBlurred(false)
     }
-  }, [currentSection, markSectionVisited])
+  }, [currentSection, isTransitioning, scrollDirection, markSectionVisited])
 
   useEffect(() => {
     // Trigger blur animation after slide-in animation completes
     if (isVisible && currentSection === 5) {
-      const blurTimer = setTimeout(() => setIsBlurred(true), 1200) // 200ms (slide-in delay) + 1000ms (slide-in duration)
+      const blurTimer = setTimeout(() => setIsBlurred(true), 1000) // 1000ms (slide-in duration)
       return () => clearTimeout(blurTimer)
     }
   }, [isVisible, currentSection])
@@ -56,7 +60,7 @@ const Section5 = memo(function Section5({
 
   return (
     <section 
-      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen px-4 sm:px-6 absolute inset-0 pt-4 md:pt-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (5 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
         zIndex: 10
@@ -82,7 +86,7 @@ const Section5 = memo(function Section5({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto" style={{ paddingTop: '5%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6" style={{ paddingTop: '5%' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
           {/* Left Side - Visual Elements - Hidden on mobile */}
@@ -148,7 +152,7 @@ const Section5 = memo(function Section5({
                       <TypingAnimation 
                         text="Sensor guide lights" 
                         speed={60} 
-                        delay={1000}
+                        delay={300}
                         sectionNumber={5}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -161,7 +165,7 @@ const Section5 = memo(function Section5({
                       <TypingAnimation 
                         text="Optimized color accuracy" 
                         speed={60} 
-                        delay={2000}
+                        delay={600}
                         sectionNumber={5}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -180,7 +184,7 @@ const Section5 = memo(function Section5({
                       <TypingAnimation 
                         text="Consistent illumination" 
                         speed={60} 
-                        delay={3000}
+                        delay={900}
                         sectionNumber={5}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -193,7 +197,7 @@ const Section5 = memo(function Section5({
                       <TypingAnimation 
                         text="True color representation" 
                         speed={60} 
-                        delay={4000}
+                        delay={1200}
                         sectionNumber={5}
                         currentSection={currentSection}
                         isVisible={isVisible}
@@ -206,7 +210,7 @@ const Section5 = memo(function Section5({
                       <TypingAnimation 
                         text="Professional-grade results" 
                         speed={60} 
-                        delay={5000}
+                        delay={1500}
                         sectionNumber={5}
                         currentSection={currentSection}
                         isVisible={isVisible}
