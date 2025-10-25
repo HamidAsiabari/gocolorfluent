@@ -80,31 +80,29 @@ const Section2 = memo(function Section2({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-6xl mx-auto px-4 sm:px-6" style={{ paddingTop: 'calc(5% - 2px)' }}>
+      <div className="section-content relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-[120px] sm:pt-[calc(5%-2px)]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
           
           {/* Left Side - Content */}
-          <div className={`space-y-6 lg:space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          <div className={`space-y-3 sm:space-y-6 lg:space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'} order-1 lg:order-1`}>
             {/* Section Title */}
             <div className="space-y-2 lg:space-y-4">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 leading-tight">
-                Advanced Detection
-              </h2>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 leading-tight">
-                Systems
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Advanced Detection</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"> Systems</span>
               </h2>
             </div>
 
             {/* Description */}
-            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-lg">
+            <p className="text-sm sm:text-lg md:text-xl text-gray-300 leading-snug sm:leading-relaxed max-w-lg">
               State-of-the-art color sensor technology with precision detection capabilities for professional-grade color accuracy.
             </p>
 
             {/* Feature List */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                <span className="text-gray-300">
+            <div className="space-y-2 sm:space-y-4">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-pulse" />
+                <span className="text-sm sm:text-base text-gray-300">
                   <TypingAnimation 
                     text="High-precision color sensors" 
                     speed={60} 
@@ -115,9 +113,9 @@ const Section2 = memo(function Section2({
                   />
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200" />
-                <span className="text-gray-300">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full animate-pulse delay-200" />
+                <span className="text-sm sm:text-base text-gray-300">
                   <TypingAnimation 
                     text="Real-time color analysis" 
                     speed={60} 
@@ -128,9 +126,9 @@ const Section2 = memo(function Section2({
                   />
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse delay-400" />
-                <span className="text-gray-300">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-pink-400 rounded-full animate-pulse delay-400" />
+                <span className="text-sm sm:text-base text-gray-300">
                   <TypingAnimation 
                     text="Professional-grade accuracy" 
                     speed={60} 
@@ -143,19 +141,33 @@ const Section2 = memo(function Section2({
               </div>
             </div>
 
-            {/* CTA Button */}
-            <a 
-              href="/catalog" 
-              className="group relative inline-block px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 text-sm sm:text-base"
-            >
-              <span className="relative z-10">Learn More</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-            </a>
+            {/* CTA Button - Desktop only */}
+            <div className="hidden md:block">
+              <a 
+                href="/catalog" 
+                className="group relative inline-block px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 text-sm sm:text-base"
+              >
+                <span className="relative z-10">Learn More</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
+              </a>
+            </div>
+
           </div>
 
-          {/* Right Side - Visual Elements - Hidden on mobile */}
-          <div className={`hidden lg:block transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          {/* Right Side - Visual Elements - Show below text on mobile */}
+          <div className={`block transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} order-2 lg:order-2`}>
             <div className="relative">
+              {/* CTA Button - Positioned at bottom center of box on mobile */}
+              <div className="absolute bottom-[20%] left-1/2 transform -translate-x-1/2 z-20 md:hidden">
+                <a 
+                  href="/catalog" 
+                  className="group relative inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 text-sm"
+                >
+                  <span className="relative z-10">Learn More</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
+                </a>
+              </div>
+              
               {/* Main visual container */}
               <div className={`relative w-full h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 

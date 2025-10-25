@@ -36,6 +36,23 @@ canvas {
   touch-action: none; /* Prevent touch interactions on canvas */
 }
 
+/* Navigation dots responsive sizing */
+.nav-dot {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+}
+
+@media (min-width: 768px) {
+  .nav-dot {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+  }
+}
+
 /* Mobile-specific improvements */
 @media (max-width: 768px) {
   html, body {

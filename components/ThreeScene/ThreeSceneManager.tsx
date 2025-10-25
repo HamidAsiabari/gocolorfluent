@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback, memo } from 'react'
+import { useEffect, useRef, useCallback, memo, useState } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
 import { StageConfig, stage0Config, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './index'
@@ -80,6 +80,20 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   // Rendering state tracking
   const isRenderingRef = useRef<boolean>(false)
   const needsRenderRef = useRef<boolean>(false)
+  
+  // Mobile detection and camera adjustment
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Mobile detection effect
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Helper functions for rendering
   const requestRender = useCallback(() => {
@@ -102,10 +116,13 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const model = modelRef.current
       const { scale, position, rotation } = modelControls
       
-      console.log(`Force updating model controls:`, { scale, position, rotation })
+      // Keep original scale - no mobile scaling
+      const adjustedScale = scale
+      
+      console.log(`Force updating model controls:`, { scale: adjustedScale, position, rotation, isMobile })
       console.log(`Model before update: scale(${model.scale.x}, ${model.scale.y}, ${model.scale.z}), position(${model.position.x}, ${model.position.y}, ${model.position.z}), rotation(${model.rotation.x}, ${model.rotation.y}, ${model.rotation.z})`)
       
-      model.scale.set(scale.x, scale.y, scale.z)
+      model.scale.set(adjustedScale.x, adjustedScale.y, adjustedScale.z)
       model.position.set(position.x, position.y, position.z)
       model.rotation.set(rotation.x, rotation.y, rotation.z)
       model.updateMatrix()
@@ -124,10 +141,19 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       console.log(`Force updating camera controls:`, { position, rotation, target, fov, near, far, zoom })
       console.log(`Camera before update: position(${camera.position.x}, ${camera.position.y}, ${camera.position.z}), rotation(${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}), fov(${camera.fov})`)
       
-      camera.position.set(position.x, position.y, position.z)
+      // Apply mobile camera adjustments
+      const finalPosition = isMobile ? {
+        x: position.x,
+        y: position.y + 0.5,
+        z: position.z + 2
+      } : position
+      
+      camera.position.set(finalPosition.x, finalPosition.y, finalPosition.z)
       camera.rotation.set(rotation.x, rotation.y, rotation.z)
       camera.lookAt(target.x, target.y, target.z)
-      camera.fov = fov
+      const mobileFOV = fov + 15 // Increase FOV on mobile for wider view
+      const finalFOV = isMobile ? mobileFOV : fov
+      camera.fov = finalFOV
       camera.near = near
       camera.far = far
       camera.zoom = zoom
@@ -169,6 +195,11 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   }, [modelControls, cameraControls, lightingControls, requestRender])
 
   // Sync dev controls with actual 3D scene values
+  // Helper function to check if a number is a power of 2
+  const isPowerOfTwo = (value: number): boolean => {
+    return (value & (value - 1)) === 0 && value !== 0
+  }
+
   const syncDevControlsWithScene = useCallback(() => {
     console.log('🔄 Syncing dev controls with actual 3D scene values')
     
@@ -252,8 +283,17 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
 
     // Scene setup
     const scene = new THREE.Scene()
+    
+    // Adjust camera settings for mobile visibility
+    const mobileFOV = cameraControls.fov + 5 // Increase FOV on mobile for wider view
+    const mobilePosition = {
+      x: cameraControls.position.x,
+      y: cameraControls.position.y + 0.5, // Move camera slightly higher
+      z: cameraControls.position.z + 2    // Move camera further back
+    }
+    
     const camera = new THREE.PerspectiveCamera(
-      cameraControls.fov, 
+      isMobile ? mobileFOV : cameraControls.fov, 
       window.innerWidth / window.innerHeight, 
       cameraControls.near, 
       cameraControls.far
@@ -268,6 +308,64 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     // Initialize texture loader
     textureLoader.current = new THREE.TextureLoader()
     
+    // Function to create procedural environment
+    const createProceduralEnvironment = () => {
+      console.log('📦 Creating detailed procedural environment map for reflections')
+      
+      // Create a more detailed environment for better reflections
+      const envGroup = new THREE.Group()
+      
+      // Create a gradient sky sphere
+      const skyGeometry = new THREE.SphereGeometry(100, 64, 32)
+      const skyMaterial = new THREE.MeshBasicMaterial({
+        color: 0x87CEEB, // Sky blue
+        side: THREE.BackSide
+      })
+      const skySphere = new THREE.Mesh(skyGeometry, skyMaterial)
+      envGroup.add(skySphere)
+      
+      // Add some clouds for more interesting reflections
+      for (let i = 0; i < 5; i++) {
+        const cloudGeometry = new THREE.SphereGeometry(15 + Math.random() * 10, 16, 8)
+        const cloudMaterial = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.8
+        })
+        const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial)
+        cloud.position.set(
+          (Math.random() - 0.5) * 200,
+          Math.random() * 50 + 20,
+          (Math.random() - 0.5) * 200
+        )
+        cloud.scale.set(1, 0.5, 1)
+        envGroup.add(cloud)
+      }
+      
+      // Add some ground elements for floor reflections
+      const groundGeometry = new THREE.PlaneGeometry(200, 200)
+      const groundMaterial = new THREE.MeshBasicMaterial({
+        color: 0x90EE90, // Light green
+        side: THREE.DoubleSide
+      })
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial)
+      ground.rotation.x = -Math.PI / 2
+      ground.position.y = -50
+      envGroup.add(ground)
+      
+      scene.add(envGroup)
+      
+      // Generate environment map from the detailed scene
+      const pmremGenerator = new THREE.PMREMGenerator(renderer)
+      const generatedEnvMap = pmremGenerator.fromScene(scene).texture
+      scene.environment = generatedEnvMap
+      
+      // Remove the temporary environment group
+      scene.remove(envGroup)
+      
+      console.log('✅ Procedural environment map created for reflections')
+    }
+
     // Create environment map for reflections
     const createEnvironmentMap = () => {
       const pmremGenerator = new THREE.PMREMGenerator(renderer)
@@ -276,87 +374,68 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       let envMap = null
       try {
         const cubeTextureLoader = new THREE.CubeTextureLoader()
-        envMap = cubeTextureLoader.load([
+        
+        // Load each face individually to ensure proper error handling
+        const loadCubemapFace = (url: string) => {
+          return new Promise<THREE.Texture>((resolve, reject) => {
+            const loader = new THREE.TextureLoader()
+            loader.load(
+              url,
+              (texture) => {
+                // Ensure texture is properly configured
+                texture.wrapS = THREE.ClampToEdgeWrapping
+                texture.wrapT = THREE.ClampToEdgeWrapping
+                texture.minFilter = THREE.LinearFilter
+                texture.magFilter = THREE.LinearFilter
+                texture.generateMipmaps = false
+                texture.format = THREE.RGBAFormat
+                texture.type = THREE.UnsignedByteType
+                resolve(texture)
+              },
+              undefined,
+              reject
+            )
+          })
+        }
+        
+        // Load all faces
+        const faceUrls = [
           '/img/skybox/px.jpg', // positive x
           '/img/skybox/nx.jpg', // negative x
           '/img/skybox/py.jpg', // positive y
           '/img/skybox/ny.jpg', // negative y
           '/img/skybox/pz.jpg', // positive z
           '/img/skybox/nz.jpg'  // negative z
-        ])
+        ]
         
-        // Configure the cubemap to prevent WebGL errors
-        if (envMap) {
-          envMap.format = THREE.RGBAFormat
-          envMap.type = THREE.UnsignedByteType
-          envMap.generateMipmaps = false
-          envMap.minFilter = THREE.LinearFilter
-          envMap.magFilter = THREE.LinearFilter
-          envMap.wrapS = THREE.ClampToEdgeWrapping
-          envMap.wrapT = THREE.ClampToEdgeWrapping
-        }
+        Promise.all(faceUrls.map(loadCubemapFace))
+          .then((textures) => {
+            // Create cubemap from loaded textures
+            envMap = new THREE.CubeTexture(textures)
+            
+            // Configure the cubemap to prevent WebGL errors
+            envMap.format = THREE.RGBAFormat
+            envMap.type = THREE.UnsignedByteType
+            envMap.generateMipmaps = false
+            envMap.minFilter = THREE.LinearFilter
+            envMap.magFilter = THREE.LinearFilter
+            envMap.wrapS = THREE.ClampToEdgeWrapping
+            envMap.wrapT = THREE.ClampToEdgeWrapping
+            
+            // Set the environment map
+            scene.environment = envMap
+            console.log('✅ Cubemap environment loaded successfully')
+          })
+          .catch((error) => {
+            console.warn('Failed to load skybox textures, using procedural environment:', error)
+            createProceduralEnvironment()
+          })
       } catch (error) {
         console.warn('Failed to load skybox textures, using procedural environment:', error)
+        createProceduralEnvironment()
       }
       
-      // If skybox images don't exist, create a procedural environment
-      if (!envMap) {
-        console.log('📦 Creating detailed procedural environment map for reflections')
-        
-        // Create a more detailed environment for better reflections
-        const envGroup = new THREE.Group()
-        
-        // Create a gradient sky sphere
-        const skyGeometry = new THREE.SphereGeometry(100, 64, 32)
-        const skyMaterial = new THREE.MeshBasicMaterial({
-          color: 0x87CEEB, // Sky blue
-          side: THREE.BackSide
-        })
-        const skySphere = new THREE.Mesh(skyGeometry, skyMaterial)
-        envGroup.add(skySphere)
-        
-        // Add some clouds for more interesting reflections
-        for (let i = 0; i < 5; i++) {
-          const cloudGeometry = new THREE.SphereGeometry(15 + Math.random() * 10, 16, 8)
-          const cloudMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.8
-          })
-          const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial)
-          cloud.position.set(
-            (Math.random() - 0.5) * 200,
-            Math.random() * 50 + 20,
-            (Math.random() - 0.5) * 200
-          )
-          cloud.scale.set(1, 0.5, 1)
-          envGroup.add(cloud)
-        }
-        
-        // Add some ground elements for floor reflections
-        const groundGeometry = new THREE.PlaneGeometry(200, 200)
-        const groundMaterial = new THREE.MeshBasicMaterial({
-          color: 0x90EE90, // Light green
-          side: THREE.DoubleSide
-        })
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial)
-        ground.rotation.x = -Math.PI / 2
-        ground.position.y = -50
-        envGroup.add(ground)
-        
-        scene.add(envGroup)
-        
-        // Generate environment map from the detailed scene
-        const generatedEnvMap = pmremGenerator.fromScene(scene).texture
-        scene.environment = generatedEnvMap
-        
-        // Remove the temporary environment group
-        scene.remove(envGroup)
-      } else {
-        scene.environment = envMap
-      }
-      
-      console.log('✅ Environment map created for reflections')
+      console.log('✅ Environment map creation initiated')
     }
     
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -1372,8 +1451,10 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         }
       })
 
-      // Apply initial controls
-      model.scale.set(modelControls.scale.x, modelControls.scale.y, modelControls.scale.z)
+      // Apply initial controls - no mobile scaling
+      const adjustedScale = modelControls.scale
+      
+      model.scale.set(adjustedScale.x, adjustedScale.y, adjustedScale.z)
       model.position.set(modelControls.position.x, modelControls.position.y, modelControls.position.z)
       model.rotation.set(modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z)
       
@@ -1386,8 +1467,14 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       scene.add(model)
       console.log('✅ Model added to scene. Scene children count:', scene.children.length)
 
-      // Set initial camera position, rotation, and target
-      camera.position.set(cameraControls.position.x, cameraControls.position.y, cameraControls.position.z)
+      // Set initial camera position, rotation, and target with mobile adjustments
+      const initialPosition = isMobile ? {
+        x: cameraControls.position.x,
+        y: cameraControls.position.y + 0.5,
+        z: cameraControls.position.z + 2
+      } : cameraControls.position
+      
+      camera.position.set(initialPosition.x, initialPosition.y, initialPosition.z)
       camera.rotation.set(cameraControls.rotation.x, cameraControls.rotation.y, cameraControls.rotation.z)
       camera.lookAt(cameraControls.target.x, cameraControls.target.y, cameraControls.target.z)
       camera.zoom = cameraControls.zoom
@@ -1498,140 +1585,147 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
           return
         }
         
-        textureLoader.current.load(texturePath, (texture) => {
-          
-          // Store texture reference for cleanup
-          oledTextureRef.current = texture
-          
-          // Configure texture for OLED display
-          texture.wrapS = THREE.ClampToEdgeWrapping
-          texture.wrapT = THREE.ClampToEdgeWrapping
-          texture.flipY = false
-          texture.minFilter = THREE.LinearFilter
-          texture.magFilter = THREE.LinearFilter
-          texture.generateMipmaps = false
-          texture.format = THREE.RGBAFormat
-          texture.type = THREE.UnsignedByteType
-          
-          
-          // Find ALL objects in the model that might be OLED displays
-          const allOLEDObjects: THREE.Object3D[] = []
-          if (modelRef.current) {
-            modelRef.current.traverse((child) => {
-              if (child.name && (
-                child.name.toLowerCase().includes('oled') || 
-                child.name.toLowerCase().includes('display') ||
-                child.name.toLowerCase().includes('screen')
-              )) {
-                allOLEDObjects.push(child)
-              }
-            })
+        textureLoader.current.load(
+          texturePath, 
+          (texture) => {
+            // Store texture reference for cleanup
+            oledTextureRef.current = texture
             
-            // Also try to find by exact component names from mapping
-            const oledComponents = componentMapping.oledDisplay
-            oledComponents.forEach(componentName => {
-              if (modelRef.current) {
-                modelRef.current.traverse((child) => {
-                  if (child.name === componentName) {
-                    allOLEDObjects.push(child)
-                  }
-                })
-              }
-            })
-          }
-          
-          // Apply texture to all found OLED objects
-          let totalMeshes = 0
-          allOLEDObjects.forEach(obj => {
-            let meshCount = 0
+            // Configure texture for OLED display to prevent WebGL errors
+            texture.wrapS = THREE.ClampToEdgeWrapping
+            texture.wrapT = THREE.ClampToEdgeWrapping
+            texture.flipY = false
+            texture.minFilter = THREE.LinearFilter
+            texture.magFilter = THREE.LinearFilter
+            texture.generateMipmaps = false
+            texture.format = THREE.RGBAFormat
+            texture.type = THREE.UnsignedByteType
             
-            obj.traverse((child) => {
-              if (child instanceof THREE.Mesh && child.material) {
-                meshCount++
-                totalMeshes++
-                
-                // Create a new material with the texture
-                const newMaterial = child.material.clone()
-                
-                if (Array.isArray(newMaterial)) {
-                  newMaterial.forEach((mat, index) => {
-                    if (mat instanceof THREE.MeshStandardMaterial) {
-                      // Apply texture to the material with stronger visibility
-                      mat.map = texture
-                      mat.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
-                      mat.emissiveMap = texture
-                      mat.emissiveIntensity = 0.8 // Increased intensity for better visibility
-                      mat.roughness = 0.1 // Make it more reflective
-                      mat.metalness = 0.0 // Non-metallic
-                      mat.needsUpdate = true
-                    }
-                  })
-                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
-                  // Apply texture to the material with stronger visibility
-                  newMaterial.map = texture
-                  newMaterial.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
-                  newMaterial.emissiveMap = texture
-                  newMaterial.emissiveIntensity = 0.8 // Increased intensity for better visibility
-                  newMaterial.roughness = 0.1 // Make it more reflective
-                  newMaterial.metalness = 0.0 // Non-metallic
-                  newMaterial.needsUpdate = true
-                }
-                
-                child.material = newMaterial
+            // Ensure texture is properly sized (power of 2)
+            if (texture.image) {
+              const width = texture.image.width
+              const height = texture.image.height
+              if (!isPowerOfTwo(width) || !isPowerOfTwo(height)) {
+                console.warn('OLED texture dimensions are not power of 2, this may cause WebGL issues')
               }
-            })
-          })
+            }
           
-          
-          if (totalMeshes === 0) {
-            
-            // Last resort: try to find any small rectangular surface that might be the OLED display
+            // Find ALL objects in the model that might be OLED displays
+            const allOLEDObjects: THREE.Object3D[] = []
             if (modelRef.current) {
               modelRef.current.traverse((child) => {
-                if (child instanceof THREE.Mesh && child.geometry) {
-                  const geometry = child.geometry
-                  if (geometry.boundingBox) {
-                    const size = geometry.boundingBox.getSize(new THREE.Vector3())
-                    // Look for small rectangular surfaces (typical OLED size)
-                    if (size.x > 0.01 && size.x < 0.1 && size.y > 0.005 && size.y < 0.05 && size.z < 0.01) {
-                      
-                      const newMaterial = child.material.clone()
-                      if (Array.isArray(newMaterial)) {
-                        newMaterial.forEach((mat, index) => {
-                          if (mat instanceof THREE.MeshStandardMaterial) {
-                            mat.map = texture
-                            mat.emissive = new THREE.Color(0x000000)
-                            mat.emissiveMap = texture
-                            mat.emissiveIntensity = 0.8
-                            mat.roughness = 0.1
-                            mat.metalness = 0.0
-                            mat.needsUpdate = true
-                          }
-                        })
-                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
-                        newMaterial.map = texture
-                        newMaterial.emissive = new THREE.Color(0x000000)
-                        newMaterial.emissiveMap = texture
-                        newMaterial.emissiveIntensity = 0.8
-                        newMaterial.roughness = 0.1
-                        newMaterial.metalness = 0.0
-                        newMaterial.needsUpdate = true
-                      }
-                      
-                      child.material = newMaterial
+                if (child.name && (
+                  child.name.toLowerCase().includes('oled') || 
+                  child.name.toLowerCase().includes('display') ||
+                  child.name.toLowerCase().includes('screen')
+                )) {
+                  allOLEDObjects.push(child)
+                }
+              })
+              
+              // Also try to find by exact component names from mapping
+              const oledComponents = componentMapping.oledDisplay
+              oledComponents.forEach(componentName => {
+                if (modelRef.current) {
+                  modelRef.current.traverse((child) => {
+                    if (child.name === componentName) {
+                      allOLEDObjects.push(child)
                     }
-                  }
+                  })
                 }
               })
             }
-          }
           
-          // Console log removed
-          updateProgress(70) // Textures loaded
-        }, undefined, (error) => {
-          updateProgress(70) // Still count as progress even if texture fails
-        })
-      }
+            // Apply texture to all found OLED objects
+            let totalMeshes = 0
+            allOLEDObjects.forEach(obj => {
+              let meshCount = 0
+            
+              obj.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                  meshCount++
+                  totalMeshes++
+                  
+                  // Create a new material with the texture
+                  const newMaterial = child.material.clone()
+                  
+                  if (Array.isArray(newMaterial)) {
+                    newMaterial.forEach((mat, index) => {
+                      if (mat instanceof THREE.MeshStandardMaterial) {
+                        // Apply texture to the material with stronger visibility
+                        mat.map = texture
+                        mat.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
+                        mat.emissiveMap = texture
+                        mat.emissiveIntensity = 0.8 // Increased intensity for better visibility
+                        mat.roughness = 0.1 // Make it more reflective
+                        mat.metalness = 0.0 // Non-metallic
+                        mat.needsUpdate = true
+                      }
+                    })
+                  } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                    // Apply texture to the material with stronger visibility
+                    newMaterial.map = texture
+                    newMaterial.emissive = new THREE.Color(0x000000) // Make it slightly emissive for screen effect
+                    newMaterial.emissiveMap = texture
+                    newMaterial.emissiveIntensity = 0.8 // Increased intensity for better visibility
+                    newMaterial.roughness = 0.1 // Make it more reflective
+                    newMaterial.metalness = 0.0 // Non-metallic
+                    newMaterial.needsUpdate = true
+                  }
+                  
+                  child.material = newMaterial
+                }
+              })
+            })
+          
+            if (totalMeshes === 0) {
+              // Last resort: try to find any small rectangular surface that might be the OLED display
+              if (modelRef.current) {
+                modelRef.current.traverse((child) => {
+                  if (child instanceof THREE.Mesh && child.geometry) {
+                    const geometry = child.geometry
+                    if (geometry.boundingBox) {
+                      const size = geometry.boundingBox.getSize(new THREE.Vector3())
+                      // Look for small rectangular surfaces (typical OLED size)
+                      if (size.x > 0.01 && size.x < 0.1 && size.y > 0.005 && size.y < 0.05 && size.z < 0.01) {
+                        
+                        const newMaterial = child.material.clone()
+                        if (Array.isArray(newMaterial)) {
+                          newMaterial.forEach((mat, index) => {
+                            if (mat instanceof THREE.MeshStandardMaterial) {
+                              mat.map = texture
+                              mat.emissive = new THREE.Color(0x000000)
+                              mat.emissiveMap = texture
+                              mat.emissiveIntensity = 0.8
+                              mat.roughness = 0.1
+                              mat.metalness = 0.0
+                              mat.needsUpdate = true
+                            }
+                          })
+                        } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                          newMaterial.map = texture
+                          newMaterial.emissive = new THREE.Color(0x000000)
+                          newMaterial.emissiveMap = texture
+                          newMaterial.emissiveIntensity = 0.8
+                          newMaterial.roughness = 0.1
+                          newMaterial.metalness = 0.0
+                          newMaterial.needsUpdate = true
+                        }
+                        
+                        child.material = newMaterial
+                      }
+                    }
+                  }
+                })
+              }
+            }
+          
+            // Console log removed
+            updateProgress(70) // Textures loaded
+          }, undefined, (error) => {
+            updateProgress(70) // Still count as progress even if texture fails
+          })
+        }
       
       // Function to remove OLED texture
       const removeOLEDTexture = () => {
@@ -1669,8 +1763,6 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
               }
             })
           }
-        }, (error: Error) => {
-          console.warn('Failed to load OLED texture:', error)
         })
         
         // Console log removed
@@ -2855,12 +2947,15 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const model = modelRef.current
       const { scale, position, rotation } = modelControls
       
-      console.log(`ThreeSceneManager: Updating model controls:`, { scale, position, rotation })
+      // Keep original scale - no mobile scaling
+      const adjustedScale = scale
+      
+      console.log(`ThreeSceneManager: Updating model controls:`, { scale: adjustedScale, position, rotation, isMobile })
       
       // Only update if values have actually changed
-      if (model.scale.x !== scale.x || model.scale.y !== scale.y || model.scale.z !== scale.z) {
-        console.log(`Updating scale from (${model.scale.x}, ${model.scale.y}, ${model.scale.z}) to (${scale.x}, ${scale.y}, ${scale.z})`)
-        model.scale.set(scale.x, scale.y, scale.z)
+      if (model.scale.x !== adjustedScale.x || model.scale.y !== adjustedScale.y || model.scale.z !== adjustedScale.z) {
+        console.log(`Updating scale from (${model.scale.x}, ${model.scale.y}, ${model.scale.z}) to (${adjustedScale.x}, ${adjustedScale.y}, ${adjustedScale.z})`)
+        model.scale.set(adjustedScale.x, adjustedScale.y, adjustedScale.z)
       }
       if (model.position.x !== position.x || model.position.y !== position.y || model.position.z !== position.z) {
         console.log(`Updating position from (${model.position.x}, ${model.position.y}, ${model.position.z}) to (${position.x}, ${position.y}, ${position.z})`)
@@ -2874,7 +2969,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     } else {
       console.log(`ThreeSceneManager: modelRef.current is null, cannot update model controls - will retry when model loads`)
     }
-  }, [modelControls.scale.x, modelControls.scale.y, modelControls.scale.z, modelControls.position.x, modelControls.position.y, modelControls.position.z, modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z, requestRender])
+  }, [modelControls.scale.x, modelControls.scale.y, modelControls.scale.z, modelControls.position.x, modelControls.position.y, modelControls.position.z, modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z, isMobile, requestRender])
 
 
   // Force updates when camera controls change
@@ -2884,8 +2979,14 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const { position, rotation, target, fov, near, far, zoom } = cameraControls
       
       // Only update if values have actually changed
-      if (camera.position.x !== position.x || camera.position.y !== position.y || camera.position.z !== position.z) {
-        camera.position.set(position.x, position.y, position.z)
+      const finalPosition = isMobile ? {
+        x: position.x,
+        y: position.y + 0.2,
+        z: position.z + 0.7
+      } : position
+      
+      if (camera.position.x !== finalPosition.x || camera.position.y !== finalPosition.y || camera.position.z !== finalPosition.z) {
+        camera.position.set(finalPosition.x, finalPosition.y, finalPosition.z)
       }
       
       if (camera.rotation.x !== rotation.x || camera.rotation.y !== rotation.y || camera.rotation.z !== rotation.z) {
@@ -2896,8 +2997,11 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         camera.lookAt(target.x, target.y, target.z)
       }
       
-      if (camera.fov !== fov || camera.near !== near || camera.far !== far) {
-        camera.fov = fov
+      const mobileFOV = fov + 1 // Increase FOV on mobile for wider view
+      const finalFOV = isMobile ? mobileFOV : fov
+      
+      if (camera.fov !== finalFOV || camera.near !== near || camera.far !== far) {
+        camera.fov = finalFOV
         camera.near = near
         camera.far = far
         camera.updateProjectionMatrix()

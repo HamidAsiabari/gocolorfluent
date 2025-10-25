@@ -563,24 +563,20 @@ export default function Home() {
   // Memoized navigation dots component to prevent unnecessary re-renders
   const NavigationDots = useMemo(() => {
     return (
-      <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50">
+      <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 hidden md:block">
         <div className="flex flex-col space-y-3 md:space-y-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((section) => (
             <button
               key={section}
               onClick={() => navigateToSection(section)}
-              className={`rounded-full border-2 transition-all duration-300 touch-manipulation ${
+              className={`nav-dot rounded-full border-2 transition-all duration-300 touch-manipulation ${
                 currentSection === section
                   ? 'bg-white border-white'
                   : 'bg-transparent border-gray-400 hover:border-white'
               }`}
               title={`Section ${section}`}
               style={{ 
-                touchAction: 'manipulation',
-                width: '20px',
-                height: '20px',
-                maxWidth: '20px',
-                maxHeight: '20px'
+                touchAction: 'manipulation'
               }}
             />
           ))}
@@ -850,7 +846,7 @@ export default function Home() {
         {NavigationDots}
 
         {/* Mobile Scroll Indicator */}
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+        <div className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 md:hidden ${currentSection === 8 ? 'hidden' : 'block'}`}>
           <div className="flex flex-col items-center space-y-2 text-white/70">
             <div className="text-sm font-medium">Swipe to navigate</div>
             <div className="flex space-x-1">

@@ -61,14 +61,16 @@ const HeroSection = memo(function HeroSection({
         
       </div>
 
-      {/* Scroll Down Component */}
-      <ScrollDown
-        isClient={isClient}
-        currentSection={currentSection}
-        isTransitioning={isTransitioning}
-        scrollDirection={scrollDirection}
-        transitionProgress={transitionProgress}
-      />
+      {/* Scroll Down Component - Hidden on mobile */}
+      <div className="hidden md:block">
+        <ScrollDown
+          isClient={isClient}
+          currentSection={currentSection}
+          isTransitioning={isTransitioning}
+          scrollDirection={scrollDirection}
+          transitionProgress={transitionProgress}
+        />
+      </div>
     </section>
   )
 })

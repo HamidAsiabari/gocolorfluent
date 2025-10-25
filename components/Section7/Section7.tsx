@@ -83,14 +83,14 @@ const Section7 = memo(function Section7({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6" style={{ paddingTop: '5%' }}>
+      <div className="section-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-[120px] sm:pt-[5%]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           
-          {/* Left Side - Visual Elements - Hidden on mobile */}
-          <div className={`hidden lg:block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          {/* Left Side - Visual Elements - Show below text on mobile */}
+          <div className={`block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'} order-2 lg:order-1`}>
             <div className="relative">
               {/* Main visual container */}
-              <div className={`relative w-full h-96 bg-gradient-to-br from-slate-900/30 to-zinc-900/30 rounded-2xl border border-slate-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
+              <div className={`relative w-full h-[310px] sm:h-96 bg-gradient-to-br from-slate-900/30 to-zinc-900/30 rounded-2xl border border-slate-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
                 {/* Technical specifications visualization */}
                 <div className="absolute inset-6 space-y-6">
@@ -144,19 +144,17 @@ const Section7 = memo(function Section7({
           </div>
 
           {/* Right Side - Content */}
-          <div className={`space-y-6 lg:space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div className={`space-y-3 sm:space-y-6 lg:space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} order-1 lg:order-2`}>
             {/* Section Title */}
             <div className="space-y-2 lg:space-y-4">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-gray-400 leading-tight">
-                Technical
-              </h2>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-zinc-400 leading-tight">
-                Specifications
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-gray-400">Technical</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-zinc-400"> Specifications</span>
               </h2>
             </div>
 
             {/* Description */}
-            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-lg">
+            <p className="text-sm sm:text-lg md:text-xl text-gray-300 leading-snug sm:leading-relaxed max-w-lg">
               Professional-grade components including micro-gear motors, precision sensors, and advanced electronic systems for reliable performance.
             </p>
 
@@ -207,7 +205,7 @@ const Section7 = memo(function Section7({
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="hidden sm:block space-y-4">
                 <h3 className="text-lg font-semibold text-gray-400">Performance Metrics</h3>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">

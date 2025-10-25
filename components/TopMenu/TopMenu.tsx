@@ -134,16 +134,16 @@ const TopMenu = memo(function TopMenu() {
       {/* Top Menu Bar */}
       <header className="absolute top-0 left-0 right-0 z-[100]">
         <div className="w-full">
-          <div className="flex justify-between items-center py-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-1 px-2 sm:py-6 sm:px-6 lg:px-8">
             {/* Logo */}
             <Link href={menuConfig.logo.href} className="flex-shrink-0">
-              <div className="relative w-[120px] h-[120px]">
+              <div className="relative w-[97px] h-[97px] md:w-[120px] md:h-[120px]">
                 <Image
                   src={menuConfig.logo.src}
                   alt={menuConfig.logo.alt}
                   fill
                   className="object-contain relative z-10"
-                  sizes="120px"
+                  sizes="(max-width: 768px) 97px, 120px"
                   priority
                 />
                 {/* White glowing shadow */}
