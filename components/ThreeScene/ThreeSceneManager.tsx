@@ -43,6 +43,7 @@ interface ThreeSceneManagerProps {
   onComponentControlsChange?: (controls: ComponentControls) => void
   onLoadingProgress?: (progress: number) => void
   onLoadingComplete?: () => void
+  isActive?: boolean
 }
 
 const ThreeSceneManager = memo(function ThreeSceneManager({
@@ -55,7 +56,8 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   categoryVisibility,
   onComponentControlsChange,
   onLoadingProgress,
-  onLoadingComplete
+  onLoadingComplete,
+  isActive = true
 }: ThreeSceneManagerProps) {
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -81,18 +83,38 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   const isRenderingRef = useRef<boolean>(false)
   const needsRenderRef = useRef<boolean>(false)
   
-  // Mobile detection and camera adjustment
+  // Mobile detection and device capability assessment
   const [isMobile, setIsMobile] = useState(false)
+  const [isLowEndDevice, setIsLowEndDevice] = useState(false)
 
-  // Mobile detection effect
+  // Enhanced device detection effect
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+    const checkDevice = () => {
+      const width = window.innerWidth
+      const isMobileDevice = width < 768
+      
+      // Detect low-end devices based on hardware capabilities
+      const isLowEnd = 
+        navigator.hardwareConcurrency <= 4 || // Low CPU cores
+        (navigator as any).deviceMemory <= 4 || // Low RAM (if available)
+        /Android.*Chrome\/[0-5][0-9]|iPhone.*Safari\/[0-5][0-9]|iPad.*Safari\/[0-5][0-9]/.test(navigator.userAgent) || // Old browsers
+        /Android.*Chrome\/[0-9][0-9]/.test(navigator.userAgent) && width < 480 // Small Android devices
+      
+      setIsMobile(isMobileDevice)
+      setIsLowEndDevice(isLowEnd)
+      
+      console.log('📱 Device detection:', {
+        isMobile: isMobileDevice,
+        isLowEnd,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        deviceMemory: (navigator as any).deviceMemory,
+        userAgent: navigator.userAgent.substring(0, 50)
+      })
     }
     
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    checkDevice()
+    window.addEventListener('resize', checkDevice)
+    return () => window.removeEventListener('resize', checkDevice)
   }, [])
 
   // Helper functions for rendering
@@ -298,7 +320,17 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       cameraControls.near, 
       cameraControls.far
     )
-    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    // Optimized renderer settings for immediate responsiveness
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: !isMobile && !isLowEndDevice,
+      powerPreference: isMobile ? 'low-power' : 'high-performance',
+      precision: isMobile ? 'lowp' : 'highp',
+      alpha: true,
+      preserveDrawingBuffer: true, // Keep frame buffer for instant display
+      failIfMajorPerformanceCaveat: false, // Don't fail on performance issues
+      stencil: false, // Disable stencil buffer for better performance
+      depth: true
+    })
     
     // Store refs
     sceneRef.current = scene
@@ -307,6 +339,60 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     
     // Initialize texture loader
     textureLoader.current = new THREE.TextureLoader()
+    
+    // Start rendering loop immediately after scene setup
+    console.log('🎬 Starting rendering loop immediately after scene setup')
+    let animationId: number | null = null
+    let renderCount = 0
+    
+    const startRenderLoop = () => {
+      if (animationId) return // Already running
+      
+      const render = () => {
+        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+          // Only render when active to save performance
+          if (isActive) {
+            rendererRef.current.render(sceneRef.current, cameraRef.current)
+            renderCount++
+            if (renderCount % 60 === 0) { // Log every 60 frames only when active
+              console.log(`🎬 Render count: ${renderCount}, Scene children: ${sceneRef.current.children.length}, Model ref: ${!!modelRef.current}`)
+            }
+          }
+        }
+        
+        // Only continue loop if still active
+        if (isActive) {
+          animationId = requestAnimationFrame(render)
+        } else {
+          animationId = null
+          console.log('⏸️ Rendering loop paused - not in Section 1')
+        }
+      }
+      
+      animationId = requestAnimationFrame(render)
+    }
+    
+    const stopRenderLoop = () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId)
+        animationId = null
+        console.log('🛑 Stopped rendering loop')
+      }
+    }
+    
+    // Start the loop if initially active
+    if (isActive) {
+      startRenderLoop()
+    }
+    
+    // Store animation ID for cleanup
+    const cleanup = () => {
+      stopRenderLoop()
+    }
+    
+    // Store functions for external control
+    ;(window as any).startRenderLoop = startRenderLoop
+    ;(window as any).stopRenderLoop = stopRenderLoop
     
     // Function to create procedural environment
     const createProceduralEnvironment = () => {
@@ -440,11 +526,22 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x1a1a1a)
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    
+    // Mobile-optimized pixel ratio and shadow settings
+    renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2))
+    renderer.shadowMap.enabled = !isMobile && !isLowEndDevice
+    renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap
+    
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
     renderer.domElement.style.display = 'block'
+    
+    // Mobile-specific optimizations
+    if (isMobile) {
+      renderer.domElement.style.imageRendering = 'optimizeSpeed'
+      renderer.domElement.style.willChange = 'transform'
+      renderer.domElement.style.transform = 'translateZ(0)' // Force GPU layer
+    }
     
     // Add sophisticated focus effect with depth of field and periphery darkening
     const applyFocusEffect = () => {
@@ -922,11 +1019,35 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     mountRef.current.className = 'three-scene-container'
     mountRef.current.appendChild(renderer.domElement)
 
-    // Add lighting
-    const ambientLight = new THREE.AmbientLight(lightingControls.ambientColor, lightingControls.ambientIntensity)
-    const directionalLight = new THREE.DirectionalLight(lightingControls.directionalColor, lightingControls.directionalIntensity)
-    const pointLight = new THREE.PointLight(lightingControls.pointLightColor, lightingControls.pointLightIntensity, lightingControls.pointLightDistance)
-    const spotLight = new THREE.SpotLight(lightingControls.spotLightColor, lightingControls.spotLightIntensity, lightingControls.spotLightDistance, lightingControls.spotLightAngle * Math.PI / 180, lightingControls.spotLightPenumbra)
+    // Add lighting with mobile optimizations
+    const ambientLight = new THREE.AmbientLight(
+      lightingControls.ambientColor, 
+      isMobile ? lightingControls.ambientIntensity * 0.8 : lightingControls.ambientIntensity
+    )
+    
+    const directionalLight = new THREE.DirectionalLight(
+      lightingControls.directionalColor, 
+      isMobile ? lightingControls.directionalIntensity * 0.7 : lightingControls.directionalIntensity
+    )
+    
+    // Reduce light count on mobile for better performance
+    let pointLight = null
+    let spotLight = null
+    
+    if (!isMobile && !isLowEndDevice) {
+      pointLight = new THREE.PointLight(
+        lightingControls.pointLightColor, 
+        lightingControls.pointLightIntensity, 
+        lightingControls.pointLightDistance
+      )
+      spotLight = new THREE.SpotLight(
+        lightingControls.spotLightColor, 
+        lightingControls.spotLightIntensity, 
+        lightingControls.spotLightDistance, 
+        lightingControls.spotLightAngle * Math.PI / 180, 
+        lightingControls.spotLightPenumbra
+      )
+    }
     
     // Configure directional light
     directionalLight.position.set(lightingControls.directionalPosition.x, lightingControls.directionalPosition.y, lightingControls.directionalPosition.z)
@@ -937,13 +1058,17 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     directionalLight.shadow.bias = lightingControls.shadowBias
     
     // Configure point light
-    pointLight.position.set(lightingControls.pointLightPosition.x, lightingControls.pointLightPosition.y, lightingControls.pointLightPosition.z)
-    pointLight.castShadow = lightingControls.shadowsEnabled
+    if (pointLight) {
+      pointLight.position.set(lightingControls.pointLightPosition.x, lightingControls.pointLightPosition.y, lightingControls.pointLightPosition.z)
+      pointLight.castShadow = lightingControls.shadowsEnabled
+    }
     
     // Configure spot light
-    spotLight.position.set(lightingControls.spotLightPosition.x, lightingControls.spotLightPosition.y, lightingControls.spotLightPosition.z)
-    spotLight.target.position.set(lightingControls.spotLightTarget.x, lightingControls.spotLightTarget.y, lightingControls.spotLightTarget.z)
-    spotLight.castShadow = lightingControls.shadowsEnabled
+    if (spotLight) {
+      spotLight.position.set(lightingControls.spotLightPosition.x, lightingControls.spotLightPosition.y, lightingControls.spotLightPosition.z)
+      spotLight.target.position.set(lightingControls.spotLightTarget.x, lightingControls.spotLightTarget.y, lightingControls.spotLightTarget.z)
+      spotLight.castShadow = lightingControls.shadowsEnabled
+    }
     
     // Store light refs
     ambientLightRef.current = ambientLight
@@ -953,10 +1078,16 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     
     scene.add(ambientLight)
     scene.add(directionalLight)
-    scene.add(pointLight)
-    scene.add(spotLight)
     scene.add(directionalLight.target)
-    scene.add(spotLight.target)
+    
+    // Only add additional lights on desktop
+    if (pointLight) {
+      scene.add(pointLight)
+    }
+    if (spotLight) {
+      scene.add(spotLight)
+      scene.add(spotLight.target)
+    }
     
     // Force render after lighting is set up
     requestRender()
@@ -1079,32 +1210,57 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         requestRender()
       },
       (progress) => {
-        console.log('Furniture loading progress:', (progress.loaded / progress.total) * 100 + '%')
+        if (progress.total > 0) {
+          console.log('Furniture loading progress:', (progress.loaded / progress.total) * 100 + '%')
+        }
       },
       (error) => {
         console.error('❌ Error loading furniture environment:', error)
       }
     )
 
-    // Load the GLB model
-    const loader = new GLTFLoader()
-    let model: THREE.Group | null = null
+    // Model loading is now handled in a separate useEffect
+      const loader = new GLTFLoader()
+      let model: THREE.Group | null = null
 
-    // Track loading progress
-    let loadingProgress = 0
-    const updateProgress = (progress: number) => {
-      loadingProgress = progress
-      onLoadingProgress?.(progress)
-    }
+      // Track loading progress
+      let loadingProgress = 0
+      const updateProgress = (progress: number) => {
+        loadingProgress = progress
+        onLoadingProgress?.(progress)
+      }
 
-    loader.load(
+      console.log('🎯 Loading 3D model for Section 1')
+
+      loader.load(
       '/product-3d/Color_Brush_assembly_V1_1.glb', 
       (gltf) => {
-        console.log('✅ Model loaded successfully:', gltf)
-        updateProgress(30) // Model loaded
+      console.log('✅ Model loaded successfully:', gltf)
+      updateProgress(30) // Model loaded
       model = gltf.scene
       modelRef.current = model
       console.log('✅ Model added to ref:', model)
+      
+      // Make model visible immediately upon loading
+      model.visible = true
+      model.traverse((child) => {
+        child.visible = true
+        if (child instanceof THREE.Mesh && child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => {
+              if (mat) {
+                mat.visible = true
+                mat.transparent = false
+                mat.opacity = 1
+              }
+            })
+          } else if (child.material) {
+            child.material.visible = true
+            child.material.transparent = false
+            child.material.opacity = 1
+          }
+        }
+      })
       
       // Analyze the 3D object structure
       // // Console log removed
@@ -1458,14 +1614,55 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       model.position.set(modelControls.position.x, modelControls.position.y, modelControls.position.z)
       model.rotation.set(modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z)
       
+      // Ensure model is visible
+      model.visible = true
+      
+      // Make sure all children are visible and have proper materials
+      model.traverse((child) => {
+        child.visible = true
+        
+        // Ensure meshes have materials
+        if (child instanceof THREE.Mesh) {
+          if (!child.material) {
+            console.warn('⚠️ Mesh without material found:', child.name)
+            child.material = new THREE.MeshBasicMaterial({ color: 0x888888 })
+          }
+          
+          // Ensure material is visible
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => {
+              if (mat) {
+                mat.visible = true
+                mat.transparent = false
+                mat.opacity = 1
+              }
+            })
+          } else if (child.material) {
+            child.material.visible = true
+            child.material.transparent = false
+            child.material.opacity = 1
+          }
+        }
+      })
+      
       console.log('✅ Model positioned:', {
         position: model.position,
         scale: model.scale,
-        rotation: model.rotation
+        rotation: model.rotation,
+        visible: model.visible
       })
       
       scene.add(model)
       console.log('✅ Model added to scene. Scene children count:', scene.children.length)
+      console.log('✅ Model position after adding:', model.position)
+      console.log('✅ Model scale after adding:', model.scale)
+      console.log('✅ Model visible after adding:', model.visible)
+      
+      // Force immediate render to show the model
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current)
+        console.log('🎨 Immediate render after model added')
+      }
 
       // Set initial camera position, rotation, and target with mobile adjustments
       const initialPosition = isMobile ? {
@@ -1480,8 +1677,43 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       camera.zoom = cameraControls.zoom
       console.log('✅ Camera positioned:', camera.position)
       console.log('✅ Camera rotation:', camera.rotation)
+      
+      // Force immediate render after camera setup
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current)
+        console.log('🎨 Immediate render after camera setup')
+      }
+      
       console.log('✅ Camera target:', cameraControls.target)
       console.log('✅ Camera zoom:', camera.zoom)
+      
+      // Debug camera and model positioning
+      if (model) {
+        const distance = camera.position.distanceTo(model.position)
+        console.log('📏 Camera to model distance:', distance)
+        console.log('📐 Camera FOV:', camera.fov)
+        console.log('📐 Camera aspect ratio:', camera.aspect)
+        console.log('📐 Camera position:', camera.position)
+        console.log('📐 Camera target:', cameraControls.target)
+        console.log('📐 Model position:', model.position)
+        
+        // Calculate model bounding box
+        const box = new THREE.Box3().setFromObject(model)
+        const size = box.getSize(new THREE.Vector3())
+        const center = box.getCenter(new THREE.Vector3())
+        console.log('📐 Model bounding box size:', size)
+        console.log('📐 Model bounding box center:', center)
+        
+        // Ensure camera is looking at the model center
+        camera.lookAt(center)
+        console.log('📐 Camera now looking at model center:', center)
+        
+        // Final render after camera adjustment
+        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+          rendererRef.current.render(sceneRef.current, cameraRef.current)
+          console.log('🎨 Final render after camera adjustment')
+        }
+      }
       
       // Force material and matrix updates
       model.traverse((child) => {
@@ -2868,14 +3100,19 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       updateProgress(100)
       onLoadingComplete?.()
       
-    }, undefined, (error) => {
-      console.error('❌ Model loading failed:', error)
-      updateProgress(100) // Still complete loading even if there's an error
-      onLoadingComplete?.()
-    })
+      // Final render to ensure model is visible
+      console.log('🎨 Final render after model loading complete')
+      requestRender()
+      
+      }, undefined, (error) => {
+        console.error('❌ Model loading failed:', error)
+        updateProgress(100) // Still complete loading even if there's an error
+        onLoadingComplete?.()
+      })
 
-    // Skip initial render - will render after model is loaded and controls are applied
-    console.log('⏸️ Skipping initial render - will render after model load')
+    // Render the scene immediately to show the background and lighting
+    console.log('🎨 Rendering initial scene')
+    requestRender()
 
     // Handle window resize
     const handleResize = () => {
@@ -2891,6 +3128,9 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize)
+      
+      // Stop rendering loop
+      cleanup()
       
       // Stop rendering
       stopRendering()
@@ -2940,6 +3180,348 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       }
     }
   }, [])
+
+  // Model loading effect - separate from main scene setup
+  useEffect(() => {
+    if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+      console.log('⏸️ Skipping model loading - scene not ready')
+      return
+    }
+
+    // Only log when stage changes or when actually loading
+    if (current3DStage >= 1) {
+      console.log('🔍 Model loading check - current3DStage:', current3DStage, 'condition:', current3DStage >= 1)
+    }
+    
+    // If model is already loaded and we're in stage 1+, don't reload it
+    if (modelRef.current && current3DStage >= 1) {
+      console.log('✅ Model already loaded, skipping reload to preserve textures')
+      onLoadingComplete?.()
+      return
+    }
+    
+    // Duplicate model loading block removed to prevent double loading
+    if (false) { // Disabled duplicate block
+      const loader = new GLTFLoader()
+      let model: THREE.Group | null = null
+
+      // Track loading progress
+      let loadingProgress = 0
+      const updateProgress = (progress: number) => {
+        loadingProgress = progress
+        onLoadingProgress?.(progress)
+      }
+
+      console.log('🎯 Loading 3D model for Section 1')
+
+      loader.load(
+      '/product-3d/Color_Brush_assembly_V1_1.glb', 
+      (gltf) => {
+      console.log('✅ Model loaded successfully:', gltf)
+      updateProgress(30) // Model loaded
+      model = gltf.scene
+      modelRef.current = model
+      console.log('✅ Model added to ref:', model)
+      
+      // Make model visible immediately upon loading
+      model.visible = true
+      model.traverse((child) => {
+        child.visible = true
+        if (child instanceof THREE.Mesh && child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => {
+              if (mat) {
+                mat.visible = true
+                mat.transparent = false
+                mat.opacity = 1
+              }
+            })
+          } else if (child.material) {
+            child.material.visible = true
+            child.material.transparent = false
+            child.material.opacity = 1
+          }
+        }
+      })
+      
+      // Apply shadows to meshes
+      model.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+        }
+      })
+
+      // Apply initial controls
+      const adjustedScale = modelControls.scale
+      model.scale.set(adjustedScale.x, adjustedScale.y, adjustedScale.z)
+      model.position.set(modelControls.position.x, modelControls.position.y, modelControls.position.z)
+      model.rotation.set(modelControls.rotation.x, modelControls.rotation.y, modelControls.rotation.z)
+      
+      // Ensure model is visible
+      model.visible = true
+      
+      // Make sure all children are visible and have proper materials
+      model.traverse((child) => {
+        child.visible = true
+        
+        if (child instanceof THREE.Mesh) {
+          if (!child.material) {
+            console.warn('⚠️ Mesh without material found:', child.name)
+            child.material = new THREE.MeshBasicMaterial({ color: 0x888888 })
+          }
+          
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => {
+              if (mat) {
+                mat.visible = true
+                mat.transparent = false
+                mat.opacity = 1
+              }
+            })
+          } else if (child.material) {
+            child.material.visible = true
+            child.material.transparent = false
+            child.material.opacity = 1
+          }
+        }
+      })
+      
+      console.log('✅ Model positioned:', {
+        position: model.position,
+        scale: model.scale,
+        rotation: model.rotation,
+        visible: model.visible
+      })
+      
+      if (sceneRef.current) {
+        sceneRef.current.add(model)
+        console.log('✅ Model added to scene. Scene children count:', sceneRef.current.children.length)
+      }
+      
+      // Force immediate render to show the model
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current)
+        console.log('🎨 Immediate render after model added')
+      }
+
+      // Update camera to look at model
+      if (cameraRef.current) {
+        const box = new THREE.Box3().setFromObject(model)
+        const center = box.getCenter(new THREE.Vector3())
+        cameraRef.current.lookAt(center)
+        console.log('📐 Camera now looking at model center:', center)
+        
+        // Final render after camera adjustment
+        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+          rendererRef.current.render(sceneRef.current, cameraRef.current)
+          console.log('🎨 Final render after camera adjustment')
+        }
+      }
+
+      // Map components for individual control
+      componentRefs.current.clear()
+      model.traverse((child) => {
+        if (child.name && child.name !== 'Scene' && child.name !== 'Root') {
+          componentRefs.current.set(child.name, child)
+        }
+      })
+      console.log('✅ Component mapping complete. Found', componentRefs.current.size, 'components')
+
+      // Apply textures to the model
+      if (textureLoader.current) {
+        console.log('🎨 Applying textures to model components')
+        
+        // Apply OLED texture to specific components
+        const oledTexture = textureLoader.current.load('/oled-screen.png', (texture) => {
+          console.log('✅ OLED texture loaded successfully')
+          oledTextureRef.current = texture
+          
+          // Apply texture to OLED components
+          const oledComponents = ['OLED_Display', 'OLED_Screen', 'Display', 'Screen']
+          oledComponents.forEach(componentName => {
+            const component = componentRefs.current.get(componentName)
+            if (component && component instanceof THREE.Mesh) {
+              if (Array.isArray(component.material)) {
+                component.material.forEach((material: THREE.MeshStandardMaterial) => {
+                  if (material.map) {
+                    material.map = texture
+                    material.needsUpdate = true
+                  }
+                })
+              } else if (component.material instanceof THREE.MeshStandardMaterial) {
+                if (component.material.map) {
+                  component.material.map = texture
+                  component.material.needsUpdate = true
+                }
+              }
+            }
+          })
+        }, undefined, (error) => {
+          console.error('❌ Error loading OLED texture:', error)
+        })
+
+        // Apply other textures
+        const upperCoverTexture = textureLoader.current.load('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg', (texture) => {
+          console.log('✅ Upper cover texture loaded successfully')
+          upperCoverTextureRef.current = texture
+          
+          const upperCoverComponents = ['Upper_Cover', 'Top_Cover', 'Cover_Upper']
+          upperCoverComponents.forEach(componentName => {
+            const component = componentRefs.current.get(componentName)
+            if (component && component instanceof THREE.Mesh) {
+              if (Array.isArray(component.material)) {
+                component.material.forEach((material: THREE.MeshStandardMaterial) => {
+                  if (material.map) {
+                    material.map = texture
+                    material.needsUpdate = true
+                  }
+                })
+              } else if (component.material instanceof THREE.MeshStandardMaterial) {
+                if (component.material.map) {
+                  component.material.map = texture
+                  component.material.needsUpdate = true
+                }
+              }
+            }
+          })
+        }, undefined, (error) => {
+          console.error('❌ Error loading upper cover texture:', error)
+        })
+
+        // Apply metal texture to all components (this is the main texture)
+        const metalTexture = textureLoader.current.load('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg', (texture) => {
+          console.log('✅ Metal texture loaded successfully')
+          
+          // Load additional texture maps for realistic material
+          if (textureLoader.current) {
+            const normalTexture = textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Normal.png', (normalMap) => {
+              console.log('✅ Normal texture loaded successfully')
+              
+              if (textureLoader.current) {
+                const metallicTexture = textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Metallic.jpg', (metallicMap) => {
+                  console.log('✅ Metallic texture loaded successfully')
+                  
+                  if (textureLoader.current) {
+                    const roughnessTexture = textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Roughness.jpg', (roughnessMap) => {
+                console.log('✅ Roughness texture loaded successfully')
+                
+                // Apply all texture maps to all mesh components
+                let textureAppliedCount = 0
+                let totalMeshes = 0
+                if (model) {
+                  model.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                      totalMeshes++
+                      console.log(`🔍 Found mesh: ${child.name}, has material: ${!!child.material}`)
+                      if (child.material) {
+                      if (Array.isArray(child.material)) {
+                        child.material.forEach((material: THREE.MeshStandardMaterial) => {
+                          // Apply textures regardless of whether material.map exists
+                          material.map = texture
+                          material.normalMap = normalMap
+                          material.metalnessMap = metallicMap
+                          material.roughnessMap = roughnessMap
+                          material.needsUpdate = true
+                          textureAppliedCount++
+                          console.log(`🎨 Applied complete metal material to ${child.name}`)
+                        })
+                      } else if (child.material instanceof THREE.MeshStandardMaterial) {
+                        // Apply textures regardless of whether material.map exists
+                        child.material.map = texture
+                        child.material.normalMap = normalMap
+                        child.material.metalnessMap = metallicMap
+                        child.material.roughnessMap = roughnessMap
+                        child.material.needsUpdate = true
+                        textureAppliedCount++
+                        console.log(`🎨 Applied complete metal material to ${child.name}`)
+                      }
+                    }
+                  }
+                  })
+                }
+                
+                console.log(`🔍 Total meshes found: ${totalMeshes}`)
+                console.log(`🎨 Complete metal material applied to ${textureAppliedCount} materials`)
+                
+                // Force a render after textures are applied
+                if (rendererRef.current && sceneRef.current && cameraRef.current) {
+                  rendererRef.current.render(sceneRef.current, cameraRef.current)
+                  console.log('🎨 Rendered after complete metal material application')
+                }
+                    }, undefined, (error) => {
+                      console.error('❌ Error loading roughness texture:', error)
+                    })
+                  }
+                }, undefined, (error) => {
+                  console.error('❌ Error loading metallic texture:', error)
+                })
+              }
+            }, undefined, (error) => {
+              console.error('❌ Error loading normal texture:', error)
+            })
+          }
+        }, undefined, (error) => {
+          console.error('❌ Error loading metal texture:', error)
+        })
+      }
+
+      // Complete loading
+      updateProgress(100)
+      onLoadingComplete?.()
+      
+      // Final render to ensure model is visible
+      console.log('🎨 Final render after model loading complete')
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current)
+      }
+      
+      }, undefined, (error) => {
+        console.error('❌ Model loading failed:', error)
+        updateProgress(100)
+        onLoadingComplete?.()
+      })
+    } else {
+      // Only log once per stage change to reduce spam
+      onLoadingComplete?.()
+    }
+  }, [current3DStage, modelControls, cameraControls, onLoadingProgress, onLoadingComplete])
+
+  // Monitor texture state to debug disappearing textures
+  useEffect(() => {
+    if (modelRef.current && current3DStage >= 1) {
+      const checkTextures = () => {
+        let texturedMaterials = 0
+        let totalMaterials = 0
+        modelRef.current?.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((material: THREE.MeshStandardMaterial) => {
+                totalMaterials++
+                if (material.map) {
+                  texturedMaterials++
+                }
+              })
+            } else if (child.material instanceof THREE.MeshStandardMaterial) {
+              totalMaterials++
+              if (child.material.map) {
+                texturedMaterials++
+              }
+            }
+          }
+        })
+        console.log(`🔍 Texture check: ${texturedMaterials}/${totalMaterials} materials have textures`)
+      }
+      
+      // Check textures immediately
+      checkTextures()
+      
+      // Check textures after a delay to see if they disappear
+      const timeoutId = setTimeout(checkTextures, 2000)
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [current3DStage])
 
   // Force updates when model controls change
   useEffect(() => {
@@ -3408,15 +3990,143 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         }
       })
     }
-  }, [current3DStage, componentControls, categoryVisibility])
+  }, [componentControls, categoryVisibility])
+
+  // Cleanup model only when completely leaving Section 1 (not during transitions)
+  useEffect(() => {
+    // Only clean up if we're going to a stage that definitely doesn't need the model
+    if (current3DStage < 0 && modelRef.current) {
+      console.log('🧹 Cleaning up 3D model - completely leaving Section 1')
+      
+      // Remove model from scene
+      if (sceneRef.current) {
+        sceneRef.current.remove(modelRef.current)
+      }
+      
+      // Dispose model resources
+      modelRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) child.geometry.dispose()
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((material: THREE.Material) => material.dispose())
+            } else {
+              child.material.dispose()
+            }
+          }
+        }
+      })
+      
+      modelRef.current = null
+    }
+  }, [current3DStage])
 
 
+  // Cleanup Three.js resources when component unmounts
+  useEffect(() => {
+    return () => {
+      console.log('🧹 ThreeSceneManager: Cleaning up Three.js resources')
+      
+      // Dispose renderer
+      if (rendererRef.current) {
+        rendererRef.current.dispose()
+        rendererRef.current = null
+      }
+      
+      // Dispose model and its resources
+      if (modelRef.current) {
+        modelRef.current.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            if (child.geometry) child.geometry.dispose()
+            if (child.material) {
+              if (Array.isArray(child.material)) {
+                child.material.forEach((material: THREE.Material) => material.dispose())
+              } else {
+                child.material.dispose()
+              }
+            }
+          }
+        })
+        modelRef.current = null
+      }
+      
+      // Dispose textures
+      const textures = [
+        oledTextureRef.current,
+        upperCoverTextureRef.current,
+        lowerSideMainTextureRef.current,
+        productComponentsTextureRef.current,
+        knobsTextureRef.current,
+        loadingMaterialCoverTextureRef.current,
+        upperSideMainHolderTextureRef.current
+      ]
+      
+      textures.forEach(texture => {
+        if (texture) {
+          texture.dispose()
+        }
+      })
+      
+      // Clear refs
+      sceneRef.current = null
+      cameraRef.current = null
+      ambientLightRef.current = null
+      directionalLightRef.current = null
+      pointLightRef.current = null
+      spotLightRef.current = null
+      textureLoader.current = null
+    }
+  }, [])
 
-
+  // Handle isActive prop changes - control rendering loop
+  useEffect(() => {
+    if (isActive) {
+      console.log('🎬 ThreeSceneManager is now active - starting rendering loop')
+      // Start rendering loop when becoming active
+      if ((window as any).startRenderLoop) {
+        ;(window as any).startRenderLoop()
+      }
+      // Force immediate render when becoming active for instant display
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current)
+        console.log('⚡ Forced immediate render for instant display')
+      }
+    } else {
+      console.log('⏸️ ThreeSceneManager is now inactive - stopping rendering loop')
+      // Stop rendering loop when becoming inactive
+      if ((window as any).stopRenderLoop) {
+        ;(window as any).stopRenderLoop()
+      }
+    }
+  }, [isActive])
 
   // Static scene - no animations
 
   return null // This component doesn't render anything directly
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  // Only re-render if critical props actually change
+  if (prevProps.current3DStage !== nextProps.current3DStage) return false
+  if (prevProps.isActive !== nextProps.isActive) return false
+  
+  // For object props, do deep comparison of key values
+  if (prevProps.modelControls?.position?.x !== nextProps.modelControls?.position?.x) return false
+  if (prevProps.modelControls?.position?.y !== nextProps.modelControls?.position?.y) return false
+  if (prevProps.modelControls?.position?.z !== nextProps.modelControls?.position?.z) return false
+  if (prevProps.modelControls?.scale?.x !== nextProps.modelControls?.scale?.x) return false
+  if (prevProps.modelControls?.scale?.y !== nextProps.modelControls?.scale?.y) return false
+  if (prevProps.modelControls?.scale?.z !== nextProps.modelControls?.scale?.z) return false
+  
+  if (prevProps.cameraControls?.position?.x !== nextProps.cameraControls?.position?.x) return false
+  if (prevProps.cameraControls?.position?.y !== nextProps.cameraControls?.position?.y) return false
+  if (prevProps.cameraControls?.position?.z !== nextProps.cameraControls?.position?.z) return false
+  if (prevProps.cameraControls?.fov !== nextProps.cameraControls?.fov) return false
+  
+  if (prevProps.lightingControls?.ambientIntensity !== nextProps.lightingControls?.ambientIntensity) return false
+  if (prevProps.lightingControls?.directionalIntensity !== nextProps.lightingControls?.directionalIntensity) return false
+  
+  // If all critical props are the same, don't re-render
+  return true
 })
 
 export default ThreeSceneManager

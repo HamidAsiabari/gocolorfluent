@@ -275,10 +275,14 @@ canvas {
   height: 100%;
   z-index: -1; /* Behind everything - negative z-index */
   pointer-events: none; /* Allow interactions to pass through to content */
+  will-change: transform; /* Hardware acceleration */
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 .three-scene-container canvas {
   pointer-events: auto; /* Re-enable interactions on the canvas itself */
+  will-change: transform; /* Hardware acceleration */
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 .section-content {
@@ -336,6 +340,18 @@ section {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y; /* Allow vertical scrolling only */
+  }
+  
+  /* Mobile-specific 3D canvas optimizations */
+  .three-scene-container {
+    transform: translate3d(0, 0, 0); /* Use 3D transforms for better performance */
+  }
+  
+  .three-scene-container canvas {
+    image-rendering: optimizeSpeed; /* Faster rendering on mobile */
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated; /* Fallback for older browsers */
   }
   
   body {

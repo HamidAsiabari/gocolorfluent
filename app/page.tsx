@@ -46,61 +46,71 @@ import { LoadingScreen, SectionLoadingScreen } from '../components/Loading'
 import { ComponentControls, defaultComponentControls, CategoryVisibility, defaultCategoryVisibility } from '../components/DevControls/sections/product3d/types'
 import DevControls from '../components/DevControls/DevControls'
 
+// Memoized ThreeSceneManager to prevent unnecessary re-renders
+const MemoizedThreeSceneManager = memo(ThreeSceneManager, (prev, next) => {
+  // Return true if props are the same (no re-render needed)
+  return (
+    prev.current3DStage === next.current3DStage &&
+    prev.isActive === next.isActive &&
+    prev.modelControls === next.modelControls &&
+    prev.cameraControls === next.cameraControls &&
+    prev.lightingControls === next.lightingControls &&
+    prev.componentControls === next.componentControls &&
+    prev.categoryVisibility === next.categoryVisibility &&
+    prev.mountRef === next.mountRef &&
+    prev.onComponentControlsChange === next.onComponentControlsChange &&
+    prev.onLoadingProgress === next.onLoadingProgress &&
+    prev.onLoadingComplete === next.onLoadingComplete
+  )
+})
+
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   
-  // Get minimal state from Zustand store to prevent infinite loops
-  const {
-    // Only essential state
-    currentSection,
-    isScrolling,
-    scrollDirection,
-    isTransitioning,
-    transitionProgress,
-    scrollPosition,
-    isNavigatingViaDots,
-    isLoading,
-    loadingProgress,
-    isClient,
-    
-    // Only essential actions
-    setCurrentSection,
-    setIsScrolling,
-    setScrollDirection,
-    setIsTransitioning,
-    setTransitionProgress,
-    setScrollPosition,
-    setIsClient,
-    setLoading,
-    setLoadingProgress,
-    setIsNavigatingViaDots,
-    addDebugLog,
-    setDebugMode
-  } = useAppStore()
+  // Optimized state subscriptions to prevent unnecessary re-renders
+  const currentSection = useAppStore((state) => state.currentSection)
+  const isClient = useAppStore((state) => state.isClient)
+  const isLoading = useAppStore((state) => state.isLoading)
+  const loadingProgress = useAppStore((state) => state.loadingProgress)
+  const isScrolling = useAppStore((state) => state.isScrolling)
+  const scrollDirection = useAppStore((state) => state.scrollDirection)
+  const isTransitioning = useAppStore((state) => state.isTransitioning)
+  const transitionProgress = useAppStore((state) => state.transitionProgress)
+  const scrollPosition = useAppStore((state) => state.scrollPosition)
+  const isNavigatingViaDots = useAppStore((state) => state.isNavigatingViaDots)
   
-  // Get all 3D state and actions from main store to avoid useSyncExternalStore issues
-  const {
-    // 3D State
-    current3DStage,
-    stage3DAnimationProgress,
-    is3DAnimating,
-    isAnimating,
-    animationProgress,
-    modelControls,
-    cameraControls,
-    lightingControls,
-    
-    // 3D Actions
-    setCurrent3DStage,
-    setModelControls,
-    setCameraControls,
-    setLightingControls,
-    setStage3DAnimationProgress,
-    setIs3DAnimating,
-    setIsAnimating,
-    setAnimationProgress
-  } = useAppStore()
+  // 3D state - only subscribe to what's needed
+  const current3DStage = useAppStore((state) => state.current3DStage)
+  const stage3DAnimationProgress = useAppStore((state) => state.stage3DAnimationProgress)
+  const is3DAnimating = useAppStore((state) => state.is3DAnimating)
+  const isAnimating = useAppStore((state) => state.isAnimating)
+  const animationProgress = useAppStore((state) => state.animationProgress)
+  const modelControls = useAppStore((state) => state.modelControls)
+  const cameraControls = useAppStore((state) => state.cameraControls)
+  const lightingControls = useAppStore((state) => state.lightingControls)
+  
+  // Actions - memoized to prevent re-renders
+  const setCurrentSection = useAppStore((state) => state.setCurrentSection)
+  const setIsClient = useAppStore((state) => state.setIsClient)
+  const setLoading = useAppStore((state) => state.setLoading)
+  const setLoadingProgress = useAppStore((state) => state.setLoadingProgress)
+  const setIsScrolling = useAppStore((state) => state.setIsScrolling)
+  const setScrollDirection = useAppStore((state) => state.setScrollDirection)
+  const setIsTransitioning = useAppStore((state) => state.setIsTransitioning)
+  const setTransitionProgress = useAppStore((state) => state.setTransitionProgress)
+  const setScrollPosition = useAppStore((state) => state.setScrollPosition)
+  const setIsNavigatingViaDots = useAppStore((state) => state.setIsNavigatingViaDots)
+  const setCurrent3DStage = useAppStore((state) => state.setCurrent3DStage)
+  const setStage3DAnimationProgress = useAppStore((state) => state.setStage3DAnimationProgress)
+  const setIs3DAnimating = useAppStore((state) => state.setIs3DAnimating)
+  const setIsAnimating = useAppStore((state) => state.setIsAnimating)
+  const setAnimationProgress = useAppStore((state) => state.setAnimationProgress)
+  const setModelControls = useAppStore((state) => state.setModelControls)
+  const setCameraControls = useAppStore((state) => state.setCameraControls)
+  const setLightingControls = useAppStore((state) => state.setLightingControls)
+  const addDebugLog = useAppStore((state) => state.addDebugLog)
+  const setDebugMode = useAppStore((state) => state.setDebugMode)
   
   // Local state for things not in store yet
   const [transitionName, setTransitionName] = useState<string | null>(null)
@@ -109,6 +119,11 @@ export default function Home() {
   const [isDevMode, setIsDevMode] = useState(false) // Disable dev mode temporarily
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
+  
+  // Memoize isActive calculation to prevent unnecessary re-renders
+  const isActive = useMemo(() => {
+    return currentSection === 1 || (isScrolling && scrollDirection === 'up' && scrollPosition < window.innerHeight * 0.5)
+  }, [currentSection, isScrolling, scrollDirection, scrollPosition])
   
   // Toggle dev mode with keyboard shortcut (Ctrl+D)
   useEffect(() => {
@@ -794,15 +809,23 @@ export default function Home() {
         toSection={sectionLoadingTo} 
       />
       
-      {/* Fixed 3D Container - Always full screen */}
+      {/* 3D Container - Always mounted but conditionally visible */}
       <div 
         ref={mountRef} 
         className="fixed inset-0 w-screen h-screen touch-none"
-        style={{ zIndex: 1 }}
+        style={{ 
+          zIndex: (currentSection === 1 || (isScrolling && scrollDirection === 'up' && scrollPosition < window.innerHeight * 0.5)) ? 1 : -1,
+          opacity: (currentSection === 1 || (isScrolling && scrollDirection === 'up' && scrollPosition < window.innerHeight * 0.5)) ? 1 : 0,
+          pointerEvents: (currentSection === 1 || (isScrolling && scrollDirection === 'up' && scrollPosition < window.innerHeight * 0.5)) ? 'auto' : 'none',
+          transition: 'opacity 0.05s ease-out',
+          willChange: 'opacity',
+          transform: 'translateZ(0)', // Force hardware acceleration
+          backfaceVisibility: 'hidden' // Optimize rendering
+        }}
       />
       
-      {/* Three.js Scene Manager */}
-      <ThreeSceneManager
+      {/* Three.js Scene Manager - Always mounted but conditionally active */}
+      <MemoizedThreeSceneManager
         mountRef={mountRef}
         modelControls={modelControls}
         cameraControls={cameraControls}
@@ -813,6 +836,7 @@ export default function Home() {
         onComponentControlsChange={setComponentControls}
         onLoadingProgress={handleLoadingProgress}
         onLoadingComplete={handleLoadingComplete}
+        isActive={isActive}
       />
 
       {/* Scroll Manager */}
