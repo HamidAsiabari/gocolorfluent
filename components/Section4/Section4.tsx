@@ -21,11 +21,17 @@ const Section4 = memo(function Section4({
 }: Section4Props) {
   const [isVisible, setIsVisible] = useState(false)
   const [isBlurred, setIsBlurred] = useState(false)
-  const [windowHeight, setWindowHeight] = useState(0)
+  const [windowHeight, setWindowHeight] = useState(() => {
+    // Initialize with actual window height to prevent flash on first render
+    if (typeof window !== 'undefined') {
+      return window.innerHeight
+    }
+    return 0
+  })
   const { markSectionVisited } = useSectionVisit()
 
   useEffect(() => {
-    // Set window height on client side
+    // Update window height when it changes
     if (typeof window !== 'undefined') {
       setWindowHeight(window.innerHeight)
     }

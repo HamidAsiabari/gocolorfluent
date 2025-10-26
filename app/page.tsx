@@ -98,13 +98,34 @@ export default function Home() {
   
   // Check if this is a navigation from another page by looking at referrer
   const [isInitialLoad, setIsInitialLoad] = useState(() => {
-    // Check if we have a referrer and it's from the same domain (navigation)
+    // Always treat as initial load to always play the stage 0->1 animation
+    // This ensures the animation always plays regardless of where the user came from
     if (typeof window !== 'undefined') {
       const referrer = document.referrer
       const currentDomain = window.location.origin
-      const isNavigation = referrer && referrer.startsWith(currentDomain) && referrer !== window.location.href
-      console.log('🔍 Initial load check:', { referrer, currentDomain, isNavigation })
-      return !isNavigation
+      const currentPath = window.location.pathname
+      
+      // Parse referrer path
+      let referrerPath = ''
+      if (referrer) {
+        try {
+          const referrerUrl = new URL(referrer)
+          referrerPath = referrerUrl.pathname
+        } catch (e) {
+          // If parsing fails, treat as initial load
+          return true
+        }
+      }
+      
+      // Check if this is an internal navigation (same domain)
+      const isInternalNavigation = referrer && referrer.startsWith(currentDomain) && referrer !== window.location.href
+      // Check if we're coming from a different path
+      const isFromDifferentPath = referrerPath !== '' && referrerPath !== currentPath
+      
+      console.log('🔍 Initial load check:', { referrer, referrerPath, currentPath, isInternalNavigation, isFromDifferentPath })
+      
+      // Always treat as initial load so animation always plays
+      return true
     }
     return true
   })
@@ -272,39 +293,57 @@ export default function Home() {
       if (progress < 1) {
         requestAnimationFrame(animateTransition)
       } else {
-        // Transition complete
-        setCurrentSection(targetSection)
-        setIsScrolling(false)
-        setIsTransitioning(false)
-        setTransitionName(null)
-        setTransitionProgress(1)
+        // Transition complete - ensure final scroll position first
+        const finalScrollY = (targetSection - 1) * window.innerHeight
+        window.scrollTo(0, finalScrollY)
+        setScrollPosition(finalScrollY)
         
-        // Hide section loading screen if it was shown
-        if (shouldShowLoading) {
-          setIsSectionLoading(false)
-        }
-        
-        // Update 3D stage to match the target section (stage = section)
-        const targetStage = targetSection
-        
-        // Direct stage transition without animation
-        if (targetStage !== current3DStage) {
-          setCurrent3DStage(targetStage)
-          setStage3DAnimationProgress(1)
-          
-          // Apply stage configuration immediately
-          const stageConfig = getStageConfigLocal(targetStage)
-          if (stageConfig) {
-            setModelControls(stageConfig.model)
-            setCameraControls(stageConfig.camera)
-            setLightingControls(stageConfig.lighting)
-          }
-        }
-        
-        // Clear the navigation flag after a short delay to prevent conflicts
-        setTimeout(() => {
-          setIsNavigatingViaDots(false)
-        }, 100)
+        // Use THREE requestAnimationFrames to ensure scroll is fully rendered before state update
+        // First frame: let the browser start rendering the scroll position
+        requestAnimationFrame(() => {
+          // Second frame: ensure the scroll position is painted
+          requestAnimationFrame(() => {
+            // Third frame: Update all state atomically to prevent flash
+            requestAnimationFrame(() => {
+              // CRITICAL: Update all state together to ensure sections render correctly
+              setTransitionProgress(0)
+              setIsScrolling(false)
+              setTransitionName(null)
+              
+              // Hide section loading screen if it was shown
+              if (shouldShowLoading) {
+                setIsSectionLoading(false)
+              }
+              
+              // Update 3D stage to match the target section (stage = section)
+              const targetStage = targetSection
+              
+              // Direct stage transition without animation
+              if (targetStage !== current3DStage) {
+                setCurrent3DStage(targetStage)
+                setStage3DAnimationProgress(1)
+                
+                // Apply stage configuration immediately
+                const stageConfig = getStageConfigLocal(targetStage)
+                if (stageConfig) {
+                  setModelControls(stageConfig.model)
+                  setCameraControls(stageConfig.camera)
+                  setLightingControls(stageConfig.lighting)
+                }
+              }
+              
+              // Set isTransitioning to false and update currentSection together
+              // This ensures isTransitioning=false when sections recalculate positions
+              setIsTransitioning(false)
+              setCurrentSection(targetSection)
+              
+              // Clear the navigation flag after a short delay to prevent conflicts
+              setTimeout(() => {
+                setIsNavigatingViaDots(false)
+              }, 100)
+            })
+          })
+        })
       }
     }
     
@@ -316,51 +355,30 @@ export default function Home() {
     setLoadingStartTime(Date.now())
   }, [])
 
-  // Set initial stage - skip Stage 0 if coming from another page
+  // Set initial stage - always start with Stage 0 and animate to Stage 1
   useEffect(() => {
     if (!isClient || isLoading) return
 
-    if (isInitialLoad) {
-      // Initial page load - start with Stage 0 and animate to Stage 1
-      console.log('🎯 Initial page load - initializing stage 0 - will animate to stage 1')
-      
-      // Set to stage 0 initially
-      setCurrent3DStage(0)
-      setIs3DAnimating(false)
-      setStage3DAnimationProgress(0)
-      
-      // Apply stage 0 configuration immediately
-      const stage0Config = getStageConfigLocal(0)
-      if (stage0Config) {
-        console.log('🎯 Applying stage 0 config:', stage0Config)
-        setModelControls(stage0Config.model)
-        setCameraControls(stage0Config.camera)
-        setLightingControls(stage0Config.lighting)
-      }
-    } else {
-      // Coming from another page - go directly to Stage 1
-      console.log('🎯 Coming from another page - going directly to stage 1')
-      
-      // Set to stage 1 immediately
-      setCurrent3DStage(1)
-      setIs3DAnimating(false)
-      setStage3DAnimationProgress(1)
-      
-      // Apply stage 1 configuration immediately
-      const stage1Config = getStageConfigLocal(1)
-      if (stage1Config) {
-        console.log('🎯 Applying stage 1 config directly:', stage1Config)
-        setModelControls(stage1Config.model)
-        setCameraControls(stage1Config.camera)
-        setLightingControls(stage1Config.lighting)
-      }
+    // Initial page load - start with Stage 0 and animate to Stage 1
+    console.log('🎯 Initializing stage 0 - will animate to stage 1')
+    
+    // Set to stage 0 initially
+    setCurrent3DStage(0)
+    setIs3DAnimating(false)
+    setStage3DAnimationProgress(0)
+    
+    // Apply stage 0 configuration immediately
+    const stage0Config = getStageConfigLocal(0)
+    if (stage0Config) {
+      console.log('🎯 Applying stage 0 config:', stage0Config)
+      setModelControls(stage0Config.model)
+      setCameraControls(stage0Config.camera)
+      setLightingControls(stage0Config.lighting)
     }
 
-    // Only start animation for initial page loads
-    if (isInitialLoad) {
-      // Start animation to stage 1 after a short delay
-      const animationDelay = 300 // 0.3 second delay
-      const animationTimeout = setTimeout(() => {
+    // Start animation to stage 1 after a short delay
+    const animationDelay = 300 // 0.3 second delay
+    const animationTimeout = setTimeout(() => {
       console.log('🎬 Starting automatic transition from stage 0 to stage 1')
       
       // Get stage 1 configuration
@@ -398,8 +416,8 @@ export default function Home() {
           }
           
           // Direct Three.js animation - bypass React state updates
-          if (window.directThreeAnimation) {
-            window.directThreeAnimation({
+          if ((window as any).directThreeAnimation) {
+            (window as any).directThreeAnimation({
               progress: easedProgress,
               stage0Config,
               stage1Config
@@ -416,6 +434,9 @@ export default function Home() {
             setStage3DAnimationProgress(1)
             
             // Apply final stage 1 values
+            // On mobile, the directThreeAnimation already positioned the camera at mobile-adjusted Stage 1
+            // Setting desktop values to store will cause forceDevControlUpdates to re-apply mobile adjustments,
+            // which should keep the camera at the same position (no jump)
             setModelControls(stage1Config.model)
             setCameraControls(stage1Config.camera)
             setLightingControls(stage1Config.lighting)
@@ -428,12 +449,11 @@ export default function Home() {
       }
     }, animationDelay)
 
-      // Cleanup timeout on unmount
-      return () => {
-        clearTimeout(animationTimeout)
-      }
+    // Cleanup timeout on unmount
+    return () => {
+      clearTimeout(animationTimeout)
     }
-  }, [isClient, isLoading, isInitialLoad, setCurrent3DStage, setIs3DAnimating, setStage3DAnimationProgress, getStageConfigLocal, setModelControls, setCameraControls, setLightingControls, easeOutCubic])
+  }, [isClient, isLoading, setCurrent3DStage, setIs3DAnimating, setStage3DAnimationProgress, getStageConfigLocal, setModelControls, setCameraControls, setLightingControls, easeOutCubic])
   
   // Track key state changes
   // Note: useStateTracker calls removed to fix invalid hook call errors
@@ -901,7 +921,7 @@ export default function Home() {
             />
           )}
 
-          {/* Section 3 - Render if current or adjacent */}
+          {/* Section 3 - Render if current, previous, or next (show for sections 2-4) */}
           {(currentSection >= 2 && currentSection <= 4) && (
             <Section3
               isClient={isClient}
@@ -912,7 +932,7 @@ export default function Home() {
             />
           )}
 
-          {/* Section 4 - Render if current or adjacent */}
+          {/* Section 4 - Render if current, previous, or next (show for sections 3-5) */}
           {(currentSection >= 3 && currentSection <= 5) && (
             <Section4
               isClient={isClient}
@@ -956,7 +976,7 @@ export default function Home() {
             />
           )}
 
-          {/* Section 8 - Render if current or adjacent */}
+          {/* Section 8 - Render if current (show for sections 7-8) */}
           {(currentSection >= 7 && currentSection <= 8) && (
             <Section8
               isClient={isClient}

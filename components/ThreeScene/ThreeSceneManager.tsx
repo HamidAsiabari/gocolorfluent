@@ -444,20 +444,35 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
           if (cameraRef.current) {
             const camera = cameraRef.current
             
-            // Interpolate camera position
-            let newPosition = {
-              x: stage0Config.camera.position.x + (stage1Config.camera.position.x - stage0Config.camera.position.x) * easedProgress,
-              y: stage0Config.camera.position.y + (stage1Config.camera.position.y - stage0Config.camera.position.y) * easedProgress,
-              z: stage0Config.camera.position.z + (stage1Config.camera.position.z - stage0Config.camera.position.z) * easedProgress
+            // Calculate Stage 0 and Stage 1 target positions with mobile adjustments already applied
+            // This ensures animation target matches the final Stage 1 values on mobile
+            let stage0Pos = { ...stage0Config.camera.position }
+            let stage1Pos = { ...stage1Config.camera.position }
+            let stage0Fov = stage0Config.camera.fov
+            let stage1Fov = stage1Config.camera.fov
+            
+            // Apply mobile adjustments to both Stage 0 and Stage 1 if mobile
+            // This ensures smooth interpolation from mobile-adjusted Stage 0 to mobile-adjusted Stage 1
+            if (isMobileDevice) {
+              stage0Pos = {
+                x: stage0Pos.x,
+                y: stage0Pos.y + 0.5,
+                z: stage0Pos.z + 2
+              }
+              stage1Pos = {
+                x: stage1Pos.x,
+                y: stage1Pos.y + 0.1,
+                z: stage1Pos.z + 0.2
+              }
+              stage0Fov = stage0Fov + 15
+              stage1Fov = stage1Fov + 15
             }
             
-            // Apply mobile camera adjustments
-            if (isMobileDevice) {
-              newPosition = {
-                x: newPosition.x,
-                y: newPosition.y + 0.5,
-                z: newPosition.z + 2
-              }
+            // Interpolate camera position from desktop values to mobile-adjusted Stage 1
+            let newPosition = {
+              x: stage0Pos.x + (stage1Pos.x - stage0Pos.x) * easedProgress,
+              y: stage0Pos.y + (stage1Pos.y - stage0Pos.y) * easedProgress,
+              z: stage0Pos.z + (stage1Pos.z - stage0Pos.z) * easedProgress
             }
             
             // Interpolate camera target (lookAt point)
@@ -467,13 +482,8 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
               z: stage0Config.camera.target.z + (stage1Config.camera.target.z - stage0Config.camera.target.z) * easedProgress
             }
             
-            // Interpolate camera FOV
-            let newFov = stage0Config.camera.fov + (stage1Config.camera.fov - stage0Config.camera.fov) * easedProgress
-            
-            // Apply mobile FOV adjustment
-            if (isMobileDevice) {
-              newFov = newFov + 15
-            }
+            // Interpolate camera FOV from desktop Stage 0 to mobile-adjusted Stage 1
+            let newFov = stage0Fov + (stage1Fov - stage0Fov) * easedProgress
             
             // Apply directly to Three.js camera
             camera.position.set(newPosition.x, newPosition.y, newPosition.z)
@@ -3731,10 +3741,11 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const { position, rotation, target, fov, near, far, zoom } = cameraControls
       
       // Only update if values have actually changed
+      // Apply mobile camera adjustments to match forceDevControlUpdates
       const finalPosition = isMobile ? {
         x: position.x,
-        y: position.y + 0.2,
-        z: position.z + 0.7
+        y: position.y + 0.1,
+        z: position.z + 0.2
       } : position
       
       if (camera.position.x !== finalPosition.x || camera.position.y !== finalPosition.y || camera.position.z !== finalPosition.z) {
@@ -3749,7 +3760,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         camera.lookAt(target.x, target.y, target.z)
       }
       
-      const mobileFOV = fov + 1 // Increase FOV on mobile for wider view
+      const mobileFOV = fov + 15 // Increase FOV on mobile for wider view - match forceDevControlUpdates
       const finalFOV = isMobile ? mobileFOV : fov
       
       if (camera.fov !== finalFOV || camera.near !== near || camera.far !== far) {

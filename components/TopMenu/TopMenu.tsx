@@ -100,6 +100,13 @@ const TopMenu = memo(function TopMenu() {
       // Small delay to show loading state
       await new Promise(resolve => setTimeout(resolve, 300))
       
+      // If navigating to home page from another page, reload the page to show loading screen
+      if (href === '/' && pathname !== '/') {
+        closeMenu()
+        window.location.href = '/'
+        return
+      }
+      
       // Navigate to the page
       router.push(href)
       
@@ -136,7 +143,16 @@ const TopMenu = memo(function TopMenu() {
         <div className="w-full">
           <div className="flex justify-between items-center py-1 px-2 sm:py-6 sm:px-6 lg:px-8">
             {/* Logo */}
-            <Link href={menuConfig.logo.href} className="flex-shrink-0">
+            <a 
+              href={menuConfig.logo.href} 
+              onClick={(e) => {
+                if (pathname !== '/' && menuConfig.logo.href === '/') {
+                  e.preventDefault()
+                  window.location.href = '/'
+                }
+              }}
+              className="flex-shrink-0"
+            >
               <div className="relative w-[97px] h-[97px] md:w-[120px] md:h-[120px]">
                 <Image
                   src={menuConfig.logo.src}
@@ -150,7 +166,7 @@ const TopMenu = memo(function TopMenu() {
                 <div className="absolute inset-0 bg-white/6 blur-lg rounded-lg -z-10 scale-110"></div>
                 <div className="absolute inset-0 bg-white/3 blur-md rounded-lg -z-10 scale-105"></div>
               </div>
-            </Link>
+            </a>
 
             {/* Menu Button */}
             <button
@@ -214,9 +230,15 @@ const TopMenu = memo(function TopMenu() {
           >
             <div className="text-center">
               {/* Logo in Menu */}
-              <Link 
+              <a 
                 href={menuConfig.logo.href} 
-                onClick={closeMenu}
+                onClick={(e) => {
+                  closeMenu()
+                  if (pathname !== '/' && menuConfig.logo.href === '/') {
+                    e.preventDefault()
+                    window.location.href = '/'
+                  }
+                }}
                 className="block mb-6"
               >
                 <div className="relative w-[676px] h-[216px] mx-auto">
@@ -232,7 +254,7 @@ const TopMenu = memo(function TopMenu() {
                   <div className="absolute inset-0 bg-white/6 blur-lg rounded-lg -z-10 scale-110"></div>
                   <div className="absolute inset-0 bg-white/3 blur-md rounded-lg -z-10 scale-105"></div>
                 </div>
-              </Link>
+              </a>
 
               {/* Menu Items */}
               <nav className="space-y-2 sm:space-y-3">

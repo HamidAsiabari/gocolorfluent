@@ -36,6 +36,13 @@ export default function Menu({ variant = 'desktop', onItemClick }: MenuProps) {
     if (onItemClick) {
       onItemClick()
     }
+    
+    // If navigating to home page from another page, reload the page to show loading screen
+    if (path === '/' && pathname !== '/') {
+      window.location.href = '/'
+      return
+    }
+    
     router.push(path)
   }
 

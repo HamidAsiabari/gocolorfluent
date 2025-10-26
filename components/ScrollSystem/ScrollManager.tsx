@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, memo, useCallback } from 'react'
+import { useEffect, useState, memo, useCallback, useRef } from 'react'
 
 interface ScrollManagerProps {
   currentSection: number
@@ -27,6 +27,14 @@ const ScrollManager = memo(function ScrollManager({
   isClient,
   setIsClient
 }: ScrollManagerProps) {
+  // Use ref to track current section value to avoid stale closures
+  const currentSectionRef = useRef(currentSection)
+  
+  // Update ref when prop changes
+  useEffect(() => {
+    currentSectionRef.current = currentSection
+  }, [currentSection])
+  
   useEffect(() => {
     setIsClient(true)
     
@@ -43,7 +51,7 @@ const ScrollManager = memo(function ScrollManager({
     // Lock scroll position to current section
     const lockScrollPosition = () => {
       const windowHeight = window.innerHeight
-      const targetScrollY = (currentSection - 1) * windowHeight
+      const targetScrollY = (currentSectionRef.current - 1) * windowHeight
       window.scrollTo(0, targetScrollY)
       setScrollPosition(targetScrollY)
     }
@@ -54,7 +62,7 @@ const ScrollManager = memo(function ScrollManager({
       
       const windowHeight = window.innerHeight
       const currentScrollY = window.scrollY
-      const expectedScrollY = (currentSection - 1) * windowHeight
+      const expectedScrollY = (currentSectionRef.current - 1) * windowHeight
       
       // Check if device is mobile
       const isMobile = window.innerWidth <= 768
@@ -171,16 +179,18 @@ const ScrollManager = memo(function ScrollManager({
     const navigateToSection = (direction: 'up' | 'down') => {
       if (isScrollingToSection) return
       
-      let targetSection = currentSection
+      // Capture current section value at the start of navigation
+      const startSection = currentSectionRef.current
+      let targetSection = startSection
       
       if (direction === 'down') {
-        targetSection = Math.min(8, currentSection + 1)
+        targetSection = Math.min(8, startSection + 1)
       } else {
-        targetSection = Math.max(1, currentSection - 1)
+        targetSection = Math.max(1, startSection - 1)
       }
       
-      if (targetSection !== currentSection) {
-        const transitionName = `section${currentSection}to${targetSection}`
+      if (targetSection !== startSection) {
+        const transitionName = `section${startSection}to${targetSection}`
         
         // Start transition animation
         setScrollDirection(direction)
@@ -195,6 +205,8 @@ const ScrollManager = memo(function ScrollManager({
         const startTime = performance.now()
         
         const animateTransition = (currentTime: number) => {
+          if (!isScrollingToSection) return // Guard against cleanup
+          
           const elapsed = currentTime - startTime
           const progress = Math.min(elapsed / duration, 1)
           
@@ -208,7 +220,7 @@ const ScrollManager = memo(function ScrollManager({
           
           // Smooth scroll to target position during animation
           const windowHeight = window.innerHeight
-          const startScrollY = (currentSection - 1) * windowHeight
+          const startScrollY = (startSection - 1) * windowHeight
           const targetScrollY = (targetSection - 1) * windowHeight
           const currentScrollY = startScrollY + (targetScrollY - startScrollY) * easedProgress
           
@@ -218,18 +230,34 @@ const ScrollManager = memo(function ScrollManager({
           if (progress < 1) {
             requestAnimationFrame(animateTransition)
           } else {
-            // Transition complete
-            setCurrentSection(targetSection)
-            setIsScrolling(false)
-            setIsTransitioning(false)
-            setTransitionProgress(0)
+            // Transition complete - ensure final scroll position is exact first
+            const finalScrollY = (targetSection - 1) * window.innerHeight
+            window.scrollTo(0, finalScrollY)
+            setScrollPosition(finalScrollY)
+            
+            // Update ref and cancel the ongoing animation
+            currentSectionRef.current = targetSection
             isScrollingToSection = false
             setTransitionName(null)
             
-            // Ensure final scroll position is exact
-            const finalScrollY = (targetSection - 1) * window.innerHeight
-            setScrollPosition(finalScrollY)
-            window.scrollTo(0, finalScrollY)
+            // Use THREE requestAnimationFrames to ensure scroll is fully rendered before state update
+            // First frame: let the browser start rendering the scroll position
+            requestAnimationFrame(() => {
+              // Second frame: ensure the scroll position is painted
+              requestAnimationFrame(() => {
+                // Third frame: Update all state atomically to prevent flash
+                requestAnimationFrame(() => {
+                  // CRITICAL: Update all state together to ensure sections render correctly
+                  setTransitionProgress(0)
+                  setIsScrolling(false)
+                  
+                  // Set isTransitioning to false and update currentSection together
+                  // This ensures isTransitioning=false when sections recalculate positions
+                  setIsTransitioning(false)
+                  setCurrentSection(targetSection)
+                })
+              })
+            })
           }
         }
         
@@ -288,8 +316,10 @@ const ScrollManager = memo(function ScrollManager({
       if (scrollLockInterval) {
         clearInterval(scrollLockInterval)
       }
+      // Cancel any ongoing animation by setting flag
+      isScrollingToSection = false
     }
-  }, [currentSection, setCurrentSection, setIsScrolling, setScrollDirection, setTransitionName, setIsTransitioning, setTransitionProgress, setScrollPosition, setIsClient])
+  }, [setCurrentSection, setIsScrolling, setScrollDirection, setTransitionName, setIsTransitioning, setTransitionProgress, setScrollPosition, setIsClient])
 
   // Initialize scroll position on mount
   useEffect(() => {
