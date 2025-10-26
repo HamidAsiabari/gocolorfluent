@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, memo } from 'react'
-import { TypingAnimation, useSectionVisit } from '../Animation'
+import { SimpleTextAnimation, useSectionVisit } from '../Animation'
 
 interface Section7Props {
   isClient: boolean
@@ -58,10 +58,11 @@ const Section7 = memo(function Section7({
 
   return (
     <section 
-      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen absolute inset-0 pt-4 md:pt-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-full absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (7 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
-        zIndex: 10
+        zIndex: 10,
+        maxWidth: '100%'
       }}
     >
       {/* Background Elements */}
@@ -166,9 +167,8 @@ const Section7 = memo(function Section7({
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" />
                     <span className="text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Micro-gear motor technology" 
-                        speed={60} 
                         delay={0}
                         sectionNumber={7}
                         currentSection={currentSection}
@@ -179,9 +179,8 @@ const Section7 = memo(function Section7({
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-200" />
                     <span className="text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Precision sensor arrays" 
-                        speed={60} 
                         delay={300}
                         sectionNumber={7}
                         currentSection={currentSection}
@@ -192,9 +191,8 @@ const Section7 = memo(function Section7({
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-zinc-400 rounded-full animate-pulse delay-400" />
                     <span className="text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Advanced electronic systems" 
-                        speed={60} 
                         delay={600}
                         sectionNumber={7}
                         currentSection={currentSection}
@@ -211,9 +209,8 @@ const Section7 = memo(function Section7({
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" />
                     <span className="text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="98.5% operational efficiency" 
-                        speed={60} 
                         delay={900}
                         sectionNumber={7}
                         currentSection={currentSection}
@@ -224,9 +221,8 @@ const Section7 = memo(function Section7({
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-200" />
                     <span className="text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="±0.01mm precision accuracy" 
-                        speed={60} 
                         delay={1200}
                         sectionNumber={7}
                         currentSection={currentSection}
@@ -237,9 +233,8 @@ const Section7 = memo(function Section7({
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-zinc-400 rounded-full animate-pulse delay-400" />
                     <span className="text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Professional-grade reliability" 
-                        speed={60} 
                         delay={1500}
                         sectionNumber={7}
                         currentSection={currentSection}

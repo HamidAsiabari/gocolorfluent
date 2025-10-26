@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import TopMenu from '../components/TopMenu'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three-stdlib'
@@ -49,24 +49,65 @@ import DevControls from '../components/DevControls/DevControls'
 // Memoized ThreeSceneManager to prevent unnecessary re-renders
 const MemoizedThreeSceneManager = memo(ThreeSceneManager, (prev, next) => {
   // Return true if props are the same (no re-render needed)
-  return (
+  // Use deep comparison for objects to prevent unnecessary re-renders
+  const isSame = (
     prev.current3DStage === next.current3DStage &&
     prev.isActive === next.isActive &&
-    prev.modelControls === next.modelControls &&
-    prev.cameraControls === next.cameraControls &&
-    prev.lightingControls === next.lightingControls &&
-    prev.componentControls === next.componentControls &&
-    prev.categoryVisibility === next.categoryVisibility &&
     prev.mountRef === next.mountRef &&
     prev.onComponentControlsChange === next.onComponentControlsChange &&
     prev.onLoadingProgress === next.onLoadingProgress &&
-    prev.onLoadingComplete === next.onLoadingComplete
+    prev.onLoadingComplete === next.onLoadingComplete &&
+    prev.componentControls === next.componentControls &&
+    prev.categoryVisibility === next.categoryVisibility
   )
+  
+  // Only check object properties if basic props are the same
+  if (!isSame) return false
+  
+  // Deep compare object properties
+  const modelSame = (
+    prev.modelControls?.position?.x === next.modelControls?.position?.x &&
+    prev.modelControls?.position?.y === next.modelControls?.position?.y &&
+    prev.modelControls?.position?.z === next.modelControls?.position?.z &&
+    prev.modelControls?.rotation?.x === next.modelControls?.rotation?.x &&
+    prev.modelControls?.rotation?.y === next.modelControls?.rotation?.y &&
+    prev.modelControls?.rotation?.z === next.modelControls?.rotation?.z &&
+    prev.modelControls?.scale?.x === next.modelControls?.scale?.x &&
+    prev.modelControls?.scale?.y === next.modelControls?.scale?.y &&
+    prev.modelControls?.scale?.z === next.modelControls?.scale?.z
+  )
+  
+  const cameraSame = (
+    prev.cameraControls?.position?.x === next.cameraControls?.position?.x &&
+    prev.cameraControls?.position?.y === next.cameraControls?.position?.y &&
+    prev.cameraControls?.position?.z === next.cameraControls?.position?.z &&
+    prev.cameraControls?.fov === next.cameraControls?.fov
+  )
+  
+  const lightingSame = (
+    prev.lightingControls?.ambientIntensity === next.lightingControls?.ambientIntensity &&
+    prev.lightingControls?.directionalIntensity === next.lightingControls?.directionalIntensity
+  )
+  
+  return modelSame && cameraSame && lightingSame
 })
 
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  
+  // Check if this is a navigation from another page by looking at referrer
+  const [isInitialLoad, setIsInitialLoad] = useState(() => {
+    // Check if we have a referrer and it's from the same domain (navigation)
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer
+      const currentDomain = window.location.origin
+      const isNavigation = referrer && referrer.startsWith(currentDomain) && referrer !== window.location.href
+      console.log('🔍 Initial load check:', { referrer, currentDomain, isNavigation })
+      return !isNavigation
+    }
+    return true
+  })
   
   // Optimized state subscriptions to prevent unnecessary re-renders
   const currentSection = useAppStore((state) => state.currentSection)
@@ -275,31 +316,51 @@ export default function Home() {
     setLoadingStartTime(Date.now())
   }, [])
 
-  // Set initial stage to 0 and animate to stage 1 after loading
+  // Set initial stage - skip Stage 0 if coming from another page
   useEffect(() => {
     if (!isClient || isLoading) return
 
-    console.log('🎯 Initializing stage 0 - will animate to stage 1')
-    
-    // Set to stage 0 initially
-    setCurrent3DStage(0)
-    setIs3DAnimating(false)
-    setStage3DAnimationProgress(0)
-    
-    // Apply stage 0 configuration immediately
-    const stage0Config = getStageConfigLocal(0)
-    if (stage0Config) {
-      console.log('🎯 Applying stage 0 config:', stage0Config)
-      setModelControls(stage0Config.model)
-      setCameraControls(stage0Config.camera)
-      setLightingControls(stage0Config.lighting)
+    if (isInitialLoad) {
+      // Initial page load - start with Stage 0 and animate to Stage 1
+      console.log('🎯 Initial page load - initializing stage 0 - will animate to stage 1')
+      
+      // Set to stage 0 initially
+      setCurrent3DStage(0)
+      setIs3DAnimating(false)
+      setStage3DAnimationProgress(0)
+      
+      // Apply stage 0 configuration immediately
+      const stage0Config = getStageConfigLocal(0)
+      if (stage0Config) {
+        console.log('🎯 Applying stage 0 config:', stage0Config)
+        setModelControls(stage0Config.model)
+        setCameraControls(stage0Config.camera)
+        setLightingControls(stage0Config.lighting)
+      }
     } else {
-      console.warn('⚠️ Stage 0 config not found!')
+      // Coming from another page - go directly to Stage 1
+      console.log('🎯 Coming from another page - going directly to stage 1')
+      
+      // Set to stage 1 immediately
+      setCurrent3DStage(1)
+      setIs3DAnimating(false)
+      setStage3DAnimationProgress(1)
+      
+      // Apply stage 1 configuration immediately
+      const stage1Config = getStageConfigLocal(1)
+      if (stage1Config) {
+        console.log('🎯 Applying stage 1 config directly:', stage1Config)
+        setModelControls(stage1Config.model)
+        setCameraControls(stage1Config.camera)
+        setLightingControls(stage1Config.lighting)
+      }
     }
 
-    // Start animation to stage 1 after a short delay
-    const animationDelay = 2000 // 2 seconds delay
-    const animationTimeout = setTimeout(() => {
+    // Only start animation for initial page loads
+    if (isInitialLoad) {
+      // Start animation to stage 1 after a short delay
+      const animationDelay = 300 // 0.3 second delay
+      const animationTimeout = setTimeout(() => {
       console.log('🎬 Starting automatic transition from stage 0 to stage 1')
       
       // Get stage 1 configuration
@@ -311,107 +372,39 @@ export default function Home() {
         setIs3DAnimating(true)
         setStage3DAnimationProgress(0)
         
-        // Animate the transition
-        const duration = 3000 // 3 seconds animation
+        // Animate the transition with optimized performance
+        const duration = 1000 // Reduced to 1 second animation for maximum smoothness
         const startTime = performance.now()
+        let lastFrameTime = startTime
         
+        // Get stage 0 config once
+        const stage0Config = getStageConfigLocal(0)
+        if (!stage0Config) {
+          console.error('Stage 0 config not found for animation interpolation!')
+          return
+        }
+        
+        // Use direct Three.js animation to bypass React re-renders
         const animate = (currentTime: number) => {
           const elapsed = currentTime - startTime
           const progress = Math.min(elapsed / duration, 1)
           
           // Apply easing
           const easedProgress = easeOutCubic(progress)
-          setStage3DAnimationProgress(easedProgress)
           
-          // Interpolate between stage 0 and stage 1
-          const interpolatedModel = {
-            position: {
-              x: stage0Config.model.position.x + (stage1Config.model.position.x - stage0Config.model.position.x) * easedProgress,
-              y: stage0Config.model.position.y + (stage1Config.model.position.y - stage0Config.model.position.y) * easedProgress,
-              z: stage0Config.model.position.z + (stage1Config.model.position.z - stage0Config.model.position.z) * easedProgress
-            },
-            rotation: {
-              x: stage0Config.model.rotation.x + (stage1Config.model.rotation.x - stage0Config.model.rotation.x) * easedProgress,
-              y: stage0Config.model.rotation.y + (stage1Config.model.rotation.y - stage0Config.model.rotation.y) * easedProgress,
-              z: stage0Config.model.rotation.z + (stage1Config.model.rotation.z - stage0Config.model.rotation.z) * easedProgress
-            },
-            scale: {
-              x: stage0Config.model.scale.x + (stage1Config.model.scale.x - stage0Config.model.scale.x) * easedProgress,
-              y: stage0Config.model.scale.y + (stage1Config.model.scale.y - stage0Config.model.scale.y) * easedProgress,
-              z: stage0Config.model.scale.z + (stage1Config.model.scale.z - stage0Config.model.scale.z) * easedProgress
-            }
+          // Update progress state only occasionally to reduce re-renders
+          if (Math.floor(progress * 30) !== Math.floor((progress - 0.033) * 30)) {
+            setStage3DAnimationProgress(easedProgress)
           }
           
-          const interpolatedCamera = {
-            position: {
-              x: stage0Config.camera.position.x + (stage1Config.camera.position.x - stage0Config.camera.position.x) * easedProgress,
-              y: stage0Config.camera.position.y + (stage1Config.camera.position.y - stage0Config.camera.position.y) * easedProgress,
-              z: stage0Config.camera.position.z + (stage1Config.camera.position.z - stage0Config.camera.position.z) * easedProgress
-            },
-            rotation: {
-              x: stage0Config.camera.rotation.x + (stage1Config.camera.rotation.x - stage0Config.camera.rotation.x) * easedProgress,
-              y: stage0Config.camera.rotation.y + (stage1Config.camera.rotation.y - stage0Config.camera.rotation.y) * easedProgress,
-              z: stage0Config.camera.rotation.z + (stage1Config.camera.rotation.z - stage0Config.camera.rotation.z) * easedProgress
-            },
-            target: {
-              x: stage0Config.camera.target.x + (stage1Config.camera.target.x - stage0Config.camera.target.x) * easedProgress,
-              y: stage0Config.camera.target.y + (stage1Config.camera.target.y - stage0Config.camera.target.y) * easedProgress,
-              z: stage0Config.camera.target.z + (stage1Config.camera.target.z - stage0Config.camera.target.z) * easedProgress
-            },
-            fov: stage0Config.camera.fov + (stage1Config.camera.fov - stage0Config.camera.fov) * easedProgress,
-            near: stage0Config.camera.near + (stage1Config.camera.near - stage0Config.camera.near) * easedProgress,
-            far: stage0Config.camera.far + (stage1Config.camera.far - stage0Config.camera.far) * easedProgress,
-            zoom: stage0Config.camera.zoom + (stage1Config.camera.zoom - stage0Config.camera.zoom) * easedProgress
+          // Direct Three.js animation - bypass React state updates
+          if (window.directThreeAnimation) {
+            window.directThreeAnimation({
+              progress: easedProgress,
+              stage0Config,
+              stage1Config
+            })
           }
-          
-          // Interpolate lighting between stage 0 and stage 1
-          const interpolatedLighting = {
-            ambientIntensity: stage0Config.lighting.ambientIntensity + (stage1Config.lighting.ambientIntensity - stage0Config.lighting.ambientIntensity) * easedProgress,
-            ambientColor: stage0Config.lighting.ambientColor, // Keep stage 0 color
-            directionalIntensity: stage0Config.lighting.directionalIntensity + (stage1Config.lighting.directionalIntensity - stage0Config.lighting.directionalIntensity) * easedProgress,
-            directionalColor: stage0Config.lighting.directionalColor, // Keep stage 0 color
-            directionalPosition: {
-              x: stage0Config.lighting.directionalPosition.x + (stage1Config.lighting.directionalPosition.x - stage0Config.lighting.directionalPosition.x) * easedProgress,
-              y: stage0Config.lighting.directionalPosition.y + (stage1Config.lighting.directionalPosition.y - stage0Config.lighting.directionalPosition.y) * easedProgress,
-              z: stage0Config.lighting.directionalPosition.z + (stage1Config.lighting.directionalPosition.z - stage0Config.lighting.directionalPosition.z) * easedProgress
-            },
-            directionalTarget: {
-              x: stage0Config.lighting.directionalTarget.x + (stage1Config.lighting.directionalTarget.x - stage0Config.lighting.directionalTarget.x) * easedProgress,
-              y: stage0Config.lighting.directionalTarget.y + (stage1Config.lighting.directionalTarget.y - stage0Config.lighting.directionalTarget.y) * easedProgress,
-              z: stage0Config.lighting.directionalTarget.z + (stage1Config.lighting.directionalTarget.z - stage0Config.lighting.directionalTarget.z) * easedProgress
-            },
-            pointLightIntensity: stage0Config.lighting.pointLightIntensity + (stage1Config.lighting.pointLightIntensity - stage0Config.lighting.pointLightIntensity) * easedProgress,
-            pointLightColor: stage0Config.lighting.pointLightColor, // Keep stage 0 color
-            pointLightPosition: {
-              x: stage0Config.lighting.pointLightPosition.x + (stage1Config.lighting.pointLightPosition.x - stage0Config.lighting.pointLightPosition.x) * easedProgress,
-              y: stage0Config.lighting.pointLightPosition.y + (stage1Config.lighting.pointLightPosition.y - stage0Config.lighting.pointLightPosition.y) * easedProgress,
-              z: stage0Config.lighting.pointLightPosition.z + (stage1Config.lighting.pointLightPosition.z - stage0Config.lighting.pointLightPosition.z) * easedProgress
-            },
-            pointLightDistance: stage0Config.lighting.pointLightDistance + (stage1Config.lighting.pointLightDistance - stage0Config.lighting.pointLightDistance) * easedProgress,
-            spotLightIntensity: stage0Config.lighting.spotLightIntensity + (stage1Config.lighting.spotLightIntensity - stage0Config.lighting.spotLightIntensity) * easedProgress,
-            spotLightColor: stage0Config.lighting.spotLightColor, // Keep stage 0 color
-            spotLightPosition: {
-              x: stage0Config.lighting.spotLightPosition.x + (stage1Config.lighting.spotLightPosition.x - stage0Config.lighting.spotLightPosition.x) * easedProgress,
-              y: stage0Config.lighting.spotLightPosition.y + (stage1Config.lighting.spotLightPosition.y - stage0Config.lighting.spotLightPosition.y) * easedProgress,
-              z: stage0Config.lighting.spotLightPosition.z + (stage1Config.lighting.spotLightPosition.z - stage0Config.lighting.spotLightPosition.z) * easedProgress
-            },
-            spotLightTarget: {
-              x: stage0Config.lighting.spotLightTarget.x + (stage1Config.lighting.spotLightTarget.x - stage0Config.lighting.spotLightTarget.x) * easedProgress,
-              y: stage0Config.lighting.spotLightTarget.y + (stage1Config.lighting.spotLightTarget.y - stage0Config.lighting.spotLightTarget.y) * easedProgress,
-              z: stage0Config.lighting.spotLightTarget.z + (stage1Config.lighting.spotLightTarget.z - stage0Config.lighting.spotLightTarget.z) * easedProgress
-            },
-            spotLightDistance: stage0Config.lighting.spotLightDistance + (stage1Config.lighting.spotLightDistance - stage0Config.lighting.spotLightDistance) * easedProgress,
-            spotLightAngle: stage0Config.lighting.spotLightAngle + (stage1Config.lighting.spotLightAngle - stage0Config.lighting.spotLightAngle) * easedProgress,
-            spotLightPenumbra: stage0Config.lighting.spotLightPenumbra + (stage1Config.lighting.spotLightPenumbra - stage0Config.lighting.spotLightPenumbra) * easedProgress,
-            shadowsEnabled: stage0Config.lighting.shadowsEnabled, // Keep stage 0 setting
-            shadowMapSize: stage0Config.lighting.shadowMapSize, // Keep stage 0 setting
-            shadowBias: stage0Config.lighting.shadowBias // Keep stage 0 setting
-          }
-          
-          // Apply interpolated values
-          setModelControls(interpolatedModel)
-          setCameraControls(interpolatedCamera)
-          setLightingControls(interpolatedLighting)
           
           if (progress < 1) {
             requestAnimationFrame(animate)
@@ -435,11 +428,12 @@ export default function Home() {
       }
     }, animationDelay)
 
-    // Cleanup timeout on unmount
-    return () => {
-      clearTimeout(animationTimeout)
+      // Cleanup timeout on unmount
+      return () => {
+        clearTimeout(animationTimeout)
+      }
     }
-  }, [isClient, isLoading, setCurrent3DStage, setIs3DAnimating, setStage3DAnimationProgress, getStageConfigLocal, setModelControls, setCameraControls, setLightingControls, easeOutCubic])
+  }, [isClient, isLoading, isInitialLoad, setCurrent3DStage, setIs3DAnimating, setStage3DAnimationProgress, getStageConfigLocal, setModelControls, setCameraControls, setLightingControls, easeOutCubic])
   
   // Track key state changes
   // Note: useStateTracker calls removed to fix invalid hook call errors
@@ -797,7 +791,7 @@ export default function Home() {
 
   return (
     <PerformanceMonitor componentName="Home">
-      <div className="relative home-page">
+      <div className="relative home-page w-full" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
         
         {/* Loading Screen */}
         <LoadingScreen isLoading={isLoading} progress={loadingProgress} />
@@ -812,7 +806,7 @@ export default function Home() {
       {/* 3D Container - Always mounted but conditionally visible */}
       <div 
         ref={mountRef} 
-        className="fixed inset-0 w-screen h-screen touch-none"
+        className="fixed inset-0 w-full h-screen touch-none"
         style={{ 
           zIndex: (currentSection === 1 || (isScrolling && scrollDirection === 'up' && scrollPosition < window.innerHeight * 0.5)) ? 1 : -1,
           opacity: (currentSection === 1 || (isScrolling && scrollDirection === 'up' && scrollPosition < window.innerHeight * 0.5)) ? 1 : 0,
@@ -820,7 +814,9 @@ export default function Home() {
           transition: 'opacity 0.05s ease-out',
           willChange: 'opacity',
           transform: 'translateZ(0)', // Force hardware acceleration
-          backfaceVisibility: 'hidden' // Optimize rendering
+          backfaceVisibility: 'hidden', // Optimize rendering
+          maxWidth: '100%',
+          overflowX: 'hidden'
         }}
       />
       
@@ -858,10 +854,12 @@ export default function Home() {
 
       {/* Scrollable Content - 8x screen height */}
       <main 
-        className={`relative bg-gradient-to-br from-gray-900 to-gray-800 transition-opacity duration-500 smooth-scroll ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        className={`relative bg-gradient-to-br from-gray-900 to-gray-800 transition-opacity duration-500 smooth-scroll ${isLoading ? 'opacity-0' : 'opacity-100'} w-full`}
         style={{ 
           height: '800vh',
           minHeight: '800vh',
+          maxWidth: '100%',
+          overflowX: 'hidden',
           touchAction: 'pan-y' // Allow vertical scrolling on mobile
         }}
       >
@@ -882,7 +880,7 @@ export default function Home() {
         </div>
 
         {/* Content Sections - Positioned based on scroll */}
-        <div className="section-content relative z-10" style={{ zIndex: 10 }}>
+        <div className="section-content relative z-10 w-full" style={{ zIndex: 10, maxWidth: '100%' }}>
           {/* Section 1 - Hero - Always render */}
           <HeroSection
             isClient={isClient}

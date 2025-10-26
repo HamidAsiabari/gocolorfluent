@@ -2,7 +2,7 @@
 
 import { useEffect, useState, memo } from 'react'
 import VideoPlayer from '../VideoPlayer'
-import { TypingAnimation, useSectionVisit } from '../Animation'
+import { SimpleTextAnimation, useSectionVisit } from '../Animation'
 
 interface Section3Props {
   isClient: boolean
@@ -60,10 +60,11 @@ const Section3 = memo(function Section3({
 
   return (
     <section 
-      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen absolute inset-0 pt-4 md:pt-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-full absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (3 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
-        zIndex: 10
+        zIndex: 10,
+        maxWidth: '100%'
       }}
     >
       {/* Background Elements */}
@@ -134,9 +135,8 @@ const Section3 = memo(function Section3({
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-400 rounded-full animate-pulse" />
                     <span className="text-sm sm:text-base text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Micro-gear motor system" 
-                        speed={60} 
                         delay={0}
                         sectionNumber={3}
                         currentSection={currentSection}
@@ -147,9 +147,8 @@ const Section3 = memo(function Section3({
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-400 rounded-full animate-pulse delay-200" />
                     <span className="text-sm sm:text-base text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Precision coupling mechanisms" 
-                        speed={60} 
                         delay={300}
                         sectionNumber={3}
                         currentSection={currentSection}
@@ -160,9 +159,8 @@ const Section3 = memo(function Section3({
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-400 rounded-full animate-pulse delay-400" />
                     <span className="text-sm sm:text-base text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Advanced support systems" 
-                        speed={60} 
                         delay={600}
                         sectionNumber={3}
                         currentSection={currentSection}
@@ -179,9 +177,8 @@ const Section3 = memo(function Section3({
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-400 rounded-full animate-pulse" />
                     <span className="text-sm sm:text-base text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Ultra-precise movement control" 
-                        speed={60} 
                         delay={900}
                         sectionNumber={3}
                         currentSection={currentSection}
@@ -192,9 +189,8 @@ const Section3 = memo(function Section3({
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-400 rounded-full animate-pulse delay-200" />
                     <span className="text-sm sm:text-base text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Smooth brush operation" 
-                        speed={60} 
                         delay={1200}
                         sectionNumber={3}
                         currentSection={currentSection}
@@ -205,9 +201,8 @@ const Section3 = memo(function Section3({
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-400 rounded-full animate-pulse delay-400" />
                     <span className="text-sm sm:text-base text-gray-300">
-                      <TypingAnimation 
+                      <SimpleTextAnimation 
                         text="Reliable mechanical performance" 
-                        speed={60} 
                         delay={1500}
                         sectionNumber={3}
                         currentSection={currentSection}

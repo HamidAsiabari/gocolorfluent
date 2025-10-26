@@ -126,12 +126,10 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
 
   // Force dev control updates (replicating useEffect logic)
   const forceDevControlUpdates = useCallback(() => {
-    console.log('🔄 Force updating all dev controls after model load')
-    console.log('📊 Current dev control values:', {
-      modelControls,
-      cameraControls,
-      lightingControls
-    })
+    // Only log occasionally to reduce spam during animation
+    if (Math.random() < 0.05) { // 5% chance to log
+      console.log('🔄 Force updating all dev controls after model load')
+    }
     
     // Update model controls
     if (modelRef.current) {
@@ -141,16 +139,16 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       // Keep original scale - no mobile scaling
       const adjustedScale = scale
       
-      console.log(`Force updating model controls:`, { scale: adjustedScale, position, rotation, isMobile })
-      console.log(`Model before update: scale(${model.scale.x}, ${model.scale.y}, ${model.scale.z}), position(${model.position.x}, ${model.position.y}, ${model.position.z}), rotation(${model.rotation.x}, ${model.rotation.y}, ${model.rotation.z})`)
+      // Only log occasionally to reduce spam during animation
+      if (Math.random() < 0.05) {
+        console.log(`Force updating model controls:`, { scale: adjustedScale, position, rotation, isMobile })
+      }
       
       model.scale.set(adjustedScale.x, adjustedScale.y, adjustedScale.z)
       model.position.set(position.x, position.y, position.z)
       model.rotation.set(rotation.x, rotation.y, rotation.z)
       model.updateMatrix()
       model.updateMatrixWorld(true)
-      
-      console.log(`Model after update: scale(${model.scale.x}, ${model.scale.y}, ${model.scale.z}), position(${model.position.x}, ${model.position.y}, ${model.position.z}), rotation(${model.rotation.x}, ${model.rotation.y}, ${model.rotation.z})`)
     } else {
       console.log('❌ modelRef.current is null during force update')
     }
@@ -160,8 +158,10 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const camera = cameraRef.current
       const { position, rotation, target, fov, near, far, zoom } = cameraControls
       
-      console.log(`Force updating camera controls:`, { position, rotation, target, fov, near, far, zoom })
-      console.log(`Camera before update: position(${camera.position.x}, ${camera.position.y}, ${camera.position.z}), rotation(${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}), fov(${camera.fov})`)
+      // Only log occasionally to reduce spam during animation
+      if (Math.random() < 0.05) {
+        console.log(`Force updating camera controls:`, { position, rotation, target, fov, near, far, zoom })
+      }
       
       // Apply mobile camera adjustments
       const finalPosition = isMobile ? {
@@ -348,26 +348,27 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     const startRenderLoop = () => {
       if (animationId) return // Already running
       
-      const render = () => {
-        if (rendererRef.current && sceneRef.current && cameraRef.current) {
-          // Only render when active to save performance
-          if (isActive) {
-            rendererRef.current.render(sceneRef.current, cameraRef.current)
-            renderCount++
-            if (renderCount % 60 === 0) { // Log every 60 frames only when active
-              console.log(`🎬 Render count: ${renderCount}, Scene children: ${sceneRef.current.children.length}, Model ref: ${!!modelRef.current}`)
+        const render = () => {
+          if (rendererRef.current && sceneRef.current && cameraRef.current) {
+            // Only render when active to save performance
+            if (isActive) {
+              rendererRef.current.render(sceneRef.current, cameraRef.current)
+              renderCount++
+              // Reduce logging frequency during animation
+              if (renderCount % 120 === 0) { // Log every 120 frames only when active
+                console.log(`🎬 Render count: ${renderCount}, Scene children: ${sceneRef.current.children.length}, Model ref: ${!!modelRef.current}`)
+              }
             }
           }
+          
+          // Only continue loop if still active
+          if (isActive) {
+            animationId = requestAnimationFrame(render)
+          } else {
+            animationId = null
+            console.log('⏸️ Rendering loop paused - not in Section 1')
+          }
         }
-        
-        // Only continue loop if still active
-        if (isActive) {
-          animationId = requestAnimationFrame(render)
-        } else {
-          animationId = null
-          console.log('⏸️ Rendering loop paused - not in Section 1')
-        }
-      }
       
       animationId = requestAnimationFrame(render)
     }
@@ -390,9 +391,179 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       stopRenderLoop()
     }
     
-    // Store functions for external control
-    ;(window as any).startRenderLoop = startRenderLoop
-    ;(window as any).stopRenderLoop = stopRenderLoop
+        // Store functions for external control
+        ;(window as any).startRenderLoop = startRenderLoop
+        ;(window as any).stopRenderLoop = stopRenderLoop
+        
+        // Direct Three.js animation function to bypass React re-renders
+        ;(window as any).directThreeAnimation = (params: {
+          progress: number
+          stage0Config: any
+          stage1Config: any
+        }) => {
+          const { progress, stage0Config, stage1Config } = params
+          const easedProgress = progress // Define easedProgress here
+          
+          // Check if mobile directly in the animation function
+          const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
+          
+          // Directly animate Three.js objects without React state updates
+          if (modelRef.current) {
+            const model = modelRef.current
+            
+            // Interpolate model position
+            const newPosition = {
+              x: stage0Config.model.position.x + (stage1Config.model.position.x - stage0Config.model.position.x) * easedProgress,
+              y: stage0Config.model.position.y + (stage1Config.model.position.y - stage0Config.model.position.y) * easedProgress,
+              z: stage0Config.model.position.z + (stage1Config.model.position.z - stage0Config.model.position.z) * easedProgress
+            }
+            
+            // Interpolate model rotation
+            const newRotation = {
+              x: stage0Config.model.rotation.x + (stage1Config.model.rotation.x - stage0Config.model.rotation.x) * easedProgress,
+              y: stage0Config.model.rotation.y + (stage1Config.model.rotation.y - stage0Config.model.rotation.y) * easedProgress,
+              z: stage0Config.model.rotation.z + (stage1Config.model.rotation.z - stage0Config.model.rotation.z) * easedProgress
+            }
+            
+            // Interpolate model scale
+            const newScale = {
+              x: stage0Config.model.scale.x + (stage1Config.model.scale.x - stage0Config.model.scale.x) * easedProgress,
+              y: stage0Config.model.scale.y + (stage1Config.model.scale.y - stage0Config.model.scale.y) * easedProgress,
+              z: stage0Config.model.scale.z + (stage1Config.model.scale.z - stage0Config.model.scale.z) * easedProgress
+            }
+            
+            // Apply directly to Three.js object
+            model.position.set(newPosition.x, newPosition.y, newPosition.z)
+            model.rotation.set(newRotation.x, newRotation.y, newRotation.z)
+            model.scale.set(newScale.x, newScale.y, newScale.z)
+            model.updateMatrix()
+            model.updateMatrixWorld(true)
+          }
+          
+          // Directly animate camera
+          if (cameraRef.current) {
+            const camera = cameraRef.current
+            
+            // Interpolate camera position
+            let newPosition = {
+              x: stage0Config.camera.position.x + (stage1Config.camera.position.x - stage0Config.camera.position.x) * easedProgress,
+              y: stage0Config.camera.position.y + (stage1Config.camera.position.y - stage0Config.camera.position.y) * easedProgress,
+              z: stage0Config.camera.position.z + (stage1Config.camera.position.z - stage0Config.camera.position.z) * easedProgress
+            }
+            
+            // Apply mobile camera adjustments
+            if (isMobileDevice) {
+              newPosition = {
+                x: newPosition.x,
+                y: newPosition.y + 0.5,
+                z: newPosition.z + 2
+              }
+            }
+            
+            // Interpolate camera target (lookAt point)
+            const newTarget = {
+              x: stage0Config.camera.target.x + (stage1Config.camera.target.x - stage0Config.camera.target.x) * easedProgress,
+              y: stage0Config.camera.target.y + (stage1Config.camera.target.y - stage0Config.camera.target.y) * easedProgress,
+              z: stage0Config.camera.target.z + (stage1Config.camera.target.z - stage0Config.camera.target.z) * easedProgress
+            }
+            
+            // Interpolate camera FOV
+            let newFov = stage0Config.camera.fov + (stage1Config.camera.fov - stage0Config.camera.fov) * easedProgress
+            
+            // Apply mobile FOV adjustment
+            if (isMobileDevice) {
+              newFov = newFov + 15
+            }
+            
+            // Apply directly to Three.js camera
+            camera.position.set(newPosition.x, newPosition.y, newPosition.z)
+            camera.lookAt(newTarget.x, newTarget.y, newTarget.z)
+            camera.fov = newFov
+            camera.updateProjectionMatrix()
+            camera.updateMatrixWorld(true)
+          }
+          
+          // Directly animate lighting
+          if (ambientLightRef.current) {
+            const intensity = stage0Config.lighting.ambientIntensity + (stage1Config.lighting.ambientIntensity - stage0Config.lighting.ambientIntensity) * easedProgress
+            ambientLightRef.current.intensity = intensity
+            
+            // Interpolate ambient light color
+            const startColor = new THREE.Color(stage0Config.lighting.ambientColor)
+            const endColor = new THREE.Color(stage1Config.lighting.ambientColor)
+            ambientLightRef.current.color.copy(startColor).lerp(endColor, easedProgress)
+          }
+          
+          if (directionalLightRef.current) {
+            const intensity = stage0Config.lighting.directionalIntensity + (stage1Config.lighting.directionalIntensity - stage0Config.lighting.directionalIntensity) * easedProgress
+            directionalLightRef.current.intensity = intensity
+            
+            // Interpolate directional light color
+            const startColor = new THREE.Color(stage0Config.lighting.directionalColor)
+            const endColor = new THREE.Color(stage1Config.lighting.directionalColor)
+            directionalLightRef.current.color.copy(startColor).lerp(endColor, easedProgress)
+            
+            // Interpolate directional light position
+            const newPosition = {
+              x: stage0Config.lighting.directionalPosition.x + (stage1Config.lighting.directionalPosition.x - stage0Config.lighting.directionalPosition.x) * easedProgress,
+              y: stage0Config.lighting.directionalPosition.y + (stage1Config.lighting.directionalPosition.y - stage0Config.lighting.directionalPosition.y) * easedProgress,
+              z: stage0Config.lighting.directionalPosition.z + (stage1Config.lighting.directionalPosition.z - stage0Config.lighting.directionalPosition.z) * easedProgress
+            }
+            directionalLightRef.current.position.set(newPosition.x, newPosition.y, newPosition.z)
+            
+            // Interpolate directional light target
+            const newTarget = {
+              x: stage0Config.lighting.directionalTarget.x + (stage1Config.lighting.directionalTarget.x - stage0Config.lighting.directionalTarget.x) * easedProgress,
+              y: stage0Config.lighting.directionalTarget.y + (stage1Config.lighting.directionalTarget.y - stage0Config.lighting.directionalTarget.y) * easedProgress,
+              z: stage0Config.lighting.directionalTarget.z + (stage1Config.lighting.directionalTarget.z - stage0Config.lighting.directionalTarget.z) * easedProgress
+            }
+            directionalLightRef.current.target.position.set(newTarget.x, newTarget.y, newTarget.z)
+          }
+          
+          if (pointLightRef.current) {
+            const intensity = stage0Config.lighting.pointLightIntensity + (stage1Config.lighting.pointLightIntensity - stage0Config.lighting.pointLightIntensity) * easedProgress
+            pointLightRef.current.intensity = intensity
+            
+            // Interpolate point light color
+            const startColor = new THREE.Color(stage0Config.lighting.pointLightColor)
+            const endColor = new THREE.Color(stage1Config.lighting.pointLightColor)
+            pointLightRef.current.color.copy(startColor).lerp(endColor, easedProgress)
+            
+            // Interpolate point light position
+            const newPosition = {
+              x: stage0Config.lighting.pointLightPosition.x + (stage1Config.lighting.pointLightPosition.x - stage0Config.lighting.pointLightPosition.x) * easedProgress,
+              y: stage0Config.lighting.pointLightPosition.y + (stage1Config.lighting.pointLightPosition.y - stage0Config.lighting.pointLightPosition.y) * easedProgress,
+              z: stage0Config.lighting.pointLightPosition.z + (stage1Config.lighting.pointLightPosition.z - stage0Config.lighting.pointLightPosition.z) * easedProgress
+            }
+            pointLightRef.current.position.set(newPosition.x, newPosition.y, newPosition.z)
+          }
+          
+          if (spotLightRef.current) {
+            const intensity = stage0Config.lighting.spotLightIntensity + (stage1Config.lighting.spotLightIntensity - stage0Config.lighting.spotLightIntensity) * easedProgress
+            spotLightRef.current.intensity = intensity
+            
+            // Interpolate spot light color
+            const startColor = new THREE.Color(stage0Config.lighting.spotLightColor)
+            const endColor = new THREE.Color(stage1Config.lighting.spotLightColor)
+            spotLightRef.current.color.copy(startColor).lerp(endColor, easedProgress)
+            
+            // Interpolate spot light position
+            const newPosition = {
+              x: stage0Config.lighting.spotLightPosition.x + (stage1Config.lighting.spotLightPosition.x - stage0Config.lighting.spotLightPosition.x) * easedProgress,
+              y: stage0Config.lighting.spotLightPosition.y + (stage1Config.lighting.spotLightPosition.y - stage0Config.lighting.spotLightPosition.y) * easedProgress,
+              z: stage0Config.lighting.spotLightPosition.z + (stage1Config.lighting.spotLightPosition.z - stage0Config.lighting.spotLightPosition.z) * easedProgress
+            }
+            spotLightRef.current.position.set(newPosition.x, newPosition.y, newPosition.z)
+            
+            // Interpolate spot light target
+            const newTarget = {
+              x: stage0Config.lighting.spotLightTarget.x + (stage1Config.lighting.spotLightTarget.x - stage0Config.lighting.spotLightTarget.x) * easedProgress,
+              y: stage0Config.lighting.spotLightTarget.y + (stage1Config.lighting.spotLightTarget.y - stage0Config.lighting.spotLightTarget.y) * easedProgress,
+              z: stage0Config.lighting.spotLightTarget.z + (stage1Config.lighting.spotLightTarget.z - stage0Config.lighting.spotLightTarget.z) * easedProgress
+            }
+            spotLightRef.current.target.position.set(newTarget.x, newTarget.y, newTarget.z)
+          }
+        }
     
     // Function to create procedural environment
     const createProceduralEnvironment = () => {
@@ -1704,14 +1875,14 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         console.log('📐 Model bounding box size:', size)
         console.log('📐 Model bounding box center:', center)
         
-        // Ensure camera is looking at the model center
-        camera.lookAt(center)
-        console.log('📐 Camera now looking at model center:', center)
+        // Camera should use the target from cameraControls, not the model center
+        // This ensures proper camera positioning during animations
+        console.log('📐 Camera should look at cameraControls.target:', cameraControls.target)
         
-        // Final render after camera adjustment
+        // Final render after camera setup is complete
         if (rendererRef.current && sceneRef.current && cameraRef.current) {
           rendererRef.current.render(sceneRef.current, cameraRef.current)
-          console.log('🎨 Final render after camera adjustment')
+          console.log('🎨 Final render after camera setup')
         }
       }
       
@@ -1788,22 +1959,21 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       console.log('✅ Forcing dev control updates after model load')
       forceDevControlUpdates()
       
-      // Final render after all control updates
-      console.log('✅ Final render after all control updates')
+      // Final render after all control updates (reduced logging)
+      if (Math.random() < 0.1) {
+        console.log('✅ Final render after all control updates')
+      }
       requestRender()
       
-      // Additional render after a short delay to ensure everything is applied
-      setTimeout(() => {
-        console.log('✅ Final render to ensure all settings are applied')
-        requestRender()
-      }, 200)
-      
-      // One more render after a longer delay to catch any remaining updates
-      setTimeout(() => {
-        console.log('✅ Ultimate final render to guarantee correct display')
-        forceDevControlUpdates()
-        requestRender()
-      }, 500)
+      // Additional render after a short delay to ensure everything is applied (reduced frequency)
+      if (Math.random() < 0.3) {
+        setTimeout(() => {
+          if (Math.random() < 0.1) {
+            console.log('✅ Final render to ensure all settings are applied')
+          }
+          requestRender()
+        }, 200)
+      }
       
       // Sync dev controls with actual scene values to identify differences
       setTimeout(() => {

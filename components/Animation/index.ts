@@ -1,4 +1,5 @@
 export { default as AnimationSystem } from './AnimationSystem'
 export * from './EasingFunctions'
 export { default as TypingAnimation } from './TypingAnimation'
+export { default as SimpleTextAnimation } from './SimpleTextAnimation'
 export { SectionVisitProvider, useSectionVisit } from './SectionVisitContext'

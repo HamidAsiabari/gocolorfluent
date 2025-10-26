@@ -42,10 +42,11 @@ const Section8 = memo(function Section8({
 
   return (
     <section 
-      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-screen absolute inset-0 pt-4 md:pt-0"
+      className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-full absolute inset-0 pt-4 md:pt-0"
       style={{
         transform: `translateY(${isClient ? (8 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
-        zIndex: 10
+        zIndex: 10,
+        maxWidth: '100%'
       }}
     >
       {/* Background Elements */}

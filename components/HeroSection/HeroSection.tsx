@@ -35,10 +35,11 @@ const HeroSection = memo(function HeroSection({
 
   return (
     <section 
-      className="flex flex-col items-center md:items-center items-start justify-start h-screen w-screen absolute inset-0 pt-16 md:pt-20"
+      className="flex flex-col items-center md:items-center items-start justify-start h-screen w-full absolute inset-0 pt-16 md:pt-20"
       style={{
         transform: `translateY(${isClient ? (1 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
-        zIndex: 10
+        zIndex: 10,
+        maxWidth: '100%'
       }}
     >
 
