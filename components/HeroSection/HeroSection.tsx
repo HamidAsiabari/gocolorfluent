@@ -50,6 +50,50 @@ const HeroSection = memo(function HeroSection({
       }}
     >
 
+      {/* Left Shadow - Desktop only */}
+      <div 
+        className="absolute left-0 top-0 h-full pointer-events-none hidden md:block"
+        style={{
+          width: '10vw',
+          height: '100vh',
+          background: 'linear-gradient(to right,  rgba(14, 0, 24, 0.7), rgba(14, 0, 24, 0.0))',
+          zIndex: 999
+        }}
+      />
+
+      {/* Right Shadow - Desktop only */}
+      <div 
+        className="absolute right-0 top-0 h-full pointer-events-none hidden md:block"
+        style={{
+          width: '10vw',
+          height: '100vh',
+          background: 'linear-gradient(to left, rgba(14, 0, 24, 0.7), rgba(14, 0, 24, 0.0))',
+          zIndex: 999
+        }}
+      />
+
+      {/* Top Shadow - Mobile only */}
+      <div 
+        className="absolute top-0 left-0 w-full pointer-events-none block md:hidden"
+        style={{
+          width: '100vw',
+          height: '10vh', minHeight: '120px',
+          background: 'linear-gradient(to bottom, rgba(14, 0, 24, 0.7), rgba(14, 0, 24, 0.0))',
+          zIndex: 999
+        }}
+      />
+
+      {/* Bottom Shadow - Mobile only */}
+      <div 
+        className="absolute bottom-0 left-0 w-full pointer-events-none block md:hidden"
+        style={{
+          width: '100vw',
+          height: '10vh', minHeight: '100px',
+          background: 'linear-gradient(to top, rgba(14, 0, 24, 0.7), rgba(14, 0, 24, 0.0))',
+          zIndex: 999
+        }}
+      />
+
       {/* Main Content */}
       <div className="section-content relative z-10 text-center text-white space-y-6 sm:space-y-8 lg:space-y-12 max-w-5xl mx-auto mt-[120px] px-4 sm:px-6">
         {/* Hero Title with enhanced typography */}

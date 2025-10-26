@@ -724,133 +724,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       renderer.domElement.style.transform = 'translateZ(0)' // Force GPU layer
     }
     
-    // Add sophisticated focus effect with depth of field and periphery darkening
-    const applyFocusEffect = () => {
-      if (cameraControls.focusDistance && cameraControls.aperture && cameraControls.maxBlur) {
-        const focusDistance = cameraControls.focusDistance
-        const aperture = cameraControls.aperture
-        const maxBlur = cameraControls.maxBlur
-        const bokehScale = cameraControls.bokehScale || 2
-        const darkenPeriphery = cameraControls.darkenPeriphery || 0.3
-        
-        const canvas = renderer.domElement
-        const parent = canvas.parentNode
-        
-        if (!parent) return
-        
-        // Remove any existing focus effects
-        const existingWrapper = parent.querySelector('.focus-effect-wrapper')
-        if (existingWrapper) {
-          parent.removeChild(existingWrapper)
-        }
-        
-        // Create wrapper for the focus effect
-        const wrapper = document.createElement('div')
-        wrapper.className = 'focus-effect-wrapper'
-        wrapper.style.position = 'relative'
-        wrapper.style.width = '100%'
-        wrapper.style.height = '100%'
-        wrapper.style.overflow = 'hidden'
-        
-        // Create the blurred background layer
-        const blurredLayer = document.createElement('canvas')
-        blurredLayer.width = canvas.width
-        blurredLayer.height = canvas.height
-        blurredLayer.style.position = 'absolute'
-        blurredLayer.style.top = '0'
-        blurredLayer.style.left = '0'
-        blurredLayer.style.width = '100%'
-        blurredLayer.style.height = '100%'
-        blurredLayer.style.filter = `blur(${maxBlur * 30}px)`
-        blurredLayer.style.transform = 'scale(1.1)' // Slight scale to avoid edge artifacts
-        
-        // Create the sharp foreground layer (center focus)
-        const sharpLayer = document.createElement('canvas')
-        sharpLayer.width = canvas.width
-        sharpLayer.height = canvas.height
-        sharpLayer.style.position = 'absolute'
-        sharpLayer.style.top = '0'
-        sharpLayer.style.left = '0'
-        sharpLayer.style.width = '100%'
-        sharpLayer.style.height = '100%'
-        
-        // Create radial mask for the sharp layer
-        const mask = document.createElement('div')
-        mask.style.position = 'absolute'
-        mask.style.top = '0'
-        mask.style.left = '0'
-        mask.style.width = '100%'
-        mask.style.height = '100%'
-        mask.style.background = `radial-gradient(circle at center, 
-          transparent 0%, 
-          transparent 30%, 
-          rgba(0,0,0,0.05) 50%, 
-          rgba(0,0,0,${darkenPeriphery}) 70%, 
-          rgba(0,0,0,${darkenPeriphery + 0.1}) 100%)`
-        mask.style.pointerEvents = 'none'
-        mask.style.zIndex = '3'
-        
-        // Create the sharp area mask (inverted)
-        const sharpMask = document.createElement('div')
-        sharpMask.style.position = 'absolute'
-        sharpMask.style.top = '0'
-        sharpMask.style.left = '0'
-        sharpMask.style.width = '100%'
-        sharpMask.style.height = '100%'
-        sharpMask.style.background = `radial-gradient(circle at center, 
-          rgba(255,255,255,1) 0%, 
-          rgba(255,255,255,1) 30%, 
-          rgba(255,255,255,0.8) 40%, 
-          rgba(255,255,255,0) 50%, 
-          rgba(255,255,255,0) 100%)`
-        sharpMask.style.pointerEvents = 'none'
-        sharpMask.style.zIndex = '2'
-        sharpMask.style.mixBlendMode = 'multiply'
-        
-        // Function to copy canvas content
-        const copyCanvasContent = () => {
-          const ctx = blurredLayer.getContext('2d')
-          const sharpCtx = sharpLayer.getContext('2d')
-          if (ctx && sharpCtx) {
-            ctx.drawImage(canvas, 0, 0)
-            sharpCtx.drawImage(canvas, 0, 0)
-          }
-        }
-        
-        // Initial copy
-        copyCanvasContent()
-        
-        // Set up the layers
-        wrapper.appendChild(blurredLayer)
-        wrapper.appendChild(sharpLayer)
-        wrapper.appendChild(sharpMask)
-        wrapper.appendChild(mask)
-        
-        // Replace the original canvas with our wrapper
-        parent.insertBefore(wrapper, canvas)
-        wrapper.appendChild(canvas)
-        
-        // Hide the original canvas and show our composite
-        canvas.style.position = 'absolute'
-        canvas.style.top = '0'
-        canvas.style.left = '0'
-        canvas.style.width = '100%'
-        canvas.style.height = '100%'
-        canvas.style.zIndex = '1'
-        
-        // Update the blurred layer on each render
-        const originalRender = rendererRef.current?.render
-        if (originalRender && rendererRef.current) {
-          rendererRef.current.render = function(scene: THREE.Scene, camera: THREE.Camera) {
-            originalRender.call(this, scene, camera)
-            copyCanvasContent()
-          }
-        }
-      }
-    }
-    
-    // Apply focus effect
-    applyFocusEffect()
+    // Focus effect removed - canvas now renders cleanly without post-processing effects
 
     // Create environment map for reflections
     createEnvironmentMap()
@@ -1309,8 +1183,21 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         console.log('✅ Furniture environment added to scene')
         
         // Apply reflection materials to mirror surfaces and force material updates for furniture
+        let deskMeshes: THREE.Mesh[] = []
+        let mainDeskGroup: any = null
+        
         furniture.traverse((child) => {
           if (child instanceof THREE.Mesh && child.material) {
+            // Skip desk meshes (will be handled separately)
+            const isDeskMesh = child.name.toLowerCase().includes('cube') || 
+                             child.name.toLowerCase().includes('desk') ||
+                             child.name.toLowerCase().includes('table')
+            
+            if (isDeskMesh) {
+              // Skip desk meshes in this pass
+              return
+            }
+            
             // Check if this might be a mirror surface based on name or material properties
             const isMirrorSurface = child.name.toLowerCase().includes('mirror') || 
                                   child.name.toLowerCase().includes('glass') ||
@@ -1319,15 +1206,17 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
                                    (child.material.name.toLowerCase().includes('mirror') || 
                                     child.material.name.toLowerCase().includes('glass')))
             
-            // Also check for dark/black materials that might be mirrors
+            // Also check for dark/black materials that might be mirrors (but not if it's from main_desk)
             const isDarkMaterial = child.material.color && 
+                                 !child.name.toLowerCase().includes('main_desk') &&
                                  (child.material.color.getHex() === 0x000000 || 
                                   child.material.color.getHex() === 0x1a1a1a ||
                                   child.material.color.getHex() === 0x333333)
             
-            // Check for flat surfaces that might be mirrors (based on geometry)
+            // Check for flat surfaces that might be mirrors (based on geometry) - but exclude desk
             const isFlatSurface = child.geometry && 
                                  child.geometry.boundingBox && 
+                                 !child.name.toLowerCase().includes('main_desk') &&
                                  (Math.abs(child.geometry.boundingBox.max.y - child.geometry.boundingBox.min.y) < 0.1 ||
                                   Math.abs(child.geometry.boundingBox.max.x - child.geometry.boundingBox.min.x) < 0.1 ||
                                   Math.abs(child.geometry.boundingBox.max.z - child.geometry.boundingBox.min.z) < 0.1)
@@ -1340,39 +1229,275 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
             
             if (isMirrorSurface || isDarkMaterial || isFlatSurface || isSpecularMaterial) {
               console.log('🪞 Found mirror surface:', child.name, 'applying realistic mirror material')
-              console.log('🪞 Detection reasons:', {
-                isMirrorSurface,
-                isDarkMaterial,
-                isFlatSurface,
-                isSpecularMaterial,
-                materialColor: child.material.color ? child.material.color.getHex() : 'no color',
-                materialName: child.material.name || 'unnamed'
-              })
               
               // Create a highly realistic mirror material
               const mirrorMaterial = new THREE.MeshPhysicalMaterial({
                 color: 0xffffff,
-                metalness: 0.0, // Pure mirror, not metallic
-                roughness: 0.0, // Perfectly smooth surface
-                reflectivity: 1.0, // Maximum reflectivity
-                clearcoat: 1.0, // Perfect clear coating
-                clearcoatRoughness: 0.0, // Perfectly smooth clear coat
+                metalness: 0.0,
+                roughness: 0.0,
+                reflectivity: 1.0,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.0,
                 envMap: scene.environment,
-                envMapIntensity: 2.0, // Enhanced environment reflection
-                transmission: 0.0, // No transmission for pure mirror
+                envMapIntensity: 2.0,
+                transmission: 0.0,
                 transparent: false,
                 opacity: 1.0,
-                side: THREE.DoubleSide, // Render both sides for better reflections
-                // Additional properties for realism
-                ior: 1.5, // Index of refraction for glass
-                sheen: 0.0, // No sheen for pure mirror
+                side: THREE.DoubleSide,
+                ior: 1.5,
+                sheen: 0.0,
                 sheenRoughness: 0.0,
                 sheenColor: 0xffffff
               })
               
-              // Apply the mirror material
               child.material = mirrorMaterial
               console.log('✅ Applied realistic mirror material to:', child.name)
+            }
+          }
+          
+          // Check for main_desk group
+          if (child instanceof THREE.Group && child.name.toLowerCase().includes('main_desk')) {
+            mainDeskGroup = child
+            console.log('🪑 Found main_desk GROUP:', child.name, 'with', child.children.length, 'children')
+          }
+        })
+        
+        // If main_desk is a group, find all meshes inside it
+        if (mainDeskGroup) {
+          mainDeskGroup.traverse((child: any) => {
+            if (child instanceof THREE.Mesh && child.material) {
+              deskMeshes.push(child)
+              console.log('🪑 Found desk mesh:', child.name)
+            }
+          })
+        }
+        
+        // Create pattern texture once for all desk meshes
+        if (deskMeshes.length > 0) {
+          // Find the table top mesh (highest Y position or flattest surface)
+          let tableTopMesh: any = null
+          let highestY = -Infinity
+          
+          deskMeshes.forEach((mesh) => {
+            const boundingBox = new THREE.Box3().setFromObject(mesh)
+            const centerY = boundingBox.getCenter(new THREE.Vector3()).y
+            const size = boundingBox.getSize(new THREE.Vector3())
+            
+            console.log('📊 Desk mesh:', mesh.name, 'Y:', centerY.toFixed(2), 'Size:', `x:${size.x.toFixed(2)} y:${size.y.toFixed(2)} z:${size.z.toFixed(2)}`)
+            
+            // Check if this is likely the top surface (just highest Y, no flatness check for now)
+            if (centerY > highestY) {
+              highestY = centerY
+              tableTopMesh = mesh
+              console.log('🪑 Selected as table top:', mesh.name, 'at Y:', centerY.toFixed(2))
+            }
+          })
+          
+          console.log('✅ Final table top mesh:', tableTopMesh?.name)
+          
+          // Apply pattern only to table top mesh
+          if (tableTopMesh) {
+            console.log(`🪑 Applying pattern to table top surface only: ${tableTopMesh.name}`)
+            
+            // Get bounding box to position the pattern plane  
+            // Find the furniture object (parent of main_desk)
+            let furnitureObject: any = null
+            let currentParent: any = tableTopMesh.parent
+            while (currentParent && !furnitureObject) {
+              if (currentParent.name === '' || currentParent === scene) {
+                furnitureObject = tableTopMesh.parent?.parent // Go up two levels: tableTopMesh -> main_desk -> furniture
+                break
+              }
+              currentParent = currentParent.parent
+            }
+            
+            // Update all parent matrices
+            if (furnitureObject) furnitureObject.updateMatrixWorld(true)
+            if (mainDeskGroup) mainDeskGroup.updateMatrixWorld(true)
+            tableTopMesh.updateMatrixWorld(true)
+            
+            const boundingBox = new THREE.Box3().setFromObject(tableTopMesh)
+            const size = boundingBox.getSize(new THREE.Vector3())
+            
+            // Get the corners of the bounding box
+            const corners = [
+              new THREE.Vector3(boundingBox.min.x, boundingBox.max.y, boundingBox.min.z),
+              new THREE.Vector3(boundingBox.max.x, boundingBox.max.y, boundingBox.min.z),
+              new THREE.Vector3(boundingBox.min.x, boundingBox.max.y, boundingBox.max.z),
+              new THREE.Vector3(boundingBox.max.x, boundingBox.max.y, boundingBox.max.z),
+            ]
+            
+            // Transform corners to world space
+            const worldCorners = corners.map(c => {
+              const worldPos = c.clone()
+              tableTopMesh.getWorldPosition(new THREE.Vector3())
+              tableTopMesh.localToWorld(worldPos)
+              return worldPos.clone()
+            })
+            
+            // Find max Y and center in X/Z
+            const worldMaxY = Math.max(...worldCorners.map(c => c.y))
+            const avgX = worldCorners.reduce((sum, c) => sum + c.x, 0) / worldCorners.length
+            const avgZ = worldCorners.reduce((sum, c) => sum + c.z, 0) / worldCorners.length
+            
+            const worldCenter = new THREE.Vector3(avgX, worldMaxY, avgZ)
+            
+            console.log('📐 Table top size:', size)
+            console.log('📐 World Max Y:', worldMaxY)
+            console.log('📐 World Center:', worldCenter)
+            
+            // Apply 3D PBR textures directly to the table top mesh
+            const textureLoader = new THREE.TextureLoader()
+            
+            // Track loaded textures
+            let baseColorTexture: THREE.Texture | null = null
+            let normalTexture: THREE.Texture | null = null
+            let roughnessTexture: THREE.Texture | null = null
+            let metallicTexture: THREE.Texture | null = null
+            let texturesLoaded = 0
+            const totalTextures = 4
+            
+            const configureTexture = (texture: THREE.Texture) => {
+              texture.wrapS = THREE.RepeatWrapping
+              texture.wrapT = THREE.RepeatWrapping
+              texture.repeat.set(4, 4) // Tiling for realistic scale
+              texture.needsUpdate = true
+            }
+            
+            const applyPBRMaterial = () => {
+              if (texturesLoaded < totalTextures) return
+              
+              // Store original material
+              tableTopMesh.userData.originalMaterial = tableTopMesh.material
+              
+              // Create professional PBR material with all loaded textures
+              const pbrMaterial = new THREE.MeshStandardMaterial({
+                map: baseColorTexture, // Diffuse/albedo color
+                normalMap: normalTexture, // Surface detail for 3D effect
+                normalScale: new THREE.Vector2(2, 2), // Intensity of normal map - increased for more visible detail
+                roughnessMap: roughnessTexture, // Surface roughness
+                metalnessMap: metallicTexture, // Metallic properties
+                color: 0xffffff,
+                side: THREE.DoubleSide,
+                flatShading: false,
+                roughness: 0.7, // Overall roughness (0 = mirror, 1 = matte)
+                metalness: 0.1, // Overall metalness for reflections
+                envMapIntensity: 1.0 // Environmental reflection intensity
+              })
+              
+              // Apply material to the actual table top mesh
+              tableTopMesh.material = pbrMaterial
+              
+              console.log('✅ Applied professional PBR 3D textures to table top mesh:', tableTopMesh.name)
+              
+              // Force material update
+              if (Array.isArray(tableTopMesh.material)) {
+                tableTopMesh.material.forEach((mat: THREE.Material) => mat.needsUpdate = true)
+              } else {
+                tableTopMesh.material.needsUpdate = true
+              }
+            }
+            
+            // Load all PBR textures
+            textureLoader.load(
+              '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_BaseColor.jpg',
+              (texture) => {
+                configureTexture(texture)
+                baseColorTexture = texture
+                texturesLoaded++
+                applyPBRMaterial()
+              },
+              undefined,
+              (error) => console.error('❌ Error loading base color:', error)
+            )
+            
+            textureLoader.load(
+              '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_Normal.png',
+              (texture) => {
+                configureTexture(texture)
+                normalTexture = texture
+                texturesLoaded++
+                applyPBRMaterial()
+              },
+              undefined,
+              (error) => console.error('❌ Error loading normal:', error)
+            )
+            
+            textureLoader.load(
+              '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_Roughness.jpg',
+              (texture) => {
+                configureTexture(texture)
+                roughnessTexture = texture
+                texturesLoaded++
+                applyPBRMaterial()
+              },
+              undefined,
+              (error) => console.error('❌ Error loading roughness:', error)
+            )
+            
+            textureLoader.load(
+              '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_Metallic.jpg',
+              (texture) => {
+                configureTexture(texture)
+                metallicTexture = texture
+                texturesLoaded++
+                applyPBRMaterial()
+              },
+              undefined,
+              (error) => console.error('❌ Error loading metallic:', error)
+            )
+          } else {
+            console.log('❌ Could not identify table top mesh, applying to all desk meshes')
+            
+            // Fallback: apply to all meshes
+            const canvas = document.createElement('canvas')
+            canvas.width = 512
+            canvas.height = 512
+            const ctx = canvas.getContext('2d')
+            
+            if (ctx) {
+              const tileSize = 64
+              for (let x = 0; x < canvas.width; x += tileSize) {
+                for (let y = 0; y < canvas.height; y += tileSize) {
+                  const isEven = ((x / tileSize) + (y / tileSize)) % 2 === 0
+                  ctx.fillStyle = isEven ? '#FF0000' : '#00FF00'
+                  ctx.fillRect(x, y, tileSize, tileSize)
+                }
+              }
+              
+              const texture = new THREE.CanvasTexture(canvas)
+              texture.wrapS = THREE.RepeatWrapping
+              texture.wrapT = THREE.RepeatWrapping
+              texture.repeat.set(2, 2)
+              texture.needsUpdate = true
+              
+              deskMeshes.forEach((mesh) => {
+                const deskMaterial = new THREE.MeshStandardMaterial({
+                  map: texture,
+                  color: 0x8B7355,
+                  roughness: 0.7,
+                  metalness: 0.0,
+                  side: THREE.DoubleSide
+                })
+                
+                mesh.userData.originalMaterial = mesh.material
+                mesh.material = deskMaterial
+                console.log('✅ Applied RED/GREEN checkerboard to desk mesh:', mesh.name)
+              })
+            }
+          }
+        }
+        
+        // Update all materials (but skip desk meshes - they're already handled)
+        furniture.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.material) {
+            // Skip desk meshes - we already applied textures only to the table top (Cube)
+            if (child.name === 'Cube' || child.name === 'Cube_1' || deskMeshes.includes(child)) {
+              // Cube has the checkerboard pattern applied
+              // Cube_1 should keep its original material
+              child.updateMatrix()
+              child.updateMatrixWorld(true)
+              return
             }
             
             if (Array.isArray(child.material)) {
@@ -3775,132 +3900,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         camera.updateProjectionMatrix()
       }
       
-      // Reapply focus effect when focus parameters change
-      if (cameraControls.focusDistance && cameraControls.aperture && cameraControls.maxBlur) {
-        const applyFocusEffect = () => {
-          const focusDistance = cameraControls.focusDistance
-          const aperture = cameraControls.aperture
-          const maxBlur = cameraControls.maxBlur
-          const bokehScale = cameraControls.bokehScale || 2
-          const darkenPeriphery = cameraControls.darkenPeriphery || 0.3
-          
-          const canvas = rendererRef.current?.domElement
-          const parent = canvas?.parentNode
-          
-          if (!canvas || !parent) return
-          
-          // Remove any existing focus effects
-          const existingWrapper = parent.querySelector('.focus-effect-wrapper')
-          if (existingWrapper) {
-            parent.removeChild(existingWrapper)
-          }
-          
-          // Create wrapper for the focus effect
-          const wrapper = document.createElement('div')
-          wrapper.className = 'focus-effect-wrapper'
-          wrapper.style.position = 'relative'
-          wrapper.style.width = '100%'
-          wrapper.style.height = '100%'
-          wrapper.style.overflow = 'hidden'
-          
-          // Create the blurred background layer
-          const blurredLayer = document.createElement('canvas')
-          blurredLayer.width = canvas.width
-          blurredLayer.height = canvas.height
-          blurredLayer.style.position = 'absolute'
-          blurredLayer.style.top = '0'
-          blurredLayer.style.left = '0'
-          blurredLayer.style.width = '100%'
-          blurredLayer.style.height = '100%'
-          blurredLayer.style.filter = `blur(${(maxBlur ?? 0.01) * 30}px)`
-          blurredLayer.style.transform = 'scale(1.1)'
-          
-          // Create the sharp foreground layer (center focus)
-          const sharpLayer = document.createElement('canvas')
-          sharpLayer.width = canvas.width
-          sharpLayer.height = canvas.height
-          sharpLayer.style.position = 'absolute'
-          sharpLayer.style.top = '0'
-          sharpLayer.style.left = '0'
-          sharpLayer.style.width = '100%'
-          sharpLayer.style.height = '100%'
-          
-          // Create radial mask for the sharp layer
-          const mask = document.createElement('div')
-          mask.style.position = 'absolute'
-          mask.style.top = '0'
-          mask.style.left = '0'
-          mask.style.width = '100%'
-          mask.style.height = '100%'
-          mask.style.background = `radial-gradient(circle at center, 
-            transparent 0%, 
-            transparent 30%, 
-            rgba(0,0,0,0.05) 50%, 
-            rgba(0,0,0,${darkenPeriphery}) 70%, 
-            rgba(0,0,0,${darkenPeriphery + 0.1}) 100%)`
-          mask.style.pointerEvents = 'none'
-          mask.style.zIndex = '3'
-          
-          // Create the sharp area mask (inverted)
-          const sharpMask = document.createElement('div')
-          sharpMask.style.position = 'absolute'
-          sharpMask.style.top = '0'
-          sharpMask.style.left = '0'
-          sharpMask.style.width = '100%'
-          sharpMask.style.height = '100%'
-          sharpMask.style.background = `radial-gradient(circle at center, 
-            rgba(255,255,255,1) 0%, 
-            rgba(255,255,255,1) 30%, 
-            rgba(255,255,255,0.8) 40%, 
-            rgba(255,255,255,0) 50%, 
-            rgba(255,255,255,0) 100%)`
-          sharpMask.style.pointerEvents = 'none'
-          sharpMask.style.zIndex = '2'
-          sharpMask.style.mixBlendMode = 'multiply'
-          
-          // Function to copy canvas content
-          const copyCanvasContent = () => {
-            const ctx = blurredLayer.getContext('2d')
-            const sharpCtx = sharpLayer.getContext('2d')
-            if (ctx && sharpCtx) {
-              ctx.drawImage(canvas, 0, 0)
-              sharpCtx.drawImage(canvas, 0, 0)
-            }
-          }
-          
-          // Initial copy
-          copyCanvasContent()
-          
-          // Set up the layers
-          wrapper.appendChild(blurredLayer)
-          wrapper.appendChild(sharpLayer)
-          wrapper.appendChild(sharpMask)
-          wrapper.appendChild(mask)
-          
-          // Replace the original canvas with our wrapper
-          parent.insertBefore(wrapper, canvas)
-          wrapper.appendChild(canvas)
-          
-          // Hide the original canvas and show our composite
-          canvas.style.position = 'absolute'
-          canvas.style.top = '0'
-          canvas.style.left = '0'
-          canvas.style.width = '100%'
-          canvas.style.height = '100%'
-          canvas.style.zIndex = '1'
-          
-          // Update the blurred layer on each render
-          const originalRender = rendererRef.current?.render
-          if (originalRender && rendererRef.current) {
-            rendererRef.current.render = function(scene: THREE.Scene, camera: THREE.Camera) {
-              originalRender.call(this, scene, camera)
-              copyCanvasContent()
-            }
-          }
-        }
-        
-        applyFocusEffect()
-      }
+      // Focus effect disabled - canvas renders cleanly without post-processing
       
       requestRender()
     }

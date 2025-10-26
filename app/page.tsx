@@ -178,7 +178,7 @@ export default function Home() {
   const [transitionName, setTransitionName] = useState<string | null>(null)
   
   // Dev controls state
-  const [isDevMode, setIsDevMode] = useState(false) // Disable dev mode temporarily
+  const [isDevMode, setIsDevMode] = useState(true) // Enable dev mode
   const [componentControls, setComponentControls] = useState<ComponentControls>(defaultComponentControls)
   const [categoryVisibility, setCategoryVisibility] = useState<CategoryVisibility>(defaultCategoryVisibility)
   
