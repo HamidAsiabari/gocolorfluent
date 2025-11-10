@@ -404,11 +404,15 @@ section {
   
   /* Special handling for home page with scroll management */
   .home-page {
-    touch-action: none; /* Prevent scrolling on home page */
+    touch-action: none !important; /* Prevent scrolling on home page */
   }
   
   .home-page .smooth-scroll {
-    touch-action: none; /* Prevent scrolling on home page */
+    touch-action: none !important; /* Prevent scrolling on home page */
+  }
+  
+  .home-page main {
+    touch-action: none !important; /* Prevent scrolling on home page main element */
   }
   
   /* Mobile section constraints removed to fix legal pages spacing */

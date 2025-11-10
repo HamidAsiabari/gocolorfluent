@@ -287,6 +287,7 @@ export default function VideoPlayer({
   return (
     <div 
       className={`relative group ${className}`}
+      data-video-player="true"
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
@@ -338,7 +339,14 @@ export default function VideoPlayer({
 
       {/* Banner Error State - Fallback to play button */}
       {!isPlaying && showBanner && bannerError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl z-5">
+        <div 
+          className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl z-5 cursor-pointer"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            togglePlay()
+          }}
+        >
           <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors duration-200">
             <svg className="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
@@ -423,7 +431,11 @@ export default function VideoPlayer({
           <div className="flex items-center space-x-3">
             {/* Play/Pause Button */}
             <button
-              onClick={togglePlay}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                togglePlay()
+              }}
               className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
             >
               {isPlaying ? (
@@ -439,7 +451,11 @@ export default function VideoPlayer({
 
             {/* Mute Button */}
             <button
-              onClick={toggleMute}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleMute()
+              }}
               className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
             >
               {isMuted ? (

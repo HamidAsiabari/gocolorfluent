@@ -200,45 +200,45 @@ export const useAppStore = create<AppState>()(
       // Actions
       setLoading: (loading) => {
         set({ isLoading: loading })
-        get().addDebugLog('info', `Loading state changed: ${loading}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Loading state changed: ${loading}`)
       },
       
       setLoadingProgress: (progress) => {
         set({ loadingProgress: progress })
-        get().addDebugLog('info', `Loading progress: ${Math.round(progress * 100)}%`)
+        if (get().isDebugMode) get().addDebugLog('info', `Loading progress: ${Math.round(progress * 100)}%`)
       },
       
       setIsClient: (client) => {
         set({ isClient: client })
-        get().addDebugLog('info', `Client state changed: ${client}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Client state changed: ${client}`)
       },
       
       setCurrent3DStage: (stage) => {
         const prevStage = get().current3DStage
         set({ current3DStage: stage })
-        get().addDebugLog('info', `3D Stage changed: ${prevStage} → ${stage}`)
+        if (get().isDebugMode) get().addDebugLog('info', `3D Stage changed: ${prevStage} → ${stage}`)
       },
       
       setStage3DAnimationProgress: (progress) => {
         set({ stage3DAnimationProgress: progress })
-        if (progress > 0 && progress < 1) {
+        if (get().isDebugMode && progress > 0 && progress < 1) {
           get().addDebugLog('info', `3D Animation progress: ${Math.round(progress * 100)}%`)
         }
       },
       
       setIs3DAnimating: (animating) => {
         set({ is3DAnimating: animating })
-        get().addDebugLog('info', `3D Animating state: ${animating}`)
+        if (get().isDebugMode) get().addDebugLog('info', `3D Animating state: ${animating}`)
       },
       
       setIsAnimating: (animating) => {
         set({ isAnimating: animating })
-        get().addDebugLog('info', `Animating state: ${animating}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Animating state: ${animating}`)
       },
       
       setAnimationProgress: (progress) => {
         set({ animationProgress: progress })
-        if (progress > 0 && progress < 1) {
+        if (get().isDebugMode && progress > 0 && progress < 1) {
           get().addDebugLog('info', `Animation progress: ${Math.round(progress * 100)}%`)
         }
       },
@@ -246,27 +246,27 @@ export const useAppStore = create<AppState>()(
       setCurrentSection: (section) => {
         const prevSection = get().currentSection
         set({ currentSection: section })
-        get().addDebugLog('info', `Section changed: ${prevSection} → ${section}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Section changed: ${prevSection} → ${section}`)
       },
       
       setIsScrolling: (scrolling) => {
         set({ isScrolling: scrolling })
-        get().addDebugLog('info', `Scrolling state: ${scrolling}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Scrolling state: ${scrolling}`)
       },
       
       setScrollDirection: (direction) => {
         set({ scrollDirection: direction })
-        get().addDebugLog('info', `Scroll direction: ${direction}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Scroll direction: ${direction}`)
       },
       
       setIsTransitioning: (transitioning) => {
         set({ isTransitioning: transitioning })
-        get().addDebugLog('info', `Transitioning state: ${transitioning}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Transitioning state: ${transitioning}`)
       },
       
       setTransitionProgress: (progress) => {
         set({ transitionProgress: progress })
-        if (progress > 0 && progress < 1) {
+        if (get().isDebugMode && progress > 0 && progress < 1) {
           get().addDebugLog('info', `Transition progress: ${Math.round(progress * 100)}%`)
         }
       },
@@ -277,29 +277,29 @@ export const useAppStore = create<AppState>()(
       
       setIsNavigatingViaDots: (navigating) => {
         set({ isNavigatingViaDots: navigating })
-        get().addDebugLog('info', `Navigating via dots: ${navigating}`)
+        if (get().isDebugMode) get().addDebugLog('info', `Navigating via dots: ${navigating}`)
       },
       
       setModelControls: (controls) => {
         set({ modelControls: controls })
-        get().addDebugLog('info', 'Model controls updated', controls)
+        if (get().isDebugMode) get().addDebugLog('info', 'Model controls updated', controls)
       },
       
       setCameraControls: (controls) => {
         set({ cameraControls: controls })
-        get().addDebugLog('info', 'Camera controls updated', controls)
+        if (get().isDebugMode) get().addDebugLog('info', 'Camera controls updated', controls)
       },
       
       setLightingControls: (controls) => {
         set({ lightingControls: controls })
-        get().addDebugLog('info', 'Lighting controls updated', controls)
+        if (get().isDebugMode) get().addDebugLog('info', 'Lighting controls updated', controls)
       },
       
       setStageConfig: (stage, config) => {
         set((state) => ({
           stageConfigs: { ...state.stageConfigs, [stage]: config }
         }))
-        get().addDebugLog('info', `Stage ${stage} config set`, config)
+        if (get().isDebugMode) get().addDebugLog('info', `Stage ${stage} config set`, config)
       },
       
       getStageConfig: (stage) => {
@@ -347,7 +347,7 @@ export const useAppStore = create<AppState>()(
       
       updateMultipleStates: (updates) => {
         set(updates)
-        get().addDebugLog('info', 'Multiple states updated', updates)
+        if (get().isDebugMode) get().addDebugLog('info', 'Multiple states updated', updates)
       }
       })
     ),

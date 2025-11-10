@@ -67,17 +67,6 @@ export default function PerformanceMonitor({ componentName, children }: Performa
 
   renderCount.current++
 
-  // Log performance metrics in development (reduced frequency)
-  if (process.env.NODE_ENV === 'development' && renderCount.current % 300 === 0) {
-    console.log(`[${componentName}] Performance:`, {
-      renders: renderCount.current,
-      fps,
-      memory: memoryUsage > 0 ? `${memoryUsage.toFixed(1)}MB` : 'N/A',
-      mobile: isMobile,
-      devicePixelRatio: window.devicePixelRatio
-    })
-  }
-
   return children ? <>{children}</> : null
 }
 

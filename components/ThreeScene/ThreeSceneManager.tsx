@@ -6,6 +6,8 @@ import { GLTFLoader } from 'three-stdlib'
 import { StageConfig, stage0Config, stage1Config, stage2Config, stage3Config, stage4Config, stage5Config, stage6Config, stage7Config, stage8Config, stage9Config } from './index'
 import { ComponentControls, CategoryVisibility, categoryComponentMap } from '../DevControls/sections/product3d/types'
 import { CameraControls } from '../../store/useAppStore'
+import { useDeviceDetection } from './hooks/useDeviceDetection'
+import { useRenderLoop } from './hooks/useRenderLoop'
 
 interface ThreeSceneManagerProps {
   mountRef: React.RefObject<HTMLDivElement>
@@ -83,39 +85,8 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
   const isRenderingRef = useRef<boolean>(false)
   const needsRenderRef = useRef<boolean>(false)
   
-  // Mobile detection and device capability assessment
-  const [isMobile, setIsMobile] = useState(false)
-  const [isLowEndDevice, setIsLowEndDevice] = useState(false)
-
-  // Enhanced device detection effect
-  useEffect(() => {
-    const checkDevice = () => {
-      const width = window.innerWidth
-      const isMobileDevice = width < 768
-      
-      // Detect low-end devices based on hardware capabilities
-      const isLowEnd = 
-        navigator.hardwareConcurrency <= 4 || // Low CPU cores
-        (navigator as any).deviceMemory <= 4 || // Low RAM (if available)
-        /Android.*Chrome\/[0-5][0-9]|iPhone.*Safari\/[0-5][0-9]|iPad.*Safari\/[0-5][0-9]/.test(navigator.userAgent) || // Old browsers
-        /Android.*Chrome\/[0-9][0-9]/.test(navigator.userAgent) && width < 480 // Small Android devices
-      
-      setIsMobile(isMobileDevice)
-      setIsLowEndDevice(isLowEnd)
-      
-      console.log('📱 Device detection:', {
-        isMobile: isMobileDevice,
-        isLowEnd,
-        hardwareConcurrency: navigator.hardwareConcurrency,
-        deviceMemory: (navigator as any).deviceMemory,
-        userAgent: navigator.userAgent.substring(0, 50)
-      })
-    }
-    
-    checkDevice()
-    window.addEventListener('resize', checkDevice)
-    return () => window.removeEventListener('resize', checkDevice)
-  }, [])
+  // Use extracted hook for device detection
+  const { isMobile, isLowEndDevice } = useDeviceDetection()
 
   // Helper functions for rendering
   const requestRender = useCallback(() => {
@@ -582,53 +553,105 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       // Create a more detailed environment for better reflections
       const envGroup = new THREE.Group()
       
-      // Create a gradient sky sphere
+      // Create a bright gradient sky sphere with multiple colors for variety
       const skyGeometry = new THREE.SphereGeometry(100, 64, 32)
       const skyMaterial = new THREE.MeshBasicMaterial({
-        color: 0x87CEEB, // Sky blue
+        color: 0xA0D0E0, // Brighter sky blue
         side: THREE.BackSide
       })
       const skySphere = new THREE.Mesh(skyGeometry, skyMaterial)
       envGroup.add(skySphere)
       
-      // Add some clouds for more interesting reflections
-      for (let i = 0; i < 5; i++) {
-        const cloudGeometry = new THREE.SphereGeometry(15 + Math.random() * 10, 16, 8)
+      // Add bright, reflective objects to create interesting reflections
+      for (let i = 0; i < 8; i++) {
+        // Add bright colored spheres for variety
+        const sphereGeometry = new THREE.SphereGeometry(10 + Math.random() * 10, 32, 16)
+        const colors = [0xffffff, 0xffd700, 0xff6b6b, 0x4ecdc4, 0x95e1d3, 0xf38181]
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+          color: colors[Math.floor(Math.random() * colors.length)],
+          side: THREE.DoubleSide
+        })
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
+        sphere.position.set(
+          (Math.random() - 0.5) * 150,
+          Math.random() * 60 - 20,
+          (Math.random() - 0.5) * 150
+        )
+        envGroup.add(sphere)
+      }
+      
+      // Add some clouds with better lighting
+      for (let i = 0; i < 10; i++) {
+        const cloudGeometry = new THREE.SphereGeometry(20 + Math.random() * 15, 16, 8)
         const cloudMaterial = new THREE.MeshBasicMaterial({
           color: 0xffffff,
           transparent: true,
-          opacity: 0.8
+          opacity: 0.9
         })
         const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial)
         cloud.position.set(
-          (Math.random() - 0.5) * 200,
-          Math.random() * 50 + 20,
-          (Math.random() - 0.5) * 200
+          (Math.random() - 0.5) * 180,
+          Math.random() * 40 + 30,
+          (Math.random() - 0.5) * 180
         )
-        cloud.scale.set(1, 0.5, 1)
+        cloud.scale.set(1, 0.6, 1)
         envGroup.add(cloud)
       }
       
-      // Add some ground elements for floor reflections
-      const groundGeometry = new THREE.PlaneGeometry(200, 200)
+      // Add bright ground for bottom reflections
+      const groundGeometry = new THREE.PlaneGeometry(300, 300)
       const groundMaterial = new THREE.MeshBasicMaterial({
-        color: 0x90EE90, // Light green
+        color: 0xE8F5E9, // Light green/white
         side: THREE.DoubleSide
       })
       const ground = new THREE.Mesh(groundGeometry, groundMaterial)
       ground.rotation.x = -Math.PI / 2
-      ground.position.y = -50
+      ground.position.y = -60
       envGroup.add(ground)
+      
+      // Add bright panels to the sides
+      const sideGeometry = new THREE.PlaneGeometry(100, 100)
+      const sideMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        side: THREE.DoubleSide
+      })
+      
+      // Left side
+      const leftSide = new THREE.Mesh(sideGeometry, sideMaterial)
+      leftSide.position.set(-80, 0, 0)
+      leftSide.rotation.y = Math.PI / 2
+      envGroup.add(leftSide)
+      
+      // Right side
+      const rightSide = new THREE.Mesh(sideGeometry, sideMaterial)
+      rightSide.position.set(80, 0, 0)
+      rightSide.rotation.y = -Math.PI / 2
+      envGroup.add(rightSide)
+      
+      // Back side
+      const backSide = new THREE.Mesh(sideGeometry, sideMaterial)
+      backSide.position.set(0, 0, -80)
+      envGroup.add(backSide)
+      
+      // Front side
+      const frontSide = new THREE.Mesh(sideGeometry, sideMaterial)
+      frontSide.position.set(0, 0, 80)
+      frontSide.rotation.y = Math.PI
+      envGroup.add(frontSide)
       
       scene.add(envGroup)
       
       // Generate environment map from the detailed scene
       const pmremGenerator = new THREE.PMREMGenerator(renderer)
+      pmremGenerator.compileEquirectangularShader()
       const generatedEnvMap = pmremGenerator.fromScene(scene).texture
       scene.environment = generatedEnvMap
       
       // Remove the temporary environment group
       scene.remove(envGroup)
+      
+      // Clean up PMREM generator
+      pmremGenerator.dispose()
       
       console.log('✅ Procedural environment map created for reflections')
     }
@@ -636,6 +659,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     // Create environment map for reflections
     const createEnvironmentMap = () => {
       const pmremGenerator = new THREE.PMREMGenerator(renderer)
+      pmremGenerator.compileEquirectangularShader()
       
       // Create a simple environment map using a cube texture
       let envMap = null
@@ -707,6 +731,10 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
     
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x1a1a1a)
+    
+    // Configure tone mapping for realistic rendering
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.0
     
     // Mobile-optimized pixel ratio and shadow settings
     renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2))
@@ -1364,6 +1392,22 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
               texture.needsUpdate = true
             }
             
+            const configureColorTexture = (texture: THREE.Texture) => {
+              texture.colorSpace = THREE.SRGBColorSpace
+              texture.flipY = false
+              texture.wrapS = THREE.RepeatWrapping
+              texture.wrapT = THREE.RepeatWrapping
+              texture.needsUpdate = true
+            }
+            
+            const configureDataTexture = (texture: THREE.Texture) => {
+              texture.colorSpace = THREE.NoColorSpace
+              texture.flipY = false
+              texture.wrapS = THREE.RepeatWrapping
+              texture.wrapT = THREE.RepeatWrapping
+              texture.needsUpdate = true
+            }
+            
             const applyPBRMaterial = () => {
               if (texturesLoaded < totalTextures) return
               
@@ -1402,7 +1446,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
             textureLoader.load(
               '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_BaseColor.jpg',
               (texture) => {
-                configureTexture(texture)
+                configureColorTexture(texture)
                 baseColorTexture = texture
                 texturesLoaded++
                 applyPBRMaterial()
@@ -1414,7 +1458,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
             textureLoader.load(
               '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_Normal.png',
               (texture) => {
-                configureTexture(texture)
+                configureDataTexture(texture)
                 normalTexture = texture
                 texturesLoaded++
                 applyPBRMaterial()
@@ -1426,7 +1470,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
             textureLoader.load(
               '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_Roughness.jpg',
               (texture) => {
-                configureTexture(texture)
+                configureDataTexture(texture)
                 roughnessTexture = texture
                 texturesLoaded++
                 applyPBRMaterial()
@@ -1438,7 +1482,7 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
             textureLoader.load(
               '/textures/Poliigon_StoneQuartzite_8060/2K/Poliigon_StoneQuartzite_8060_Metallic.jpg',
               (texture) => {
-                configureTexture(texture)
+                configureDataTexture(texture)
                 metallicTexture = texture
                 texturesLoaded++
                 applyPBRMaterial()
@@ -2306,59 +2350,77 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       }
       
       // Function to apply texture to Upper Cover
-      const applyUpperCoverTexture = (texturePath: string) => {
+      const applyUpperCoverTexture = (textDownload: string) => {
         if (!textureLoader.current) return
         
+        console.log('🎨 Loading full PBR textures for upper cover...')
         
-        textureLoader.current.load(texturePath, (texture) => {
-          // Store texture reference for cleanup
-          upperCoverTextureRef.current = texture
+        // Load all PBR textures
+        textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg', (baseTexture) => {
+          baseTexture.colorSpace = THREE.SRGBColorSpace
+          baseTexture.flipY = false
           
-          // Configure texture for metal surface
-          texture.wrapS = THREE.RepeatWrapping
-          texture.wrapT = THREE.RepeatWrapping
-          texture.flipY = false
-          texture.minFilter = THREE.LinearFilter
-          texture.magFilter = THREE.LinearFilter
-          texture.generateMipmaps = false
-          texture.format = THREE.RGBAFormat
-          texture.type = THREE.UnsignedByteType
-          
-          // Find Upper Cover component and apply texture
-          const upperCoverComponent = componentRefs.current.get('upperCover')
-          
-          if (upperCoverComponent) {
-            let meshCount = 0
-            upperCoverComponent.traverse((child) => {
-              if (child instanceof THREE.Mesh && child.material) {
-                meshCount++
-                const newMaterial = child.material.clone()
-                if (Array.isArray(newMaterial)) {
-                  newMaterial.forEach((mat, index) => {
-                    if (mat instanceof THREE.MeshStandardMaterial) {
-                      // Apply texture to the material
-                      mat.map = texture
-                      // Set metallic properties for brushed steel appearance
-                      mat.metalness = 0.8
-                      mat.roughness = 0.3
-                      mat.needsUpdate = true
+          textureLoader.current!.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Normal.png', (normalTexture) => {
+            normalTexture.colorSpace = THREE.NoColorSpace
+            normalTexture.flipY = false
+            
+            textureLoader.current!.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Metallic.jpg', (metallicTexture) => {
+              metallicTexture.colorSpace = THREE.NoColorSpace
+              metallicTexture.flipY = false
+              
+              textureLoader.current!.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Roughness.jpg', (roughnessTexture) => {
+                roughnessTexture.colorSpace = THREE.NoColorSpace
+                roughnessTexture.flipY = false
+                
+                console.log('✅ All PBR textures loaded, applying to upper cover...')
+                
+                // Find Upper Cover component and apply all textures
+                const upperCoverComponent = componentRefs.current.get('upperCover')
+                
+                if (upperCoverComponent) {
+                  let meshCount = 0
+                  upperCoverComponent.traverse((child) => {
+                    if (child instanceof THREE.Mesh && child.material) {
+                      meshCount++
+                      const newMaterial = child.material.clone()
+                      if (Array.isArray(newMaterial)) {
+                        newMaterial.forEach((mat) => {
+                          if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.map = baseTexture
+                            mat.normalMap = normalTexture
+                            mat.metalnessMap = metallicTexture
+                            mat.roughnessMap = roughnessTexture
+                            mat.metalness = 0.8
+                            mat.roughness = 0.3
+                            mat.needsUpdate = true
+                          }
+                        })
+                      } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
+                        newMaterial.map = baseTexture
+                        newMaterial.normalMap = normalTexture
+                        newMaterial.metalnessMap = metallicTexture
+                        newMaterial.roughnessMap = roughnessTexture
+                        newMaterial.metalness = 0.8
+                        newMaterial.roughness = 0.3
+                        newMaterial.needsUpdate = true
+                      }
+                      
+                      child.material = newMaterial
                     }
                   })
-                } else if (newMaterial instanceof THREE.MeshStandardMaterial) {
-                  // Apply texture to the material
-                  newMaterial.map = texture
-                  // Set metallic properties for brushed steel appearance
-                  newMaterial.metalness = 0.8
-                  newMaterial.roughness = 0.3
-                  newMaterial.needsUpdate = true
+                  
+                  console.log(`✅ Applied full PBR textures to ${meshCount} meshes in upperCover`)
+                  
+                  // Force render after texture application
+                  if (rendererRef.current && sceneRef.current && cameraRef.current) {
+                    rendererRef.current.render(sceneRef.current, cameraRef.current)
+                  }
+                } else {
+                  console.log('⚠️ upperCover component not found for texture application')
                 }
-                
-                child.material = newMaterial
-              }
+              })
             })
-          } else {
-          }
-        }, undefined, (error) => {
+          })
         })
       }
       
@@ -3248,7 +3310,13 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
       const applyUpperCoverTextureWhenReady = () => {
         const upperCoverComponent = componentRefs.current.get('upperCover')
         
+        console.log('🔍 Checking for upperCover component...')
+        console.log('🔍 ComponentRefs size:', componentRefs.current.size)
+        console.log('🔍 ComponentRefs keys:', Array.from(componentRefs.current.keys()))
+        console.log('🔍 upperCover found:', !!upperCoverComponent)
+        
         if (upperCoverComponent && (window as any).applyUpperCoverTexture) {
+          console.log('✅ Applying upper cover texture...')
           ;(window as any).applyUpperCoverTexture('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg')
         } else {
           // Retry after a short delay if component not found yet
@@ -3698,18 +3766,42 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
         const metalTexture = textureLoader.current.load('/textures/Poliigon_MetalSteelBrushed_7174_BaseColor.jpg', (texture) => {
           console.log('✅ Metal texture loaded successfully')
           
+          // Configure base color texture (sRGB for color textures)
+          texture.colorSpace = THREE.SRGBColorSpace
+          texture.flipY = false
+          texture.wrapS = THREE.RepeatWrapping
+          texture.wrapT = THREE.RepeatWrapping
+          
           // Load additional texture maps for realistic material
           if (textureLoader.current) {
             const normalTexture = textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Normal.png', (normalMap) => {
               console.log('✅ Normal texture loaded successfully')
               
+              // Configure normal texture (linear for data textures)
+              normalMap.colorSpace = THREE.NoColorSpace
+              normalMap.flipY = false
+              normalMap.wrapS = THREE.RepeatWrapping
+              normalMap.wrapT = THREE.RepeatWrapping
+              
               if (textureLoader.current) {
                 const metallicTexture = textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Metallic.jpg', (metallicMap) => {
                   console.log('✅ Metallic texture loaded successfully')
                   
+                  // Configure metallic texture (linear for data textures)
+                  metallicMap.colorSpace = THREE.NoColorSpace
+                  metallicMap.flipY = false
+                  metallicMap.wrapS = THREE.RepeatWrapping
+                  metallicMap.wrapT = THREE.RepeatWrapping
+                  
                   if (textureLoader.current) {
                     const roughnessTexture = textureLoader.current.load('/Poliigon_MetalSteelBrushed_7174/2K/Poliigon_MetalSteelBrushed_7174_Roughness.jpg', (roughnessMap) => {
                 console.log('✅ Roughness texture loaded successfully')
+                
+                // Configure roughness texture (linear for data textures)
+                roughnessMap.colorSpace = THREE.NoColorSpace
+                roughnessMap.flipY = false
+                roughnessMap.wrapS = THREE.RepeatWrapping
+                roughnessMap.wrapT = THREE.RepeatWrapping
                 
                 // Apply all texture maps to all mesh components
                 let textureAppliedCount = 0
@@ -3721,25 +3813,74 @@ const ThreeSceneManager = memo(function ThreeSceneManager({
                       console.log(`🔍 Found mesh: ${child.name}, has material: ${!!child.material}`)
                       if (child.material) {
                       if (Array.isArray(child.material)) {
-                        child.material.forEach((material: THREE.MeshStandardMaterial) => {
-                          // Apply textures regardless of whether material.map exists
-                          material.map = texture
-                          material.normalMap = normalMap
-                          material.metalnessMap = metallicMap
-                          material.roughnessMap = roughnessMap
-                          material.needsUpdate = true
+                        child.material.forEach((material) => {
+                          // Replace with MeshPhysicalMaterial for realistic brushed steel
+                          const steelMaterial = new THREE.MeshPhysicalMaterial({
+                            map: texture, // Base color texture
+                            normalMap: normalMap, // Surface detail for brushed look
+                            normalScale: new THREE.Vector2(1.5, 1.5), // Stronger normal effect
+                            
+                            // Brushed steel properties
+                            metalness: 1.0, // 100% metallic
+                            roughness: 0.15, // Very low roughness for strong reflections
+                            envMap: sceneRef.current?.environment || null,
+                            envMapIntensity: 3.5, // Strong reflections
+                            
+                            // Clearcoat for glossy finish
+                            clearcoat: 1.0,
+                            clearcoatRoughness: 0.03, // Very smooth clearcoat
+                            
+                            // IOR for metal
+                            ior: 2.5,
+                            
+                            // Strong anisotropy for brushed grain - this is KEY!
+                            anisotropy: 1.0, // Maximum for strong directional highlights
+                            anisotropyRotation: Math.PI / 4, // 45 degrees for diagonal brushing
+                            
+                            side: THREE.DoubleSide,
+                            color: 0xffffff
+                          })
+                          
+                          // Replace the material
+                          const materialIndex = child.material.indexOf(material)
+                          child.material[materialIndex] = steelMaterial
+                          
                           textureAppliedCount++
-                          console.log(`🎨 Applied complete metal material to ${child.name}`)
+                          console.log(`🎨 Applied realistic steel material to ${child.name}`)
                         })
-                      } else if (child.material instanceof THREE.MeshStandardMaterial) {
-                        // Apply textures regardless of whether material.map exists
-                        child.material.map = texture
-                        child.material.normalMap = normalMap
-                        child.material.metalnessMap = metallicMap
-                        child.material.roughnessMap = roughnessMap
-                        child.material.needsUpdate = true
+                      } else if (child.material instanceof THREE.MeshStandardMaterial || child.material instanceof THREE.MeshPhysicalMaterial) {
+                        // Replace with MeshPhysicalMaterial for realistic steel
+                        const steelMaterial = new THREE.MeshPhysicalMaterial({
+                          map: texture, // Base color texture
+                          normalMap: normalMap, // Surface detail for brushed look
+                          normalScale: new THREE.Vector2(1.5, 1.5), // Stronger normal effect
+                          
+                          // Brushed steel properties
+                          metalness: 1.0, // 100% metallic
+                          roughness: 0.15, // Very low roughness for strong reflections
+                          envMap: sceneRef.current?.environment || null,
+                          envMapIntensity: 3.5, // Strong reflections
+                          
+                          // Clearcoat for glossy finish
+                          clearcoat: 1.0,
+                          clearcoatRoughness: 0.03, // Very smooth clearcoat
+                          
+                          // IOR for metal
+                          ior: 2.5,
+                          
+                          // Strong anisotropy for brushed grain - this is KEY!
+                          anisotropy: 1.0, // Maximum for strong directional highlights
+                          anisotropyRotation: Math.PI / 4, // 45 degrees for diagonal brushing
+                          
+                          side: THREE.DoubleSide,
+                          color: 0xffffff
+                        })
+                        
+                        // Replace the material
+                        child.material = steelMaterial
+                        
                         textureAppliedCount++
-                        console.log(`🎨 Applied complete metal material to ${child.name}`)
+                        console.log(`🎨 Applied realistic steel material to ${child.name}`)
                       }
                     }
                   }

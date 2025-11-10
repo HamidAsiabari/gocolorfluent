@@ -50,9 +50,14 @@ const Section8 = memo(function Section8({
     <section 
       className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-full absolute inset-0 pt-4 md:pt-0"
       style={{
-        transform: `translateY(${isClient ? (8 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
+        transform: `translate3d(0, ${isClient ? (8 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px, 0)`,
         zIndex: 10,
-        maxWidth: '100%'
+        maxWidth: '100%',
+        willChange: isTransitioning ? 'transform' : 'auto',
+        contain: 'layout style paint',
+        backfaceVisibility: 'hidden',
+        transformStyle: 'preserve-3d',
+        WebkitFontSmoothing: 'antialiased'
       }}
     >
       {/* Background Elements */}
@@ -75,12 +80,12 @@ const Section8 = memo(function Section8({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-5xl mx-auto text-center px-4 sm:px-6 pt-[120px] sm:pt-[5%]">
-        <div className="space-y-4 sm:space-y-8">
+      <div className="section-content relative z-10 max-w-5xl mx-auto text-center px-4 sm:px-6 pt-[73px] sm:pt-[5%] min-h-[calc(100vh-73px)] md:min-h-0 pb-4 md:pb-0">
+        <div className="space-y-4 sm:space-y-8 flex flex-col min-h-full md:min-h-0 justify-center md:justify-start">
           
           {/* Section Title */}
           <div className={`space-y-2 lg:space-y-4 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+            <h2 className="text-[1.2rem] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-purple-400">Contact Us</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-400 to-blue-400"> Today</span>
             </h2>
@@ -97,33 +102,33 @@ const Section8 = memo(function Section8({
           <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
               {/* Email */}
-              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-indigo-500/20 p-4 sm:p-6 hover:border-indigo-400/40 transition-all duration-300 hover:scale-105">
-                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-indigo-500/20 p-3 sm:p-6 hover:border-indigo-400/40 transition-all duration-300 hover:scale-105">
+                <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Email Us</h3>
-                <p className="text-gray-400 mb-3 text-sm">Get detailed information</p>
-                <a href="mailto:info@gocolorfluent.com" className="text-indigo-400 hover:text-indigo-300 transition-colors duration-300 text-sm">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">Email Us</h3>
+                <p className="text-gray-400 mb-2 sm:mb-3 text-xs sm:text-sm">Get detailed information</p>
+                <a href="mailto:info@gocolorfluent.com" className="text-indigo-400 hover:text-indigo-300 transition-colors duration-300 text-xs sm:text-sm">
                   info@gocolorfluent.com
                 </a>
               </div>
 
               {/* Phone */}
-              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-blue-500/20 p-4 sm:p-6 hover:border-blue-400/40 transition-all duration-300 hover:scale-105">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="group bg-black/30 backdrop-blur-sm rounded-xl border border-blue-500/20 p-3 sm:p-6 hover:border-blue-400/40 transition-all duration-300 hover:scale-105">
+                <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Call Us</h3>
-                <p className="text-gray-400 mb-3 text-sm">Speak with our experts</p>
-                <a href="tel:+14378822429" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 text-sm block mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">Call Us</h3>
+                <p className="text-gray-400 mb-2 sm:mb-3 text-xs sm:text-sm">Speak with our experts</p>
+                <a href="tel:+14378822429" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 text-xs sm:text-sm block mb-1 sm:mb-2">
                   +1 (437) 882-2429
                 </a>
                 {/* Book a Demo link - Mobile only */}
-                <a href="/contact" className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-sm sm:hidden block">
+                <a href="/contact" className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-xs sm:text-sm sm:hidden block">
                   Book a Demo
                 </a>
               </div>

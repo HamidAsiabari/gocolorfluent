@@ -66,9 +66,14 @@ const Section2 = memo(function Section2({
     <section 
       className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-full absolute inset-0 pt-4 md:pt-0"
       style={{
-        transform: `translateY(${isClient ? (2 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
+        transform: `translate3d(0, ${isClient ? (2 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px, 0)`,
         zIndex: 10,
-        maxWidth: '100%'
+        maxWidth: '100%',
+        willChange: isTransitioning ? 'transform' : 'auto',
+        contain: 'layout style paint',
+        backfaceVisibility: 'hidden',
+        transformStyle: 'preserve-3d',
+        WebkitFontSmoothing: 'antialiased'
       }}
     >
       {/* Background Elements */}
@@ -87,14 +92,14 @@ const Section2 = memo(function Section2({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-[120px] sm:pt-[calc(5%-2px)]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
+      <div className="section-content relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-[73px] sm:pt-[calc(5%-2px)] min-h-[calc(100vh-73px)] md:min-h-0 pb-4 md:pb-0 flex flex-col md:block">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center md:items-center justify-between md:justify-center flex-grow md:flex-grow-0">
           
           {/* Left Side - Content */}
           <div className={`space-y-3 sm:space-y-6 lg:space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'} order-1 lg:order-1`}>
             {/* Section Title */}
             <div className="space-y-2 lg:space-y-4">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+              <h2 className="text-[1.2rem] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Advanced Detection</span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"> Systems</span>
               </h2>
@@ -173,7 +178,7 @@ const Section2 = memo(function Section2({
               </div>
               
               {/* Main visual container */}
-              <div className={`relative w-full h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
+              <div className={`relative w-full h-[200px] sm:h-96 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
                 {/* Home Image */}
                 <div className="absolute inset-0 flex items-center justify-center">

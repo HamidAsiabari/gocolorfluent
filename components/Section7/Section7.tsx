@@ -66,9 +66,14 @@ const Section7 = memo(function Section7({
     <section 
       className="flex items-start md:items-center justify-center md:justify-center justify-start h-screen w-full absolute inset-0 pt-4 md:pt-0"
       style={{
-        transform: `translateY(${isClient ? (7 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px)`,
+        transform: `translate3d(0, ${isClient ? (7 - currentSection - (isTransitioning ? (scrollDirection === 'down' ? transitionProgress : -transitionProgress) : 0)) * windowHeight : 0}px, 0)`,
         zIndex: 10,
-        maxWidth: '100%'
+        maxWidth: '100%',
+        willChange: isTransitioning ? 'transform' : 'auto',
+        contain: 'layout style paint',
+        backfaceVisibility: 'hidden',
+        transformStyle: 'preserve-3d',
+        WebkitFontSmoothing: 'antialiased'
       }}
     >
       {/* Background Elements */}
@@ -90,14 +95,14 @@ const Section7 = memo(function Section7({
 
 
       {/* Main Content */}
-      <div className="section-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-[120px] sm:pt-[5%]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
+      <div className="section-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-[73px] sm:pt-[5%] min-h-[calc(100vh-73px)] md:min-h-0 pb-4 md:pb-0 flex flex-col md:block">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center md:items-center justify-between md:justify-center flex-grow md:flex-grow-0">
           
           {/* Left Side - Visual Elements - Show below text on mobile */}
           <div className={`block transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'} order-2 lg:order-1`}>
             <div className="relative">
               {/* Main visual container */}
-              <div className={`relative w-full h-[310px] sm:h-96 bg-gradient-to-br from-slate-900/30 to-zinc-900/30 rounded-2xl border border-slate-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
+              <div className={`relative w-full h-[200px] sm:h-96 bg-gradient-to-br from-slate-900/30 to-zinc-900/30 rounded-2xl border border-slate-500/20 overflow-hidden transition-all duration-1000 ${isBlurred ? 'backdrop-blur-sm' : 'backdrop-blur-none'}`}>
                 
                 {/* Technical specifications visualization */}
                 <div className="absolute inset-6 space-y-6">
@@ -154,7 +159,7 @@ const Section7 = memo(function Section7({
           <div className={`space-y-3 sm:space-y-6 lg:space-y-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'} order-1 lg:order-2`}>
             {/* Section Title */}
             <div className="space-y-2 lg:space-y-4">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+              <h2 className="text-[1.2rem] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-gray-400">Technical</span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-zinc-400"> Specifications</span>
               </h2>

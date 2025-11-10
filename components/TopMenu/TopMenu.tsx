@@ -21,10 +21,26 @@ interface MenuConfig {
   menuItems: MenuItem[]
 }
 
+const FALLBACK_MENU_CONFIG: MenuConfig = {
+  logo: {
+    src: "/Color-fluent-Logo-2.png",
+    alt: "Color Fluent Logo",
+    href: "/"
+  },
+  menuItems: [
+    { id: "home", label: "Home", href: "/", isActive: false },
+    { id: "application", label: "Application", href: "/application", isActive: false },
+    { id: "history", label: "History", href: "/history", isActive: false },
+    { id: "shop", label: "Shop", href: "/shop", isActive: false },
+    { id: "about", label: "About Us", href: "/about", isActive: false },
+    { id: "contact", label: "Contact Us", href: "/contact", isActive: false },
+  ]
+}
+
 const TopMenu = memo(function TopMenu() {
   const router = useRouter()
   const pathname = usePathname()
-  const [menuConfig, setMenuConfig] = useState<MenuConfig | null>(null)
+  const [menuConfig, setMenuConfig] = useState<MenuConfig>(FALLBACK_MENU_CONFIG)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
 
@@ -44,22 +60,7 @@ const TopMenu = memo(function TopMenu() {
         // Only log error in development mode
         if (process.env.NODE_ENV === 'development') {
         }
-        // Fallback config in case of error
-        setMenuConfig({
-          logo: {
-            src: "/Color-fluent-Logo-2.png",
-            alt: "Color Fluent Logo",
-            href: "/"
-          },
-          menuItems: [
-            { id: "home", label: "Home", href: "/", isActive: false },
-            { id: "application", label: "Application", href: "/application", isActive: false },
-            { id: "history", label: "History", href: "/history", isActive: false },
-            { id: "shop", label: "Shop", href: "/shop", isActive: false },
-            { id: "about", label: "About Us", href: "/about", isActive: false },
-            { id: "contact", label: "Contact Us", href: "/contact", isActive: false },
-          ]
-        })
+        // Keep fallback config (already set initially)
       })
   }, [])
 
@@ -123,19 +124,6 @@ const TopMenu = memo(function TopMenu() {
     return `${baseClasses} ${activeClasses} transition-colors`
   }
 
-  if (!menuConfig) {
-    return (
-      <header className="absolute top-0 left-0 right-0 z-[100]">
-        <div className="w-full">
-          <div className="flex justify-between items-center py-6 px-4 sm:px-6 lg:px-8">
-            <div className="w-[120px] h-[120px] bg-gray-600 rounded animate-pulse"></div>
-            <div className="w-10 h-10 bg-gray-600 rounded animate-pulse mt-[15px]"></div>
-          </div>
-        </div>
-      </header>
-    )
-  }
-
   return (
     <>
       {/* Top Menu Bar */}
@@ -153,13 +141,13 @@ const TopMenu = memo(function TopMenu() {
               }}
               className="flex-shrink-0"
             >
-              <div className="relative w-[97px] h-[97px] md:w-[120px] md:h-[120px]">
+              <div className="relative w-[68px] h-[68px] md:w-[120px] md:h-[120px]">
                 <Image
                   src={menuConfig.logo.src}
                   alt={menuConfig.logo.alt}
                   fill
                   className="object-contain relative z-10"
-                  sizes="(max-width: 768px) 97px, 120px"
+                  sizes="(max-width: 768px) 68px, 120px"
                   priority
                 />
                 {/* White glowing shadow */}
@@ -175,7 +163,7 @@ const TopMenu = memo(function TopMenu() {
               aria-label="Open menu"
             >
               <svg
-                className="w-10 h-10"
+                className="w-8 h-8 md:w-10 md:h-10"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

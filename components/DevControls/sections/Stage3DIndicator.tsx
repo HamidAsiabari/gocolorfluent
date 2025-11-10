@@ -33,7 +33,7 @@ export default function Stage3DIndicator({
       title="3D Stage"
       icon="🎯"
       color="text-orange-400"
-      defaultExpanded={true}
+      defaultExpanded={false}
     >
       <div className="space-y-2">
         <div className="text-xs text-gray-300">
@@ -124,6 +124,8 @@ export default function Stage3DIndicator({
         >
           🔄 Reset to Stage 1
         </button>
+
+        
       </div>
     </CollapsibleSection>
   )

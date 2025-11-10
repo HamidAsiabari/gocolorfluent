@@ -39,7 +39,7 @@ export const stage0DesktopConfig: StageConfig = {
     spotLightDistance: 1,
     spotLightAngle: 5, // Narrower spot light angle
     spotLightPenumbra: 0, // No penumbra for sharp edges
-    shadowsEnabled: false,
+    shadowsEnabled: true,
     shadowMapSize: 4096, // Higher resolution shadow map
     shadowBias: 0.001
   }

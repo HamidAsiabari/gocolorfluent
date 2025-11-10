@@ -1,26 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface LoadingScreenProps {
   isLoading: boolean
   progress?: number
+  onHidden?: () => void
 }
 
-export default function LoadingScreen({ isLoading, progress = 0 }: LoadingScreenProps) {
+export default function LoadingScreen({ isLoading, progress = 0, onHidden }: LoadingScreenProps) {
   const [displayProgress, setDisplayProgress] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [showContent, setShowContent] = useState(false)
   const [simulatedProgress, setSimulatedProgress] = useState(0)
+  const simulatedProgressRef = useRef(0)
 
   useEffect(() => {
     if (isLoading) {
       // Animate progress bar smoothly using the higher of real or simulated progress
       const interval = setInterval(() => {
         setDisplayProgress(prev => {
-          const targetProgress = Math.max(progress, simulatedProgress)
+          const realPercent = Math.max(0, Math.min(100, (progress || 0) * 100))
+          const targetProgress = Math.max(realPercent, simulatedProgressRef.current)
           const diff = targetProgress - prev
-          if (Math.abs(diff) < 0.01) return targetProgress
+          if (Math.abs(diff) < 0.01) return Math.min(100, targetProgress)
           return prev + diff * 0.1
         })
       }, 16) // ~60fps
@@ -31,9 +34,10 @@ export default function LoadingScreen({ isLoading, progress = 0 }: LoadingScreen
       // Add a longer delay before hiding to show completion and ensure minimum time
       setTimeout(() => {
         setIsVisible(false)
+        onHidden?.()
       }, 1200) // Increased delay for better visual feedback
     }
-  }, [isLoading, progress]) // Removed simulatedProgress from dependency array to prevent infinite loop
+  }, [isLoading, progress]) // Keep dependencies minimal to avoid loops
 
   useEffect(() => {
     // Show content after a brief delay for smooth entrance
@@ -71,6 +75,11 @@ export default function LoadingScreen({ isLoading, progress = 0 }: LoadingScreen
       requestAnimationFrame(simulateProgress)
     }
   }, [isLoading])
+
+  // Keep a ref of simulated progress to avoid stale closure in interval
+  useEffect(() => {
+    simulatedProgressRef.current = simulatedProgress
+  }, [simulatedProgress])
 
   if (!isVisible) return null
 

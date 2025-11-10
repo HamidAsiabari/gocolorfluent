@@ -29,6 +29,7 @@ const ScrollManager = memo(function ScrollManager({
 }: ScrollManagerProps) {
   // Use ref to track current section value to avoid stale closures
   const currentSectionRef = useRef(currentSection)
+  const lastLockedYRef = useRef<number | null>(null)
   
   // Update ref when prop changes
   useEffect(() => {
@@ -53,27 +54,20 @@ const ScrollManager = memo(function ScrollManager({
       const windowHeight = window.innerHeight
       const targetScrollY = (currentSectionRef.current - 1) * windowHeight
       window.scrollTo(0, targetScrollY)
-      setScrollPosition(targetScrollY)
+      // Avoid redundant store updates that cause re-renders
+      if (lastLockedYRef.current !== targetScrollY) {
+        lastLockedYRef.current = targetScrollY
+        setScrollPosition(targetScrollY)
+      }
     }
     
     // Handle scroll events to maintain section locking
     const handleScroll = (e: Event) => {
-      if (isScrollingToSection) return
-      
-      const windowHeight = window.innerHeight
-      const currentScrollY = window.scrollY
-      const expectedScrollY = (currentSectionRef.current - 1) * windowHeight
-      
-      // Check if device is mobile
-      const isMobile = window.innerWidth <= 768
-      const tolerance = isMobile ? 0 : 10 // No tolerance on mobile, small tolerance on desktop
-      
-      // If scroll position deviates from expected, lock it back immediately
-      if (Math.abs(currentScrollY - expectedScrollY) > tolerance) {
+      // Aggressively lock scroll position on mobile to prevent free scrolling
+      if (!isScrollingToSection) {
+        e.preventDefault()
         lockScrollPosition()
       }
-      
-      setScrollPosition(currentScrollY)
     }
     
     // Handle wheel events for section navigation
@@ -96,9 +90,38 @@ const ScrollManager = memo(function ScrollManager({
       }
     }
     
+    // Helper function to check if element is interactive
+    const isInteractiveElement = (target: HTMLElement | null): boolean => {
+      if (!target) return false
+      return !!(
+        target.closest('video') || 
+        target.closest('[data-video-player]') ||
+        target.closest('button') ||
+        target.closest('a') ||
+        target.closest('input') ||
+        target.closest('select') ||
+        target.closest('[role="button"]') ||
+        target.closest('[onclick]')
+      )
+    }
+    
     // Handle touch events for mobile devices
     const handleTouchStart = (e: TouchEvent) => {
-      if (isScrollingToSection) return
+      // Check if touch is on an interactive element FIRST, before preventing default
+      const target = e.target as HTMLElement
+      if (isInteractiveElement(target)) {
+        // Don't interfere with interactive elements - let them handle the touch
+        isTouchScrolling = false
+        return // Don't prevent default or interfere
+      }
+      
+      if (isScrollingToSection) {
+        e.preventDefault()
+        return
+      }
+      
+      // Prevent any scrolling at the start (only for non-interactive elements)
+      e.preventDefault()
       
       touchStartY = e.touches[0].clientY
       lastTouchY = touchStartY
@@ -110,18 +133,55 @@ const ScrollManager = memo(function ScrollManager({
     const handleTouchMove = (e: TouchEvent) => {
       if (!isTouchScrolling || isScrollingToSection) return
       
+      // Check if touch is on an interactive element - if so, don't interfere
+      const target = e.target as HTMLElement
+      if (isInteractiveElement(target)) {
+        // Don't prevent default on interactive elements - reset state
+        isTouchScrolling = false
+        touchMoveCount = 0
+        return
+      }
+      
       // Prevent default scrolling on mobile to avoid showing multiple sections
       e.preventDefault()
       
       touchMoveCount++
       const currentY = e.touches[0].clientY
+      const currentDeltaY = touchStartY - currentY
       lastTouchY = currentY
+      
+      // Immediate section navigation on touch move (like wheel events)
+      // This makes mobile behave like desktop - immediate section-by-section scrolling
+      // Reduced threshold for more immediate response
+      if (Math.abs(currentDeltaY) > 20 && touchMoveCount >= 1) {
+        const isScrollingDown = currentDeltaY > 0  // Swipe up -> next section
+        const isScrollingUp = currentDeltaY < 0    // Swipe down -> previous section
+        
+        if (isScrollingDown || isScrollingUp) {
+          isTouchScrolling = false // Reset to prevent multiple triggers
+          touchMoveCount = 0
+          const direction = isScrollingDown ? 'down' : 'up'
+          // Lock scroll immediately before navigation
+          lockScrollPosition()
+          navigateToSection(direction)
+          return
+        }
+      }
       
       // Track movement for swipe detection
     }
     
     const handleTouchEnd = (e: TouchEvent) => {
       if (!isTouchScrolling || isScrollingToSection) return
+      
+      // Check if touch ended on an interactive element - if so, don't interfere
+      const target = e.target as HTMLElement
+      if (isInteractiveElement(target)) {
+        // Don't interfere with interactive elements - let them handle the click
+        isTouchScrolling = false
+        touchMoveCount = 0
+        return
+      }
       
       touchEndY = e.changedTouches[0].clientY
       touchEndTime = Date.now()
@@ -130,15 +190,15 @@ const ScrollManager = memo(function ScrollManager({
       const deltaTime = touchEndTime - touchStartTime
       const velocity = deltaTime > 0 ? Math.abs(deltaY) / deltaTime : 0
       
-      // Enhanced swipe detection with multiple criteria
-      const minSwipeDistance = 60 // Minimum distance for swipe
-      const minVelocity = 0.12 // Minimum velocity for swipe
-      const minMoveCount = 3 // Minimum number of touch moves
+      // Only trigger navigation if there was significant movement
+      // If movement was minimal, it was likely a tap/click, not a swipe
+      const minSwipeDistance = 50 // Minimum distance for swipe
+      const minVelocity = 0.1 // Minimum velocity for swipe
+      const minMoveCount = 1 // Minimum move count
       
-      // Only trigger navigation for clear, intentional swipe gestures
+      // Trigger navigation for swipe gestures (fallback if move handler didn't trigger)
       if (Math.abs(deltaY) > minSwipeDistance && 
-          velocity > minVelocity && 
-          touchMoveCount >= minMoveCount) {
+          (velocity > minVelocity || touchMoveCount >= minMoveCount)) {
         
         // Touch scroll direction logic (inverted for mobile)
         // deltaY = touchStartY - touchEndY
@@ -202,12 +262,12 @@ const ScrollManager = memo(function ScrollManager({
         
         // Animate transition progress with improved timing
         const duration = 1200 // 1.2 seconds for smoother feel
-        const startTime = performance.now()
+        const animationStartTime = performance.now()
         
         const animateTransition = (currentTime: number) => {
-          if (!isScrollingToSection) return // Guard against cleanup
+          if (!isScrollingToSection) return
           
-          const elapsed = currentTime - startTime
+          const elapsed = currentTime - animationStartTime
           const progress = Math.min(elapsed / duration, 1)
           
           // Improved easing function for more natural animation
@@ -216,48 +276,30 @@ const ScrollManager = memo(function ScrollManager({
           }
           
           const easedProgress = easeOutCubic(progress)
-          setTransitionProgress(easedProgress)
           
-          // Smooth scroll to target position during animation
-          const windowHeight = window.innerHeight
-          const startScrollY = (startSection - 1) * windowHeight
-          const targetScrollY = (targetSection - 1) * windowHeight
-          const currentScrollY = startScrollY + (targetScrollY - startScrollY) * easedProgress
+        // Update transition progress every frame for smooth animation
+        setTransitionProgress(easedProgress)
           
-          window.scrollTo(0, currentScrollY)
-          setScrollPosition(currentScrollY)
+          // We no longer programmatically scroll every frame; sections animate via CSS transforms
           
           if (progress < 1) {
             requestAnimationFrame(animateTransition)
           } else {
-            // Transition complete - ensure final scroll position is exact first
+            // Transition complete - set final scroll position exactly once
             const finalScrollY = (targetSection - 1) * window.innerHeight
             window.scrollTo(0, finalScrollY)
-            setScrollPosition(finalScrollY)
-            
+
             // Update ref and cancel the ongoing animation
             currentSectionRef.current = targetSection
             isScrollingToSection = false
-            setTransitionName(null)
             
-            // Use THREE requestAnimationFrames to ensure scroll is fully rendered before state update
-            // First frame: let the browser start rendering the scroll position
-            requestAnimationFrame(() => {
-              // Second frame: ensure the scroll position is painted
-              requestAnimationFrame(() => {
-                // Third frame: Update all state atomically to prevent flash
-                requestAnimationFrame(() => {
-                  // CRITICAL: Update all state together to ensure sections render correctly
-                  setTransitionProgress(0)
-                  setIsScrolling(false)
-                  
-                  // Set isTransitioning to false and update currentSection together
-                  // This ensures isTransitioning=false when sections recalculate positions
-                  setIsTransitioning(false)
-                  setCurrentSection(targetSection)
-                })
-              })
-            })
+            // Batch all state updates in one synchronous call - no RAF needed
+            setScrollPosition(finalScrollY)
+            setTransitionProgress(0)
+            setIsScrolling(false)
+            setIsTransitioning(false)
+            setCurrentSection(targetSection)
+            setTransitionName(null)
           }
         }
         
@@ -265,20 +307,36 @@ const ScrollManager = memo(function ScrollManager({
       }
     }
     
-    // Update scroll position display
-    const updateScrollPosition = () => {
-      setScrollPosition(window.scrollY)
-    }
-    
     // Add event listeners
     window.addEventListener('wheel', handleWheel, { passive: false })
     window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('scroll', handleScroll, { passive: true })
     
-    // Add touch event listeners for mobile
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: false })
-    window.addEventListener('touchend', handleTouchEnd, { passive: false })
+    // Add scroll handler for aggressive locking on mobile
+    const isMobile = window.innerWidth <= 768
+    let scrollLockInterval: NodeJS.Timeout | null = null
+    
+    if (isMobile) {
+      window.addEventListener('scroll', handleScroll, { passive: false, capture: true })
+      // Also add to document and body for comprehensive prevention
+      document.addEventListener('scroll', handleScroll, { passive: false, capture: true })
+      document.body.addEventListener('scroll', handleScroll, { passive: false, capture: true })
+      
+      // Lock scroll position more frequently on mobile to prevent any scrolling
+      scrollLockInterval = setInterval(() => {
+        if (!isScrollingToSection) {
+          lockScrollPosition()
+        }
+      }, 16) // ~60fps
+    }
+    
+    // Add touch event listeners for mobile - all non-passive to prevent default
+    window.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true })
+    // Also add to document for comprehensive prevention
+    document.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true })
+    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true })
+    document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true })
     
     // Lock initial scroll position
     lockScrollPosition()
@@ -289,26 +347,20 @@ const ScrollManager = memo(function ScrollManager({
     }
     window.addEventListener('resize', handleResize)
     
-    // Add continuous scroll locking for mobile devices
-    const isMobile = window.innerWidth <= 768
-    let scrollLockInterval: NodeJS.Timeout | null = null
-    
-    if (isMobile) {
-      // Lock scroll position more frequently on mobile to prevent any scrolling
-      scrollLockInterval = setInterval(() => {
-        if (!isScrollingToSection) {
-          lockScrollPosition()
-        }
-      }, 16) // ~60fps
-    }
-    
     return () => {
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleTouchEnd)
+      if (isMobile) {
+        window.removeEventListener('scroll', handleScroll, { capture: true } as any)
+        document.removeEventListener('scroll', handleScroll, { capture: true } as any)
+        document.body.removeEventListener('scroll', handleScroll, { capture: true } as any)
+      }
+      window.removeEventListener('touchstart', handleTouchStart, { capture: true } as any)
+      window.removeEventListener('touchmove', handleTouchMove, { capture: true } as any)
+      window.removeEventListener('touchend', handleTouchEnd, { capture: true } as any)
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true } as any)
+      document.removeEventListener('touchmove', handleTouchMove, { capture: true } as any)
+      document.removeEventListener('touchend', handleTouchEnd, { capture: true } as any)
       window.removeEventListener('resize', handleResize)
       if (wheelTimeout) {
         clearTimeout(wheelTimeout)

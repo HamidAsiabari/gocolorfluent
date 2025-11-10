@@ -1,4 +1,5 @@
 export { default as ThreeSceneManager } from './ThreeSceneManager'
+export { default as ThreeSceneManagerV2 } from './ThreeSceneManagerV2'
 
 // Stage configurations
 export { stage0Config } from './stage0'

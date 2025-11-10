@@ -57,7 +57,7 @@ export default function Product3DViewer({
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.2
+    renderer.toneMappingExposure = 1.0
     rendererRef.current = renderer
 
     mountRef.current.appendChild(renderer.domElement)
